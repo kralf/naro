@@ -1,5 +1,5 @@
 gpio:
-    num: "200"
+    num: "199"
 sensor:
     name: "hallSensor_rear"
     frequency: 300
