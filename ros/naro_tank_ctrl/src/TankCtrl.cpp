@@ -81,7 +81,7 @@ bool TankCtrl::setTankPosition(SetTankPosition::Request& request, SetTankPositio
 
 		finalPosition = false;
 	} else {
-		NODEWRAP_INFO("Already at final position");
+		//NODEWRAP_INFO("Already at final position");
 	}
 
 	return true;
@@ -111,7 +111,7 @@ void TankCtrl::checkPosition(const ros::TimerEvent& event) {
 	if(!finalPosition) {
 		float position = getPosition();
 		if(fabs(position-positionRequest)<positionThreshold) {
-			NODEWRAP_INFO("Reached final position");
+			//NODEWRAP_INFO("Reached final position");
 			setSpeed(0.0);
 			speedDirection = 0;
 			setDirection(0);
@@ -136,7 +136,7 @@ void TankCtrl::setDirection(float direction) {
 
 	directionSrv.request.direction = direction;
 	if(directionClient.call(directionSrv)) {
-		NODEWRAP_INFO("direction set to: %f", direction);	
+		//NODEWRAP_INFO("direction set to: %f", direction);	
 	} else {
 		NODEWRAP_INFO("setDirection: TankPosition node not available");
 	}
@@ -181,7 +181,7 @@ bool TankCtrl::resetPosition() {
 			ros::Duration(2.0).sleep();
 		}
 	} else {
-		NODEWRAP_INFO("Already at position 0");
+		//NODEWRAP_INFO("Already at position 0");
 	}
 
 	setSpeed(0.0);

@@ -31,8 +31,12 @@
     <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_front.yaml"/>
   </node>
 
+  <include file="$(find naro_imu)/launch/naro_imu.launch" />
+
   <node name="DepthSensor" pkg="naro_sensor_srvs" type="depth_sensor" output="screen">
     <rosparam command="load" file="$(find naro_sensor_srvs)/config/depth_sensor.yaml"/>
   </node>
+
+  <include file="$(find naro_dive_ctrl)/launch/dive_controller.launch" />
 
 </launch>
