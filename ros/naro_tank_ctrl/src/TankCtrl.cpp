@@ -107,9 +107,9 @@ void TankCtrl::setSpeed(float speed) {
 * check position and stop if correct position within certain threshold
 */
 void TankCtrl::checkPosition(const ros::TimerEvent& event) {
-	float position = getPosition();
-	if(fabs(position-positionRequest)<positionThreshold) {
-		if(!finalPosition) {
+	if(!finalPosition) {
+		float position = getPosition();
+		if(fabs(position-positionRequest)<positionThreshold) {
 			NODEWRAP_INFO("Reached final position");
 			setSpeed(0.0);
 			speedDirection = 0;
@@ -134,7 +134,7 @@ void TankCtrl::setDirection(float direction) {
 	if(directionClient.call(directionSrv)) {
 		NODEWRAP_INFO("direction set to: %f", direction);	
 	} else {
-		NODEWRAP_INFO("TankPosition node not available");
+		NODEWRAP_INFO("setDirection: TankPosition node not available");
 	}
 }
 
@@ -145,7 +145,7 @@ float TankCtrl::getPosition() {
 	if(positionClient.call(posSrv)) {
 		return posSrv.response.position;	
 	} else {
-		NODEWRAP_INFO("TankPosition node not avialable");
+		NODEWRAP_INFO("getPosition: TankPosition node not avialable");
 		return false;
 	}
 }

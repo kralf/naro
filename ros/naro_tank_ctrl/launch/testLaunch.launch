@@ -15,16 +15,16 @@
     <rosparam command="load" file="$(find naro_sensor_srvs)/config/hallSensor_rear.yaml"/>
   </node>
   
-  <node name="tankPos" pkg="naro_tank_ctrl" type="tank_pos" output="screen">
+  <node name="TankPositionRear" pkg="naro_tank_ctrl" type="tank_pos" output="screen">
     <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_rear.yaml"/>
   </node>
-  <node name="tankCtrl" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
+  <node name="TankCtrlRear" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
     <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_rear.yaml"/>
   </node>
-    <node name="tankPos" pkg="naro_tank_ctrl" type="tank_pos" output="screen">
+    <node name="TankPositionFront" pkg="naro_tank_ctrl" type="tank_pos" output="screen">
     <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_front.yaml"/>
   </node>
-  <node name="tankCtrl" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
+  <node name="TankCtrlFront" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
     <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_front.yaml"/>
   </node>
 

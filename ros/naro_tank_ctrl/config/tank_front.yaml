@@ -1,8 +1,8 @@
 position:
-	name: "TankPositionFront"
-	hallSensor: "hallSensor_front"
-	totalTicks: 950
+    name: "TankPositionFront"
+    hallSensor: "hallSensor_front"
+    totalTicks: 950
 control:
-	name: "TankCtrlFront"
-	smcServer: "smc_server_front"
+    name: "TankCtrlFront"
+    smcServer: "smc_server_front"
 positionThreshold: 0.01
