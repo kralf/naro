@@ -5,7 +5,6 @@
  * 2015
  */
 #include "naro_sensor_srvs/HallSensor.h"
-#include <iostream>
 #include <unistd.h>
 
 

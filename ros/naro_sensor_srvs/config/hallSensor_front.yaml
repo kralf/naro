@@ -2,4 +2,4 @@ gpio:
     num: "199"
 sensor:
     name: "hallSensor_front"
-    frequency: 10
+    frequency: 300
