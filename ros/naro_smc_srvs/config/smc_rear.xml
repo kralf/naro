@@ -60,7 +60,7 @@
   </Analog2>
   <!--Motor Settings-->
   <PwmPeriodFactor>0</PwmPeriodFactor>
-  <MotorInvert>false</MotorInvert>
+  <MotorInvert>false</MotorInvert> <!-- change HERE -->
   <SpeedZeroBrakeAmount>32</SpeedZeroBrakeAmount>
   <SpeedUpdatePeriod>1</SpeedUpdatePeriod>
   <ForwardLimits>
