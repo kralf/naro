@@ -32,9 +32,9 @@ class TankCtrl:
 			float position;
 			float positionRequest;
 			float positionThreshold;
-			int totalTicks;
-			int ticksOld;
-			int speedDirection;
+			float totalTicks;
+			float ticksOld;
+			float speedDirection;
 			bool finalPosition;
 
 			ros::NodeHandle n;
@@ -56,6 +56,8 @@ class TankCtrl:
 			bool setTankPosition(SetTankPosition::Request& request, SetTankPosition::Response& response);
 
 			void callSpeedClient(float speed);
+
+			void startup();
 
 };
 
