@@ -41,6 +41,7 @@ add_service_files(
   FILES
     GetTankPosition.srv
     SetTankPosition.srv
+    SetDirection.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -90,10 +91,16 @@ add_library(
 	naro_tank_ctrl src/TankCtrl.cpp
 )
 
+add_library(
+  naro_tank_pos src/TankPosition.cpp
+)
 
 ## Declare a cpp executable
 add_executable(
   tank_ctrl src/tank_ctrl.cpp
+)
+add_executable(
+  tank_pos src/tank_pos.cpp
 )
 
 ## Add cmake target dependencies of the executable/library
@@ -103,7 +110,7 @@ add_executable(
 ## Specify libraries to link a library or executable target against
 
 target_link_libraries(
-  naro_tank_ctrl
+  tank_ctrl
   ${catkin_LIBRARIES}
 )
 
@@ -113,3 +120,13 @@ target_link_libraries(
   ${catkin_LIBRARIES}
 )
 
+target_link_libraries(
+  tank_pos
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(
+  tank_pos
+  naro_tank_pos
+  ${catkin_LIBRARIES}
+)

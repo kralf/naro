@@ -15,7 +15,9 @@
     <rosparam command="load" file="$(find naro_sensor_srvs)/config/hallSensor_rear.yaml"/>
   </node>
   
-  <node name="tankCtrl" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
+    <node name="tankPos" pkg="naro_tank_ctrl" type="tank_pos" output="screen">
+  </node>
+    <node name="tankCtrl" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
   </node>
 
 </launch>

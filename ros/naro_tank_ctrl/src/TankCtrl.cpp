@@ -17,21 +17,22 @@ TankCtrl::~TankCtrl() {};
 void TankCtrl::init() {
 	NODEWRAP_INFO("Initialize <TankCtrl>");
 
-	positionClient = n.serviceClient<naro_sensor_srvs::GetPosition>("hallSensor_rear/getPosition");
+	// SERVICES
+	// -> subscribe
 	speedClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/smc_server_rear/set_speed");
+	positionClient = n.serviceClient<naro_tank_ctrl::GetTankPosition>("/tankPos/getTankPosition");
+	directionClient = n.serviceClient<naro_tank_ctrl::SetDirection>("/tankPos/setDirection");
 
-	timerHallSensor = n.createTimer(ros::Duration(1/300), &TankCtrl::readPosition, this); // timer for reading HallSensor
-	checkPositionTimer = n.createTimer(ros::Duration(1/300), &TankCtrl::checkPosition, this); // timer for checking position
-
-	getTankPositionService = advertiseService("getTankPosition", "getTankPosition", &TankCtrl::getTankPosition);
+	// -> advertise
 	setTankPositionService = advertiseService("setTankPosition", "setTankPosition", &TankCtrl::setTankPosition);
+
+	// TIMER
+	checkPositionTimer = n.createTimer(ros::Duration(1/300), &TankCtrl::checkPosition, this); // timer for checking position
 
 	startup();
 
-	ticksOld = 0.0;
-	totalTicks = 950.0;
+	// INIT VAROIABLES
 	speedDirection = 0.0;
-	position = 0.0;
 	positionRequest = 0.0;
 	positionThreshold = 0.01;
 	finalPosition = true;
@@ -42,69 +43,36 @@ void TankCtrl::cleanup() {
 	NODEWRAP_INFO("Shutting down: TankCtrl");
 }
 
-/*
-* get information from hall sensor and transform into normalized tank position
-*/
-void TankCtrl::readPosition(const ros::TimerEvent& event) {
-	if(positionClient.call(posSrv)) {
-		float ticksNew = posSrv.response.position;
-		float diff = ticksNew-ticksOld; // calculate diff in position
-		// change position
-		if(speedDirection<0) { // tank filling
-			float posTmp = position+diff/totalTicks; // add normalized difference
-			position = posTmp;
-		} else if(speedDirection > 0) {
-			float posTmp = position-diff/totalTicks; // subtract normalized difference
-			position = posTmp;
-		} else { // no speed
-			if(diff!=0) {
-				NODEWRAP_INFO("Somebody messed with the system!");
-				float posTmp = position+diff/totalTicks; // add normalized difference
-				position = posTmp;
-			}
-		}
-
-		ticksOld = ticksNew;
-
-	}
-	else {
-		NODEWRAP_INFO("HallSensor service not available");
-	}
-}
-
-bool TankCtrl::getTankPosition(GetTankPosition::Request& request, GetTankPosition::Response& response) {
-	response.position = this->position;
-	return true;
-}
 
 /*
-* sets correct motor speed according actual position and requested position of piston tank
+* set correct motor speed according actual position and requested position of piston tank
 */
-
 bool TankCtrl::setTankPosition(SetTankPosition::Request& request, SetTankPosition::Response& response) {
 	positionRequest = (float)(request.position);
+	float speed = fabs((float)(request.speed));
 
-	std::cout << "---" << std::endl;
-	std::cout << "Position Request:" << positionRequest << std::endl;
+	float position = getPosition();
 
-	float speed = abs((float)(request.speed));
-
-	std::cout << "Speed Request: " << speed << std::endl;
-
-	float diff = abs(positionRequest-position);
-
-	std::cout << "Position:" << position << std::endl;
-	std::cout << "Position Diff: " << diff << std::endl;
-
-	if(diff>positionThreshold) { // check ifnot at position
+	if(fabs(positionRequest-position)>positionThreshold) { // check ifnot at position
+		float direction = speedDirection;
 		if(position > positionRequest) {
-			speedDirection = 1.0; // drive in
+			direction = 1.0; // drive in
 			NODEWRAP_INFO("set speed direction +");
 		} else {
-			speedDirection = -1.0; // drive in
+			direction = -1.0; // drive in
 			NODEWRAP_INFO("set speed direction -");
 		}
+
+		if(direction!=speedDirection) { // check if change in direction
+			// stop motor
+			callSpeedClient(0);
+			// change direction
+			setDirection(direction);
+			speedDirection = direction;
+		}
+
 		callSpeedClient(speedDirection*speed);
+
 		finalPosition = false;
 	} else {
 		NODEWRAP_INFO("Already at final position");
@@ -117,9 +85,7 @@ bool TankCtrl::setTankPosition(SetTankPosition::Request& request, SetTankPositio
 * set the speed of the motor 
 */
 void TankCtrl::callSpeedClient(float speed) {
-	std::cout << "Speed in call class: " << speed << std::endl;
 	speedSrv.request.speed = speed;
-	std::cout << speed << std::endl;
 	speedSrv.request.start = true;
 	if(speedClient.call(speedSrv)) {
 		NODEWRAP_INFO("speed set to: %f", speed);
@@ -133,12 +99,13 @@ void TankCtrl::callSpeedClient(float speed) {
 * check position and stop if correct position within certain threshold
 */
 void TankCtrl::checkPosition(const ros::TimerEvent& event) {
-	if(abs(position-positionRequest)<positionThreshold) {
+	float position = getPosition();
+	if(fabs(position-positionRequest)<positionThreshold) {
 		if(!finalPosition) {
-			std::cout << "Diff: " << abs(position-positionRequest) << std::endl;
 			NODEWRAP_INFO("Reached final position");
 			callSpeedClient(0.0);
-			speedDirection = 0.0;
+			speedDirection = 0;
+			setDirection(0);
 			finalPosition = true;
 		}
 	}
@@ -150,5 +117,30 @@ void TankCtrl::checkPosition(const ros::TimerEvent& event) {
 void TankCtrl::startup() {
 	callSpeedClient(0.0);
 }
+
+/*
+* call TankPosition node and update direction for position counting
+*/
+void TankCtrl::setDirection(float direction) {
+	directionSrv.request.direction = direction;
+	if(directionClient.call(directionSrv)) {
+		NODEWRAP_INFO("direction set to: %f", direction);	
+	} else {
+		NODEWRAP_INFO("TankPosition node not avialable");
+	}
+}
+
+/*
+* get tank position from PositionNode
+*/
+float TankCtrl::getPosition() {
+	if(positionClient.call(posSrv)) {
+		return posSrv.response.position;	
+	} else {
+		NODEWRAP_INFO("TankPosition node not avialable");
+		return false;
+	}
+}
+
 
 }

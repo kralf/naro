@@ -13,6 +13,7 @@
 #include "naro_smc_srvs/SetSpeed.h"
 #include "naro_tank_ctrl/GetTankPosition.h"
 #include "naro_tank_ctrl/SetTankPosition.h"
+ #include "naro_tank_ctrl/SetDirection.h"
 
 using namespace naro_tank_ctrl;
 
@@ -29,7 +30,6 @@ class TankCtrl:
 			void init();
 			void cleanup();
 
-			float position;
 			float positionRequest;
 			float positionThreshold;
 			float totalTicks;
@@ -43,19 +43,23 @@ class TankCtrl:
 			ros::Timer checkPositionTimer;
 
 			ros::ServiceClient positionClient;
+			naro_tank_ctrl::GetTankPosition posSrv;
+
 			ros::ServiceClient speedClient;
 			naro_smc_srvs::SetSpeed speedSrv;
-			naro_sensor_srvs::GetPosition posSrv;
 
-			ros::ServiceServer getTankPositionService;
+			ros::ServiceClient directionClient;
+			naro_tank_ctrl::SetDirection directionSrv;
+
 			ros::ServiceServer setTankPositionService;
 
 			void readPosition(const ros::TimerEvent& event);
 			void checkPosition(const ros::TimerEvent& event);
-			bool getTankPosition(GetTankPosition::Request& request, GetTankPosition::Response& response);
 			bool setTankPosition(SetTankPosition::Request& request, SetTankPosition::Response& response);
 
 			void callSpeedClient(float speed);
+			void setDirection(float direction);
+			float getPosition();
 
 			void startup();
 
