@@ -35,7 +35,7 @@ void DiveController::init() {
 	double Ki = getParam("Depth/Ki", Ki);
 	double Kd = getParam("Depth/Kd", Kd);
 	double freq = getParam("Depth/Frequency", freq);
-	double dt = 1/freq;
+	double dt = 1.0/freq;
 	depthCtrl.setGains(Kp,Ki,Kd);
 	depthCtrl.setTimestep(dt);
 
@@ -43,7 +43,7 @@ void DiveController::init() {
 	Ki = getParam("Pitch/Ki", Ki);
 	Kd = getParam("Pitch/Kd", Kd);
 	freq = getParam("Depth/Frequency", freq);
-	dt = 1/freq;
+	dt = 1.0/freq;
 	pitchCtrl.setGains(Kp,Ki,Kd);
 	pitchCtrl.setTimestep(dt);
 
@@ -64,8 +64,8 @@ void DiveController::init() {
 	disableService = advertiseService("disable", "disable", &DiveController::disable);
 
 	// TIMER, not starting
-	depthTimer = n.createTimer(ros::Duration(1/freqDepth), &DiveController::depthCallback, this, 0, 0);
-	pitchTimer = n.createTimer(ros::Duration(1/freqPitch), &DiveController::pitchCallback, this, 0, 0);
+	depthTimer = n.createTimer(ros::Duration(1.0/freqDepth), &DiveController::depthCallback, this, 0, 0);
+	pitchTimer = n.createTimer(ros::Duration(1.0/freqPitch), &DiveController::pitchCallback, this, 0, 0);
 
 }
 
@@ -93,6 +93,9 @@ void DiveController::pitchCallback(const ros::TimerEvent& event) {
 
 	std::vector<float> pitchData{(float)refPitch, (float)actualPitch};
 	logger.log(pitchData, "pitchLog");
+
+	NODEWRAP_INFO("Pitch error: %f", (float)error);
+	NODEWRAP_INFO("Input Pitch: %f", (float)inputPitch);
 
 	setControlInput(controlInputDepth, inputPitch);
 
@@ -141,6 +144,8 @@ void DiveController::setControlInput(double inputDepth, double inputPitch) {
 	setTankPosition(controlFrontClient, inputFront);
 	setTankPosition(controlRearClient, inputRear);
 
+	NODEWRAP_INFO("Input Front: %f", (float)inputFront);
+	NODEWRAP_INFO("Input Rear: %f", (float)inputRear);
 	std::vector<float> inputData{(float)inputFront, (float)inputRear};
 	logger.log(inputData, "ctrlInputs");
 }
@@ -189,9 +194,15 @@ bool DiveController::getRefDepth(GetRefDepth::Request& request, GetRefDepth::Res
 }
 
 bool DiveController::enable(Enable::Request& request, Enable::Response& response) {
-	pitchTimer.start();
-	depthTimer.start();
-	NODEWRAP_INFO("DiveCtrl ENABLED!");
+	if(request.enablePitchCtrl) {
+		pitchTimer.start();
+		NODEWRAP_INFO("PitchCtrl ENABLED!");
+	}
+	if(request.enableDepthCtrl) {
+		depthTimer.start();
+		NODEWRAP_INFO("DepthCtrl ENABLED!");
+	}
+
 	return 1;
 }
 
@@ -208,7 +219,7 @@ void DiveController::connectServices() {
 	if(!controlRearClient)
 		controlRearClient  = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankRear+"/setTankPosition", true);
 	if(!depthClient)
-		depthClient = n.serviceClient<naro_sensor_srvs::GetDepth>("/"+depthName+"/setTankPosition", true);
+		depthClient = n.serviceClient<naro_sensor_srvs::GetDepth>("/"+depthName+"/get_depth", true);
 	if(!pitchClient)
 		pitchClient = n.serviceClient<naro_imu::GetPitch>("/"+pitchName+"/getPitch", true);
 }

@@ -1,1 +1,3 @@
+bool enablePitchCtrl
+bool enableDepthCtrl
 ---

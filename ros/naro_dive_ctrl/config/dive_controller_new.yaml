@@ -4,14 +4,14 @@ Depth:
     Ki: 0.0062
     Kd: 1.4245
 Pitch:
-    Frequency: 200
+    Frequency: 1
     Kp: 0.2
     Ki: 0.0
     Kd: 0.0
 Services:
-    tankFrontCtrl: "tankCtrlFront"
-    tankRearCtrl: "tankCtrlRear"
-    depthService: "depth_sensor"
-    pitchService: "base"
+    tankFrontCtrl: "TankCtrlFront"
+    tankRearCtrl: "TankCtrlRear"
+    depthService: "DepthSensor"
+    pitchService: "naro_imu_node"
 Tank:
     Speed: 0.6

@@ -35,7 +35,7 @@ double PIDController::updateControl(double error) {
 	if(lastError != error)
 		derivativeError = (error-lastError)/timeStep;
 
-	bool output = Kp*error+Ki*integralError+Kd*derivativeError;
+	double output = Kp*error+Ki*integralError+Kd*derivativeError;
 	lastError = error;
 
 	return output;
