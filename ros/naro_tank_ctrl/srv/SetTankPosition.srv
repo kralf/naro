@@ -1,0 +1,4 @@
+float32 position  # within (0,1)
+float32 speed    # within (0,1)
+---
+bool set

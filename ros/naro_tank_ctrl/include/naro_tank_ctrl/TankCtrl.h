@@ -10,8 +10,11 @@
 #include "std_msgs/String.h"
 
 #include "naro_sensor_srvs/GetPosition.h"
+#include "naro_smc_srvs/SetSpeed.h"
+#include "naro_tank_ctrl/GetTankPosition.h"
+#include "naro_tank_ctrl/SetTankPosition.h"
 
-//using namespace naro_tank_ctrl;
+using namespace naro_tank_ctrl;
 
 namespace nodewrap {
 
@@ -26,19 +29,33 @@ class TankCtrl:
 			void init();
 			void cleanup();
 
-			double position;
+			float position;
+			float positionRequest;
+			float positionThreshold;
 			int totalTicks;
 			int ticksOld;
 			int speedDirection;
+			bool finalPosition;
 
 			ros::NodeHandle n;
-			ros::Subscriber subscribeCtrl;
-			ros::Timer timerPosition;
-			ros::ServiceClient positionClient;
-			naro_sensor_srvs::GetPosition srv;
 
-			void handleCtrlInput(const std_msgs::String::ConstPtr& msg);
+			ros::Timer timerHallSensor;
+			ros::Timer checkPositionTimer;
+
+			ros::ServiceClient positionClient;
+			ros::ServiceClient speedClient;
+			naro_smc_srvs::SetSpeed speedSrv;
+			naro_sensor_srvs::GetPosition posSrv;
+
+			ros::ServiceServer getTankPositionService;
+			ros::ServiceServer setTankPositionService;
+
 			void readPosition(const ros::TimerEvent& event);
+			void checkPosition(const ros::TimerEvent& event);
+			bool getTankPosition(GetTankPosition::Request& request, GetTankPosition::Response& response);
+			bool setTankPosition(SetTankPosition::Request& request, SetTankPosition::Response& response);
+
+			void callSpeedClient(float speed);
 
 };
 

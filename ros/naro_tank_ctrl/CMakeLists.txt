@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp_nodewrap
   message_generation
   naro_sensor_srvs
+  naro_smc_srvs
 )
 
 ################################################
@@ -36,10 +37,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-#add_service_files(
-#  FILES
-#  	test
-#)
+add_service_files(
+  FILES
+    GetTankPosition.srv
+    SetTankPosition.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -49,7 +51,7 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-#generate_messages()
+generate_messages()
 
 ###################################
 ## catkin specific configuration ##
@@ -63,7 +65,13 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
  #   INCLUDE_DIRS include
  #   LIBRARIES naro_sensor_srvs
-    CATKIN_DEPENDS std_msgs std_srvs roscpp_nodewrap message_runtime naro_sensor_srvs
+    CATKIN_DEPENDS 
+      std_msgs 
+      std_srvs 
+      roscpp_nodewrap 
+      message_runtime 
+      naro_sensor_srvs
+      naro_smc_srvs
 )
 
 ###########
