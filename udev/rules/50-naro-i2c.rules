@@ -1,0 +1,11 @@
+# Naro "Nanins" I2C auto-configuration rules for udev.
+# See udev(7) for syntax.
+
+# I2C hardware device driver
+SUBSYSTEM=="platform", KERNEL=="bcm2708_i2c.[0-9]*", RUN+="/sbin/modprobe i2c_bcm2708"
+
+# I2C userspace device driver
+SUBSYSTEM=="i2c", ACTION=="add", RUN+="/sbin/modprobe i2c-dev"
+
+# BlinkM smart LED device permissions and symlinks
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", MODE="0664", GROUP="plugdev", SYMLINK+="naro/led%n"

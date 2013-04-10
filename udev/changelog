@@ -1,0 +1,8 @@
+naro-udev (0.1-1) lucid; urgency=low
+
+  * Initial commit with project structure
+  * Added rules:
+    + I2C kernel module loading and device setup (LEDs)
+    + USB raw device setup (motor controllers)
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 13 Feb 2013 10:25:00 +0100
