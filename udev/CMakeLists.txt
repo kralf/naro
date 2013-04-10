@@ -6,7 +6,7 @@ remake_project(
   naro-udev
   VERSION 0.1
   RELEASE alpha
-  SUMMARY "Naro \"Nanins\" auto-configuration rules for udev."
+  SUMMARY "Naro Nanins auto-configuration rules for udev."
   AUTHOR "Ralf Kaestner"
   CONTACT "ralf.kaestner@gmail.com"
   HOME "http://github.com/kralf/naro"
