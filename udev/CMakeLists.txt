@@ -26,7 +26,7 @@ remake_pack_deb(
 
 remake_distribute_deb(
   DISTRIBUTION precise
-  ALIAS rpi
+  ALIAS raspbian
   ARCH armhf
   SECTION admin
   UPLOAD ppa:kralf/naro
