@@ -1,0 +1,11 @@
+naro-ros (0.1-2) lucid; urgency=low
+
+  * Added naro_diagnostics, naro_smc_srvs, and naro_test ROS packages
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Tue, 07 May 2013 18:29:00 +0100
+
+naro-ros (0.1-1) lucid; urgency=low
+
+  * Initial commit with project structure
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 24 Feb 2013 15:08:00 +0100

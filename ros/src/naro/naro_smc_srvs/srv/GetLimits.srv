@@ -1,0 +1,14 @@
+---
+uint16 NONE = 0
+uint16 STARTED_STATE = 1
+uint16 TEMPERATURE = 2
+uint16 MAX_SPEED = 4
+uint16 STARTING_SPEED = 8
+uint16 ACCELERATION = 16
+uint16 RC1 = 32
+uint16 RC2 = 64
+uint16 ANALOG1 = 128
+uint16 ANALOG2 = 256
+uint16 USB_KILL = 512
+
+uint16 limits

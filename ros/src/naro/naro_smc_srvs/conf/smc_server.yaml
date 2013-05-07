@@ -1,0 +1,3 @@
+device:
+  address: /dev/naro/smc
+  timeout: 0.1

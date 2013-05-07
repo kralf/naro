@@ -1,0 +1,15 @@
+pub_rate: 1.0
+base_path: ''
+analyzers:
+  motors:
+    type: AnalyzerGroup
+    path: Motors
+    analyzers:
+      smc_server:
+        type: GenericAnalyzer
+        path: Simple Motor Controller
+        find_and_remove_prefix: 'smc_server:'
+      usc_server:
+        type: GenericAnalyzer
+        path: USB Servo Controller
+        find_and_remove_prefix: 'usc_server:'
