@@ -1,4 +1,11 @@
-naro-ros (0.1-2) lucid; urgency=low
+naro-ros (0.1-6) lucid; urgency=low
+
+  * Added naro_usc_srvs ROS package (incomplete)
+  * Added dive_cylinder_test.py to naro_test ROS package
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 08 May 2013 09:13:00 +0100
+
+naro-ros (0.1-5) lucid; urgency=low
 
   * Added naro_diagnostics, naro_smc_srvs, and naro_test ROS packages
 

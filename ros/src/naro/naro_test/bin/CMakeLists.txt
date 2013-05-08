@@ -1,1 +1,4 @@
 remake_ros_package_add_executable(smc_monitor)
+remake_ros_package_add_executable(usc_monitor)
+
+remake_add_scripts(*.py)

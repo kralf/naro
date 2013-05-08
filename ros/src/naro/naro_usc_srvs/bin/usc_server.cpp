@@ -22,42 +22,29 @@
 
 #include <usb/context.h>
 #include <config/document.h>
-#include <smc/device.h>
-#include <smc/usb/getfirmwareversion.h>
-#include <smc/usb/setsettings.h>
-#include <smc/usb/getvariables.h>
-#include <smc/usb/exitsafestart.h>
-#include <smc/usb/setusbkill.h>
-#include <smc/usb/setspeed.h>
-#include <smc/usb/setbrake.h>
+#include <usc/device.h>
+#include <usc/usb/getfirmwareversion.h>
+#include <usc/usb/mini/setsettings.h>
+#include <usc/usb/mini/getvariables.h>
 
 #include <ros/ros.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 
-#include "naro_smc_srvs/GetErrors.h"
-#include "naro_smc_srvs/GetLimits.h"
-#include "naro_smc_srvs/GetInputs.h"
-#include "naro_smc_srvs/GetVoltage.h"
-#include "naro_smc_srvs/GetTemperature.h"
-#include "naro_smc_srvs/GetSpeed.h"
-#include "naro_smc_srvs/Start.h"
-#include "naro_smc_srvs/Kill.h"
-#include "naro_smc_srvs/SetSpeed.h"
-#include "naro_smc_srvs/SetBrake.h"
+#include "naro_usc_srvs/GetErrors.h"
 
-using namespace naro_smc_srvs;
+using namespace naro_usc_srvs;
 
 double connectionRetry = 1.0;
-std::string deviceAddress = "/dev/naro/smc";
+std::string deviceAddress = "/dev/naro/usc";
 double deviceTimeout = 0.1;
-std::string configurationFile = "etc/smc.xml";
+std::string configurationFile = "etc/usc.xml";
 
 boost::shared_ptr<diagnostic_updater::Updater> updater;
 std::string configurationError;
 
 Pololu::Pointer<Pololu::Usb::Context> context;
 Pololu::Pointer<Pololu::Usb::Interface> interface;
-Pololu::Pointer<Pololu::Smc::Device> device;
+Pololu::Pointer<Pololu::Usc::Device> device;
 
 void getParameters() {
   ros::param::param<double>("connection/retry", connectionRetry,
@@ -128,7 +115,7 @@ void diagnoseConfiguration(diagnostic_updater::DiagnosticStatusWrapper
 void diagnoseTransfer(diagnostic_updater::DiagnosticStatusWrapper
     &status) {
   if (!device.isNull() && device->isConnected()) {
-    Pololu::Smc::Usb::GetFirmwareVersion request;
+    Pololu::Usc::Usb::GetFirmwareVersion request;
     try {
       device->send(request);
       status.summaryf(diagnostic_msgs::DiagnosticStatus::OK,
@@ -154,10 +141,10 @@ void setSettings(const std::string& filename) {
 
   if (file.is_open()) {
     try {
-      Pololu::Smc::Usb::SetSettings settings;
+      Pololu::Usc::Usb::Mini::SetSettings settings(device->getNumChannels());
       file >> settings;
 
-      Pololu::Smc::Usb::SetSettings setSettingsRequest(settings);
+      Pololu::Usc::Usb::Mini::SetSettings setSettingsRequest(settings);
       interface->transfer(setSettingsRequest);
     }
     catch (const Pololu::Exception& exception) {
@@ -183,7 +170,7 @@ void connect(const ros::TimerEvent& event = ros::TimerEvent()) {
         interface->setTimeout(deviceTimeout);
       }
       if (device.isNull())
-        device = interface->discoverDevice().typeCast<Pololu::Smc::Device>();
+        device = interface->discoverDevice().typeCast<Pololu::Usc::Device>();
       updater->force_update();
 
       device->setInterface(interface.typeCast<Pololu::Interface>());
@@ -241,7 +228,7 @@ bool transfer(Pololu::Usb::Request& request, const std::string& name) {
 }
 
 bool getErrors(GetErrors::Request& request, GetErrors::Response& response) {
-  Pololu::Smc::Usb::GetVariables getVariablesRequest;
+  Pololu::Usc::Usb::Mini::GetVariables getVariablesRequest;
 
   if (transfer(getVariablesRequest, "GetVariables"))
     response.errors = getVariablesRequest.getResponse().errorOccurred;
@@ -251,111 +238,8 @@ bool getErrors(GetErrors::Request& request, GetErrors::Response& response) {
   return true;
 }
 
-bool getLimits(GetLimits::Request& request, GetLimits::Response& response) {
-  Pololu::Smc::Usb::GetVariables getVariablesRequest;
-
-  if (transfer(getVariablesRequest, "GetVariables"))
-    response.limits = getVariablesRequest.getResponse().limitStatus;
-  else
-    return false;
-
-  return true;
-}
-
-bool getInputs(GetInputs::Request& request, GetInputs::Response& response) {
-  Pololu::Smc::Usb::GetVariables getVariablesRequest;
-
-  if (transfer(getVariablesRequest, "GetVariables")) {
-    Pololu::Smc::Usb::Variables variables = getVariablesRequest.getResponse();
-
-    for (int i = 0; i < 4; ++i) {
-      response.raw[i] = variables.inputChannels[i].rawValue;
-      response.scaled[i] = variables.inputChannels[i].scaledValue;
-    }
-  }
-  else
-    return false;
-
-  return true;
-}
-
-bool getVoltage(GetVoltage::Request& request, GetVoltage::Response&
-    response) {
-  Pololu::Smc::Usb::GetVariables getVariablesRequest;
-
-  if (transfer(getVariablesRequest, "GetVariables"))
-    response.voltage = getVariablesRequest.getResponse().vinMv*1e-3;
-  else
-    return false;
-
-  return true;
-}
-
-bool getTemperature(GetTemperature::Request& request,
-    GetTemperature::Response& response) {
-  Pololu::Smc::Usb::GetVariables getVariablesRequest;
-
-  if (transfer(getVariablesRequest, "GetVariables"))
-    response.temperature = getVariablesRequest.getResponse().temperature*1e-1;
-  else
-    return false;
-
-  return true;
-}
-
-bool getSpeed(GetSpeed::Request& request, GetSpeed::Response& response) {
-  Pololu::Smc::Usb::GetVariables getVariablesRequest;
-
-  if (transfer(getVariablesRequest, "GetVariables")) {
-    Pololu::Smc::Usb::Variables variables = getVariablesRequest.getResponse();
-
-    response.actual = variables.speed;
-    response.target = variables.targetSpeed;
-  }
-  else
-    return false;
-
-  return true;
-}
-
-bool start(Start::Request& request, Start::Response& response) {
-  Pololu::Smc::Usb::ExitSafeStart startRequest;
-
-  if (!transfer(startRequest, "ExitSafeStart"))
-    return false;
-
-  return true;
-}
-
-bool kill(Kill::Request& request, Kill::Response& response) {
-  Pololu::Smc::Usb::SetUsbKill killRequest;
-
-  if (!transfer(killRequest, "SetUsbKill"))
-    return false;
-
-  return true;
-}
-
-bool setSpeed(SetSpeed::Request& request, SetSpeed::Response& response) {
-  Pololu::Smc::Usb::SetSpeed setSpeedRequest(request.speed);
-
-  if (!transfer(setSpeedRequest, "SetSpeed"))
-    return false;
-
-  return true;
-}
-
-bool setBrake(SetBrake::Request& request, SetBrake::Response& response) {
-  Pololu::Smc::Usb::SetBrake setBrakeRequest(request.brake);
-
-  if (!transfer(setBrakeRequest, "SetBrake"))
-    return false;
-
-  return true;
-}
-
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "smc_server");
+  ros::init(argc, argv, "usc_server");
   ros::NodeHandle node;
 
   updater.reset(new diagnostic_updater::Updater());
@@ -374,25 +258,7 @@ int main(int argc, char **argv) {
   connect();
 
   ros::ServiceServer getErrorsService = node.advertiseService(
-    "smc_server/get_errors", getErrors);
-  ros::ServiceServer getLimitsService = node.advertiseService(
-    "smc_server/get_limits", getLimits);
-  ros::ServiceServer getInputsService = node.advertiseService(
-    "smc_server/get_inputs", getInputs);
-  ros::ServiceServer getVoltageService = node.advertiseService(
-    "smc_server/get_voltage", getVoltage);
-  ros::ServiceServer getTemperatureService = node.advertiseService(
-    "smc_server/get_temperature", getTemperature);
-  ros::ServiceServer getSpeedService = node.advertiseService(
-    "smc_server/get_speed", getSpeed);
-  ros::ServiceServer startService = node.advertiseService(
-    "smc_server/start", start);
-  ros::ServiceServer killService = node.advertiseService(
-    "smc_server/kill", kill);
-  ros::ServiceServer setSpeedService = node.advertiseService(
-    "smc_server/set_speed", setSpeed);
-  ros::ServiceServer setBrakeService = node.advertiseService(
-    "smc_server/set_brake", setBrake);
+    "usc_server/get_errors", getErrors);
 
   ros::Timer diagnosticsTimer = node.createTimer(
     ros::Duration(1.0), updateDiagnostics);

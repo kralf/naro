@@ -22,15 +22,19 @@
 
 #include "naro_smc_srvs/GetErrors.h"
 #include "naro_smc_srvs/GetLimits.h"
+#include "naro_smc_srvs/GetInputs.h"
 #include "naro_smc_srvs/GetVoltage.h"
 #include "naro_smc_srvs/GetTemperature.h"
+#include "naro_smc_srvs/GetSpeed.h"
 
 using namespace naro_smc_srvs;
 
 ros::ServiceClient getErrorsClient;
 ros::ServiceClient getLimitsClient;
+ros::ServiceClient getInputsClient;
 ros::ServiceClient getVoltageClient;
 ros::ServiceClient getTemperatureClient;
+ros::ServiceClient getSpeedClient;
 
 void update(const ros::TimerEvent& event) {
   GetErrors getErrors;
@@ -61,6 +65,20 @@ void update(const ros::TimerEvent& event) {
   else
     printf("\r%14s: %10s\n", "Limits", "n/a");
 
+  GetInputs getInputs;
+  if (getInputsClient.call(getInputs)) {
+    printf("\r%14s: %10d\n", "Analog1", getInputs.response.scaled[0]);
+    printf("\r%14s: %10d\n", "Analog2", getInputs.response.scaled[1]);
+    printf("\r%14s: %10d\n", "Rc1", getInputs.response.scaled[2]);
+    printf("\r%14s: %10d\n", "Rc2", getInputs.response.scaled[3]);
+  }
+  else {
+    printf("\r%14s: %10s\n", "Analog1", "n/a");
+    printf("\r%14s: %10s\n", "Analog2", "n/a");
+    printf("\r%14s: %10s\n", "Rc1", "n/a");
+    printf("\r%14s: %10s\n", "Rc2", "n/a");
+  }
+
   GetVoltage getVoltage;
   if (getVoltageClient.call(getVoltage))
     printf("\r%14s: %8.2f V\n", "Voltage",
@@ -75,26 +93,37 @@ void update(const ros::TimerEvent& event) {
   else
     printf("\r%14s: %10s\n", "Temperature", "n/a");
 
-  printf("%c[4A\r", 0x1B);
+  GetSpeed getSpeed;
+  if (getSpeedClient.call(getSpeed))
+    printf("\r%14s: %10d\n", "Speed",
+      getSpeed.response.actual);
+  else
+    printf("\r%14s: %10s\n", "Speed", "n/a");
+
+  printf("%c[9A\r", 0x1B);
 }
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "smc_client");
+  ros::init(argc, argv, "smc_monitor");
   ros::NodeHandle node;
 
   getErrorsClient = node.serviceClient<GetErrors>(
     "smc_server/get_errors");
   getLimitsClient = node.serviceClient<GetLimits>(
     "smc_server/get_limits");
+  getInputsClient = node.serviceClient<GetInputs>(
+    "smc_server/get_inputs");
   getVoltageClient = node.serviceClient<GetVoltage>(
     "smc_server/get_voltage");
   getTemperatureClient = node.serviceClient<GetTemperature>(
     "smc_server/get_temperature");
+  getSpeedClient = node.serviceClient<GetSpeed>(
+    "smc_server/get_speed");
 
   ros::Timer timer = node.createTimer(ros::Duration(0.1), update);
   ros::spin();
 
-  printf("%c[4B\n", 0x1B);
+  printf("%c[9B\n", 0x1B);
 
   return 0;
 }
