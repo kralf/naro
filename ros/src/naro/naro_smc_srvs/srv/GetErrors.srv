@@ -11,4 +11,4 @@ uint16 TEMPERATURE_HIGH = 128
 uint16 MOTOR_DRIVER = 256
 uint16 LINE_HIGH = 512
 
-uint16 errors
+uint16 errors # OR'ed flags as given above

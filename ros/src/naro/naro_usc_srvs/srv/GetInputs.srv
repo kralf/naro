@@ -1,0 +1,3 @@
+byte[] channels
+---
+float32[] voltage # in [V]

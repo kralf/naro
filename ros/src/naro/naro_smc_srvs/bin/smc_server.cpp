@@ -21,10 +21,12 @@
 #include <fstream>
 
 #include <usb/context.h>
+#include <usb/error.h>
 #include <config/document.h>
 #include <smc/device.h>
 #include <smc/usb/getfirmwareversion.h>
 #include <smc/usb/setsettings.h>
+#include <smc/usb/getsettings.h>
 #include <smc/usb/getvariables.h>
 #include <smc/usb/exitsafestart.h>
 #include <smc/usb/setusbkill.h>
@@ -40,6 +42,7 @@
 #include "naro_smc_srvs/GetVoltage.h"
 #include "naro_smc_srvs/GetTemperature.h"
 #include "naro_smc_srvs/GetSpeed.h"
+#include "naro_smc_srvs/GetBrake.h"
 #include "naro_smc_srvs/Start.h"
 #include "naro_smc_srvs/Kill.h"
 #include "naro_smc_srvs/SetSpeed.h"
@@ -47,7 +50,7 @@
 
 using namespace naro_smc_srvs;
 
-double connectionRetry = 1.0;
+double connectionRetry = 0.1;
 std::string deviceAddress = "/dev/naro/smc";
 double deviceTimeout = 0.1;
 std::string configurationFile = "etc/smc.xml";
@@ -58,6 +61,23 @@ std::string configurationError;
 Pololu::Pointer<Pololu::Usb::Context> context;
 Pololu::Pointer<Pololu::Usb::Interface> interface;
 Pololu::Pointer<Pololu::Smc::Device> device;
+Pololu::Smc::Usb::Settings settings;
+
+ros::ServiceServer getErrorsService;
+ros::ServiceServer getLimitsService;
+ros::ServiceServer getInputsService;
+ros::ServiceServer getVoltageService;
+ros::ServiceServer getTemperatureService;
+ros::ServiceServer getSpeedService;
+ros::ServiceServer getBrakeService;
+ros::ServiceServer startService;
+ros::ServiceServer killService;
+ros::ServiceServer setSpeedService;
+ros::ServiceServer setBrakeService;
+
+template <typename T> inline T clamp(T x, T min, T max) {
+  return x < min ? min : (x > max ? max : x);
+}
 
 void getParameters() {
   ros::param::param<double>("connection/retry", connectionRetry,
@@ -145,18 +165,12 @@ void diagnoseTransfer(diagnostic_updater::DiagnosticStatusWrapper
       "Transfer to Pololu device failed: No connection.");
 }
 
-void updateDiagnostics(const ros::TimerEvent& event) {
-  updater->update();
-}
-
-void setSettings(const std::string& filename) {
+void syncSettings(const std::string& filename) {
   std::ifstream file(configurationFile.c_str());
 
   if (file.is_open()) {
     try {
-      Pololu::Smc::Usb::SetSettings settings;
       file >> settings;
-
       Pololu::Smc::Usb::SetSettings setSettingsRequest(settings);
       interface->transfer(setSettingsRequest);
     }
@@ -171,41 +185,51 @@ void setSettings(const std::string& filename) {
     ROS_WARN("Failed to open configuration file: %s", filename.c_str());
     configurationError = "Failed to open "+filename;
   }
+
+  try {
+    Pololu::Smc::Usb::GetSettings getSettingsRequest;
+    interface->transfer(getSettingsRequest);
+    settings = getSettingsRequest.getResponse();
+  }
+  catch (const Pololu::Exception& exception) {
+    ROS_WARN("Failed to get device configuration: %s", exception.what());
+  }
 }
 
-void connect(const ros::TimerEvent& event = ros::TimerEvent()) {
-  if (device.isNull() || !device->isConnected()) {
-    try {
-      if (context.isNull())
-        context = new Pololu::Usb::Context();
-      if (interface.isNull()) {
-        interface = context->getInterface(deviceAddress);
-        interface->setTimeout(deviceTimeout);
-      }
-      if (device.isNull())
-        device = interface->discoverDevice().typeCast<Pololu::Smc::Device>();
-      updater->force_update();
-
-      device->setInterface(interface.typeCast<Pololu::Interface>());
-      device->connect();
-      updater->force_update();
-
-      setSettings(configurationFile);
-      updater->force_update();
-
-      ROS_INFO("%s device connected at %s.", device->getName().c_str(),
-        device->getInterface()->getAddress().c_str());
+bool connect() {
+  try {
+    if (context.isNull())
+      context = new Pololu::Usb::Context();
+    if (interface.isNull()) {
+      interface = context->getInterface(deviceAddress);
+      interface->setTimeout(deviceTimeout);
     }
-    catch (const Pololu::Exception& exception) {
-      if (!device.isNull())
-        device.free();
-      if (!interface.isNull())
-        interface.free();
+    if (device.isNull())
+      device = interface->discoverDevice().typeCast<Pololu::Smc::Device>();
+    updater->force_update();
 
-      ROS_FATAL("Connecting device failed: %s", exception.what());
-      ROS_INFO("Retrying in %.2f second(s).", connectionRetry);
-    }
+    device->setInterface(interface.typeCast<Pololu::Interface>());
+    device->connect();
+    updater->force_update();
+
+    syncSettings(configurationFile);
+    updater->force_update();
+
+    ROS_INFO("%s device connected at %s.", device->getName().c_str(),
+      device->getInterface()->getAddress().c_str());
+
+    return true;
   }
+  catch (const Pololu::Exception& exception) {
+    if (!device.isNull())
+      device.free();
+    if (!interface.isNull())
+      interface.free();
+
+    ROS_FATAL("Connecting device failed: %s", exception.what());
+  }
+
+  return false;
 }
 
 void disconnect() {
@@ -226,6 +250,16 @@ bool transfer(Pololu::Usb::Request& request, const std::string& name) {
   if (!device.isNull() && device->isConnected()) {
     try {
       interface->transfer(request);
+    }
+    catch (const Pololu::Usb::Error& error) {
+      ROS_WARN("%s request failed: %s", name.c_str(), error.what());
+
+      if (error == Pololu::Usb::Error::device) {
+        ROS_INFO("Retrying connection now.");
+
+        disconnect();
+        connect();
+      }
     }
     catch (const Pololu::Exception& exception) {
       ROS_WARN("%s request failed: %s", name.c_str(), exception.what());
@@ -268,10 +302,25 @@ bool getInputs(GetInputs::Request& request, GetInputs::Response& response) {
   if (transfer(getVariablesRequest, "GetVariables")) {
     Pololu::Smc::Usb::Variables variables = getVariablesRequest.getResponse();
 
-    for (int i = 0; i < 4; ++i) {
-      response.raw[i] = variables.inputChannels[i].rawValue;
-      response.scaled[i] = variables.inputChannels[i].scaledValue;
-    }
+    response.raw[GetInputs::Response::RC1] = variables.inputChannels[
+      Pololu::Smc::Device::inputChannelRc1].rawValue*0.25e-6;
+    response.scaled[GetInputs::Response::RC1] = variables.inputChannels[
+      Pololu::Smc::Device::inputChannelRc1].scaledValue/3200.0;
+
+    response.raw[GetInputs::Response::RC2] = variables.inputChannels[
+      Pololu::Smc::Device::inputChannelRc2].rawValue*0.25e-6;
+    response.scaled[GetInputs::Response::RC2] = variables.inputChannels[
+      Pololu::Smc::Device::inputChannelRc2].scaledValue/3200.0;
+
+    response.raw[GetInputs::Response::ANALOG1] = variables.inputChannels[
+      Pololu::Smc::Device::inputChannelAnalog1].rawValue/4095.0*3.3;
+    response.scaled[GetInputs::Response::ANALOG1] = variables.inputChannels[
+      Pololu::Smc::Device::inputChannelAnalog1].scaledValue/3200.0;
+
+    response.raw[GetInputs::Response::ANALOG2] = variables.inputChannels[
+      Pololu::Smc::Device::inputChannelAnalog2].rawValue/4095.0*3.3;
+    response.scaled[GetInputs::Response::ANALOG2] = variables.inputChannels[
+      Pololu::Smc::Device::inputChannelAnalog2].scaledValue/3200.0;
   }
   else
     return false;
@@ -308,10 +357,20 @@ bool getSpeed(GetSpeed::Request& request, GetSpeed::Response& response) {
 
   if (transfer(getVariablesRequest, "GetVariables")) {
     Pololu::Smc::Usb::Variables variables = getVariablesRequest.getResponse();
-
-    response.actual = variables.speed;
-    response.target = variables.targetSpeed;
+    response.actual = variables.speed/3200.0;
+    response.target = variables.targetSpeed/3200.0;
   }
+  else
+    return false;
+
+  return true;
+}
+
+bool getBrake(GetBrake::Request& request, GetBrake::Response& response) {
+  Pololu::Smc::Usb::GetVariables getVariablesRequest;
+
+  if (transfer(getVariablesRequest, "GetVariables"))
+    response.brake = getVariablesRequest.getResponse().brakeAmount/32.0;
   else
     return false;
 
@@ -337,7 +396,8 @@ bool kill(Kill::Request& request, Kill::Response& response) {
 }
 
 bool setSpeed(SetSpeed::Request& request, SetSpeed::Response& response) {
-  Pololu::Smc::Usb::SetSpeed setSpeedRequest(request.speed);
+  Pololu::Smc::Usb::SetSpeed setSpeedRequest(
+    round(clamp<float>(request.speed, -1.0, 1.0)*3200.0));
 
   if (!transfer(setSpeedRequest, "SetSpeed"))
     return false;
@@ -346,12 +406,24 @@ bool setSpeed(SetSpeed::Request& request, SetSpeed::Response& response) {
 }
 
 bool setBrake(SetBrake::Request& request, SetBrake::Response& response) {
-  Pololu::Smc::Usb::SetBrake setBrakeRequest(request.brake);
+  Pololu::Smc::Usb::SetBrake setBrakeRequest(
+    round(clamp<float>(request.brake, 0.0, 1.0)*32.0));
 
   if (!transfer(setBrakeRequest, "SetBrake"))
     return false;
 
   return true;
+}
+
+void updateDiagnostics(const ros::TimerEvent& event) {
+  updater->update();
+}
+
+void tryConnect(const ros::TimerEvent& event) {
+  if (device.isNull() || !device->isConnected()) {
+    if (!connect())
+      ROS_INFO("Retrying in %.2f second(s).", connectionRetry);
+  }
 }
 
 int main(int argc, char **argv) {
@@ -373,31 +445,33 @@ int main(int argc, char **argv) {
 
   connect();
 
-  ros::ServiceServer getErrorsService = node.advertiseService(
-    "smc_server/get_errors", getErrors);
-  ros::ServiceServer getLimitsService = node.advertiseService(
-    "smc_server/get_limits", getLimits);
-  ros::ServiceServer getInputsService = node.advertiseService(
-    "smc_server/get_inputs", getInputs);
-  ros::ServiceServer getVoltageService = node.advertiseService(
-    "smc_server/get_voltage", getVoltage);
-  ros::ServiceServer getTemperatureService = node.advertiseService(
-    "smc_server/get_temperature", getTemperature);
-  ros::ServiceServer getSpeedService = node.advertiseService(
-    "smc_server/get_speed", getSpeed);
-  ros::ServiceServer startService = node.advertiseService(
-    "smc_server/start", start);
-  ros::ServiceServer killService = node.advertiseService(
-    "smc_server/kill", kill);
-  ros::ServiceServer setSpeedService = node.advertiseService(
-    "smc_server/set_speed", setSpeed);
-  ros::ServiceServer setBrakeService = node.advertiseService(
-    "smc_server/set_brake", setBrake);
+  getErrorsService = node.advertiseService(
+    ros::this_node::getName()+"/get_errors", getErrors);
+  getLimitsService = node.advertiseService(
+    ros::this_node::getName()+"/get_limits", getLimits);
+  getInputsService = node.advertiseService(
+    ros::this_node::getName()+"/get_inputs", getInputs);
+  getVoltageService = node.advertiseService(
+    ros::this_node::getName()+"/get_voltage", getVoltage);
+  getTemperatureService = node.advertiseService(
+    ros::this_node::getName()+"/get_temperature", getTemperature);
+  getSpeedService = node.advertiseService(
+    ros::this_node::getName()+"/get_speed", getSpeed);
+  getBrakeService = node.advertiseService(
+    ros::this_node::getName()+"/get_brake", getBrake);
+  startService = node.advertiseService(
+    ros::this_node::getName()+"/start", start);
+  killService = node.advertiseService(
+    ros::this_node::getName()+"/kill", kill);
+  setSpeedService = node.advertiseService(
+    ros::this_node::getName()+"/set_speed", setSpeed);
+  setBrakeService = node.advertiseService(
+    ros::this_node::getName()+"/set_brake", setBrake);
 
   ros::Timer diagnosticsTimer = node.createTimer(
     ros::Duration(1.0), updateDiagnostics);
-  ros::Timer connectTimer = node.createTimer(
-    ros::Duration(connectionRetry), connect);
+  ros::Timer connectionTimer = node.createTimer(
+    ros::Duration(connectionRetry), tryConnect);
 
   ros::spin();
 

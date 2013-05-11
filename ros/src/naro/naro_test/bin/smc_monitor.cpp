@@ -26,8 +26,12 @@
 #include "naro_smc_srvs/GetVoltage.h"
 #include "naro_smc_srvs/GetTemperature.h"
 #include "naro_smc_srvs/GetSpeed.h"
+#include "naro_smc_srvs/GetBrake.h"
 
 using namespace naro_smc_srvs;
+
+std::string serverName = "smc_server";
+double clientUpdate = 0.1;
 
 ros::ServiceClient getErrorsClient;
 ros::ServiceClient getLimitsClient;
@@ -35,6 +39,7 @@ ros::ServiceClient getInputsClient;
 ros::ServiceClient getVoltageClient;
 ros::ServiceClient getTemperatureClient;
 ros::ServiceClient getSpeedClient;
+ros::ServiceClient getBrakeClient;
 
 void update(const ros::TimerEvent& event) {
   GetErrors getErrors;
@@ -67,10 +72,10 @@ void update(const ros::TimerEvent& event) {
 
   GetInputs getInputs;
   if (getInputsClient.call(getInputs)) {
-    printf("\r%14s: %10d\n", "Analog1", getInputs.response.scaled[0]);
-    printf("\r%14s: %10d\n", "Analog2", getInputs.response.scaled[1]);
-    printf("\r%14s: %10d\n", "Rc1", getInputs.response.scaled[2]);
-    printf("\r%14s: %10d\n", "Rc2", getInputs.response.scaled[3]);
+    printf("\r%14s: %10.2f\n", "Rc1", getInputs.response.scaled[0]);
+    printf("\r%14s: %10.2f\n", "Rc2", getInputs.response.scaled[1]);
+    printf("\r%14s: %10.2f\n", "Analog1", getInputs.response.scaled[2]);
+    printf("\r%14s: %10.2f\n", "Analog2", getInputs.response.scaled[3]);
   }
   else {
     printf("\r%14s: %10s\n", "Analog1", "n/a");
@@ -81,49 +86,62 @@ void update(const ros::TimerEvent& event) {
 
   GetVoltage getVoltage;
   if (getVoltageClient.call(getVoltage))
-    printf("\r%14s: %8.2f V\n", "Voltage",
+    printf("\r%14s: %10.2f V\n", "Voltage",
       getVoltage.response.voltage);
   else
-    printf("\r%14s: %10s\n", "Voltage", "n/a");
+    printf("\r%14s: %10s  \n", "Voltage", "n/a");
 
   GetTemperature getTemperature;
   if (getTemperatureClient.call(getTemperature))
-    printf("\r%14s: %8.2f C\n", "Temperature",
+    printf("\r%14s: %10.2f C\n", "Temperature",
       getTemperature.response.temperature);
   else
-    printf("\r%14s: %10s\n", "Temperature", "n/a");
+    printf("\r%14s: %10s  \n", "Temperature", "n/a");
 
   GetSpeed getSpeed;
   if (getSpeedClient.call(getSpeed))
-    printf("\r%14s: %10d\n", "Speed",
+    printf("\r%14s: %10.2f\n", "Speed",
       getSpeed.response.actual);
   else
     printf("\r%14s: %10s\n", "Speed", "n/a");
 
-  printf("%c[9A\r", 0x1B);
+  GetBrake getBrake;
+  if (getBrakeClient.call(getBrake))
+    printf("\r%14s: %10.2f\n", "Brake",
+      getBrake.response.brake);
+  else
+    printf("\r%14s: %10s\n", "Brake", "n/a");
+
+  printf("%c[10A\r", 0x1B);
 }
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "smc_monitor");
   ros::NodeHandle node;
 
-  getErrorsClient = node.serviceClient<GetErrors>(
-    "smc_server/get_errors");
-  getLimitsClient = node.serviceClient<GetLimits>(
-    "smc_server/get_limits");
-  getInputsClient = node.serviceClient<GetInputs>(
-    "smc_server/get_inputs");
-  getVoltageClient = node.serviceClient<GetVoltage>(
-    "smc_server/get_voltage");
-  getTemperatureClient = node.serviceClient<GetTemperature>(
-    "smc_server/get_temperature");
-  getSpeedClient = node.serviceClient<GetSpeed>(
-    "smc_server/get_speed");
+  ros::param::param<std::string>("server/name", serverName, serverName);
+  ros::param::param<double>("client/update", clientUpdate, clientUpdate);
 
-  ros::Timer timer = node.createTimer(ros::Duration(0.1), update);
+  getErrorsClient = node.serviceClient<GetErrors>(
+    serverName+"/get_errors");
+  getLimitsClient = node.serviceClient<GetLimits>(
+    serverName+"/get_limits");
+  getInputsClient = node.serviceClient<GetInputs>(
+    serverName+"/get_inputs");
+  getVoltageClient = node.serviceClient<GetVoltage>(
+    serverName+"/get_voltage");
+  getTemperatureClient = node.serviceClient<GetTemperature>(
+    serverName+"/get_temperature");
+  getSpeedClient = node.serviceClient<GetSpeed>(
+    serverName+"/get_speed");
+  getBrakeClient = node.serviceClient<GetBrake>(
+    serverName+"/get_brake");
+
+  ros::Timer updateTimer = node.createTimer(
+    ros::Duration(clientUpdate), update);
   ros::spin();
 
-  printf("%c[9B\n", 0x1B);
+  printf("%c[10B\n", 0x1B);
 
   return 0;
 }

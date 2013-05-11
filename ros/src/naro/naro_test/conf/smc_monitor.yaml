@@ -1,0 +1,4 @@
+server:
+  name: smc_server
+client:
+  update: 0.1

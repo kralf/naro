@@ -1,5 +1,7 @@
 connection:
-  retry: 1.0
+  retry: 0.1
 device:
   address: /dev/naro/usc
   timeout: 0.1
+servos:
+  transmission: 0.00125

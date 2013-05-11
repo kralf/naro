@@ -1,2 +1,2 @@
 ---
-float32 temperature
+float32 temperature # in [degree Celsius]

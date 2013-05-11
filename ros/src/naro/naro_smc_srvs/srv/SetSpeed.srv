@@ -1,2 +1,2 @@
-int16 speed
+float32 speed # in [-1.0, 1.0]
 ---

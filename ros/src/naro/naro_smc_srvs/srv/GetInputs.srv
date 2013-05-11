@@ -1,3 +1,8 @@
 ---
-uint16[4] raw
-int16[4] scaled
+byte RC1 = 0
+byte RC2 = 1
+byte ANALOG1 = 2
+byte ANALOG2 = 3
+
+float32[4] raw # in [s] (rc) or [V] (analog)
+float32[4] scaled # in [-1.0, 1.0]

@@ -1,0 +1,3 @@
+byte[] channels
+float32[] acceleration # in [rad/s^2]
+---

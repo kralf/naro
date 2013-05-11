@@ -1,2 +1,2 @@
-uint16 brake
+float32 brake # in [0.0, 1.0]
 ---

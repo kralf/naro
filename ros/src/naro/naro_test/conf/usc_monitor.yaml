@@ -1,0 +1,4 @@
+server:
+  name: usc_server
+client:
+  update: 0.1

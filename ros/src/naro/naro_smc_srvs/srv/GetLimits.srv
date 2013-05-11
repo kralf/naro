@@ -11,4 +11,4 @@ uint16 ANALOG1 = 128
 uint16 ANALOG2 = 256
 uint16 USB_KILL = 512
 
-uint16 limits
+uint16 limits # OR'ed flags as given above

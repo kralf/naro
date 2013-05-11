@@ -21,63 +21,29 @@
 ###########################################################################
 
 import roslib;
-roslib.load_manifest("naro_smc_srvs")
+roslib.load_manifest("naro_usc_srvs")
 
-import sys, rospy
-from naro_smc_srvs.srv import *
+import sys, rospy, math
+from naro_usc_srvs.srv import *
 
-def start():
-  rospy.wait_for_service("smc_server/start")
+def setPosition(channel, angle):
+  rospy.wait_for_service("usc_server/set_positions")
   try:
-    request = rospy.ServiceProxy("smc_server/start", Start)
-    request()
+    request = rospy.ServiceProxy("usc_server/set_positions", SetPositions)
+    request([channel], [angle])
   except rospy.ServiceException, exception:
-    print "Start request failed: %s" % exception
-
-def setSpeed(speed):
-  rospy.wait_for_service("smc_server/set_speed")
-  try:
-    request = rospy.ServiceProxy("smc_server/set_speed", SetSpeed)
-    request(speed)
-  except rospy.ServiceException, exception:
-    print "SetSpeed request failed: %s" % exception
-
-def getLimits():
-  rospy.wait_for_service("smc_server/get_limits")
-  try:
-    request = rospy.ServiceProxy("smc_server/get_limits", GetLimits)
-    return request().limits
-  except rospy.ServiceException, exception:
-    print "GetLimits request failed: %s" % exception
-    return 0
+    print "SetPosition request failed: %s" % exception
 
 def usage():
-  return "%s SPEED NUM_CYCLES" % sys.argv[0]
+  return "%s CHANNEL ANGLE" % sys.argv[0]
 
 if __name__ == "__main__":
   if len(sys.argv) == 3:
-    speed = float(sys.argv[1])
-    numCycles = int(sys.argv[2])
+    channel = int(sys.argv[1])
+    angle = float(sys.argv[2])*math.pi/180.0
   else:
     print usage()
     sys.exit(1)
 
-  if not numCycles:
-    sys.exit(0)
-
-  for i in range(1, numCycles):
-    start()
-    setSpeed(speed)
-
-    if speed > 0:
-      limitMask = GetLimitsResponse.ANALOG1
-    else:
-      limitMask = GetLimitsResponse.ANALOG2
-
-    while not getLimits() & limitMask:
-      rospy.sleep(0.1)
-
-    speed *= -1
-
-  setSpeed(0)
+  setPosition(channel, angle)
   

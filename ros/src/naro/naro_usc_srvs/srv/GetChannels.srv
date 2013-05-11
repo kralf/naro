@@ -1,0 +1,6 @@
+---
+byte SERVO = 0
+byte OUTPUT = 1
+byte INPUT = 2
+
+byte[] mode # Flags as given above

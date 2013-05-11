@@ -1,0 +1,4 @@
+byte[] channels
+---
+float32[] actual # in [rad]
+float32[] target # in [rad]
