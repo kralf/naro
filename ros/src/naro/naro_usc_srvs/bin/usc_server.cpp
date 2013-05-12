@@ -115,14 +115,16 @@ inline unsigned short radToQus(int channel, double angle) {
 }
 
 void getParameters() {
-  ros::param::param<double>("connection/retry", connectionRetry,
-    connectionRetry);
-  ros::param::param<std::string>("device/address", deviceAddress,
-    deviceAddress);
-  ros::param::param<double>("device/timeout", deviceTimeout, deviceTimeout);
-  ros::param::param<double>("servos/transmission", servosTransmission,
-    servosTransmission);
-  ros::param::param<std::string>("configuration/file", configurationFile,
+  ros::param::param<double>(ros::this_node::getName()+"/connection/retry",
+    connectionRetry, connectionRetry);
+  ros::param::param<std::string>(ros::this_node::getName()+"/device/address",
+    deviceAddress, deviceAddress);
+  ros::param::param<double>(ros::this_node::getName()+"/device/timeout",
+    deviceTimeout, deviceTimeout);
+  ros::param::param<double>(ros::this_node::getName()+"/servos/transmission",
+    servosTransmission, servosTransmission);
+  ros::param::param<std::string>(
+    ros::this_node::getName()+"/configuration/file", configurationFile,
     configurationFile);
 }
 

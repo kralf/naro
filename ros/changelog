@@ -1,3 +1,10 @@
+naro-ros (0.1-10) lucid; urgency=low
+
+  * Made all node parameters private to the node, thus avoiding conflicts
+    between nodes with equivalent parameters
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Sun, 12 May 2013 18:25:00 +0100
+
 naro-ros (0.1-8) lucid; urgency=low
 
   * Added ros.conf configuration file

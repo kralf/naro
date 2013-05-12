@@ -112,8 +112,10 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "usc_monitor");
   ros::NodeHandle node;
 
-  ros::param::param<std::string>("server/name", serverName, serverName);
-  ros::param::param<double>("client/update", clientUpdate, clientUpdate);
+  ros::param::param<std::string>(ros::this_node::getName()+"/server/name",
+    serverName, serverName);
+  ros::param::param<double>(ros::this_node::getName()+"/client/update",
+    clientUpdate, clientUpdate);
 
   getErrorsClient = node.serviceClient<GetErrors>(
     serverName+"/get_errors");
