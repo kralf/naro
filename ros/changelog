@@ -1,3 +1,9 @@
+naro-ros (0.1-8) lucid; urgency=low
+
+  * Added ros.conf configuration file
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Sun, 12 May 2013 16:47:00 +0100
+
 naro-ros (0.1-7) lucid; urgency=low
 
   * Revised smc_server and usc_server

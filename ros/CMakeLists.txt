@@ -13,6 +13,7 @@ remake_project(
   LICENSE "GNU Lesser General Public License (LGPL)"
   PREFIX naro-
   INSTALL /usr
+  CONFIGURATION_DESTINATION /etc/naro
 )
 
 remake_ros_pack_deb()
