@@ -1,0 +1,11 @@
+#!/bin/sh -e
+# postrm for naro-init
+
+if [ "$1" = "purge" ] ; then
+  update-rc.d naro-roscore remove > /dev/null
+  update-rc.d naro-smc-srvs remove > /dev/null
+  update-rc.d naro-usc-srvs remove > /dev/null
+  update-rc.d naro-diagnostics remove > /dev/null
+fi
+
+exit 0

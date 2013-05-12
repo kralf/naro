@@ -1,0 +1,48 @@
+#!/bin/sh -e
+# prerm for naro-init
+
+case "$1" in
+  remove|deconfigure)
+    if [ -x /etc/init.d/naro-roscore ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-roscore stop
+      else
+        /etc/init.d/naro-roscore stop
+      fi
+    fi
+
+    if [ -x /etc/init.d/naro-smc-srvs ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-smc-srvs stop
+      else
+        /etc/init.d/naro-smc-srvs stop
+      fi
+    fi
+
+    if [ -x /etc/init.d/naro-usc-srvs ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-usc-srvs stop
+      else
+        /etc/init.d/naro-usc-srvs stop
+      fi
+    fi
+
+    if [ -x /etc/init.d/naro-diagnostics ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-diagnostics stop
+      else
+        /etc/init.d/naro-diagnostics stop
+      fi
+    fi
+    ;;
+  upgrade)
+    ;;
+  failed-upgrade)
+    ;;
+  *)
+    echo "prerm called with unknown argument \`$1'" >&2
+    exit 0
+    ;;
+esac
+
+exit 0

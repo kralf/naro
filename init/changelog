@@ -1,0 +1,7 @@
+naro-init (0.1-9) lucid; urgency=low
+
+  * Initial commit with startup script project structure
+  * System startup scripts for roscore, smc_server, usc_server and
+    diagnostics aggregator
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Sun, 12 May 2013 16:49:00 +0100

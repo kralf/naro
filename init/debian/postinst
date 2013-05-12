@@ -1,0 +1,47 @@
+#!/bin/sh -e
+# postinst for naro-init
+
+action="$1"
+oldversion="$2"
+
+if [ "$action" != configure ]; then
+  exit 0
+fi
+
+if [ -x /etc/init.d/naro-roscore ]; then
+  update-rc.d naro-roscore start 80 2 3 4 5 . stop 20 0 1 6 . >/dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-roscore restart
+  else
+    /etc/init.d/naro-roscore restart
+  fi
+fi
+
+if [ -x /etc/init.d/naro-smc-srvs ]; then
+  update-rc.d naro-smc-srvs start 90 2 3 4 5 . stop 10 0 1 6 . >/dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-smc-srvs restart
+  else
+    /etc/init.d/naro-smc-srvs restart
+  fi
+fi
+
+if [ -x /etc/init.d/naro-usc-srvs ]; then
+  update-rc.d naro-usc-srvs start 90 2 3 4 5 . stop 10 0 1 6 . >/dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-usc-srvs restart
+  else
+    /etc/init.d/naro-usc-srvs restart
+  fi
+fi
+
+if [ -x /etc/init.d/naro-diagnostics ]; then
+  update-rc.d naro-diagnostics start 99 2 3 4 5 . stop 1 0 1 6 . >/dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-diagnostics restart
+  else
+    /etc/init.d/naro-diagnostics restart
+  fi
+fi
+
+exit 0
