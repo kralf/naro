@@ -27,25 +27,25 @@ import sys, rospy
 from naro_smc_srvs.srv import *
 
 def start():
-  rospy.wait_for_service("smc_server/start")
+  rospy.wait_for_service("/smc_server/start")
   try:
-    request = rospy.ServiceProxy("smc_server/start", Start)
+    request = rospy.ServiceProxy("/smc_server/start", Start)
     request()
   except rospy.ServiceException, exception:
     print "Start request failed: %s" % exception
 
 def setSpeed(speed):
-  rospy.wait_for_service("smc_server/set_speed")
+  rospy.wait_for_service("/smc_server/set_speed")
   try:
-    request = rospy.ServiceProxy("smc_server/set_speed", SetSpeed)
+    request = rospy.ServiceProxy("/smc_server/set_speed", SetSpeed)
     request(speed)
   except rospy.ServiceException, exception:
     print "SetSpeed request failed: %s" % exception
 
 def getLimits():
-  rospy.wait_for_service("smc_server/get_limits")
+  rospy.wait_for_service("/smc_server/get_limits")
   try:
-    request = rospy.ServiceProxy("smc_server/get_limits", GetLimits)
+    request = rospy.ServiceProxy("/smc_server/get_limits", GetLimits)
     return request().limits
   except rospy.ServiceException, exception:
     print "GetLimits request failed: %s" % exception

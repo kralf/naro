@@ -1,0 +1,7 @@
+server:
+  smc:
+    name: smc_server
+  usc:
+    name: usc_server
+controller:
+  frequency: 5.0

@@ -44,12 +44,14 @@
 #include "naro_usc_srvs/GetPositions.h"
 #include "naro_usc_srvs/GetSpeeds.h"
 #include "naro_usc_srvs/GetAccelerations.h"
+#include "naro_usc_srvs/GetProfiles.h"
 #include "naro_usc_srvs/GetInputs.h"
 #include "naro_usc_srvs/Initialize.h"
 #include "naro_usc_srvs/ClearErrors.h"
 #include "naro_usc_srvs/SetPositions.h"
 #include "naro_usc_srvs/SetSpeeds.h"
 #include "naro_usc_srvs/SetAccelerations.h"
+#include "naro_usc_srvs/SetProfiles.h"
 #include "naro_usc_srvs/SetOutputs.h"
 
 using namespace naro_usc_srvs;
@@ -73,14 +75,19 @@ ros::ServiceServer getChannelsService;
 ros::ServiceServer getPositionsService;
 ros::ServiceServer getSpeedsService;
 ros::ServiceServer getAccelerationsService;
+ros::ServiceServer getProfilesService;
 ros::ServiceServer getInputsService;
 ros::ServiceServer initializeService;
 ros::ServiceServer clearErrorsService;
 ros::ServiceServer setPositionsService;
 ros::ServiceServer setSpeedsService;
 ros::ServiceServer setAccelerationsService;
+ros::ServiceServer setProfilesService;
+ros::ServiceServer setOutputsService;
 
-template <typename T> inline T clamp(T x, T min, T max) {
+template <typename T> inline T clamp(const T& x,
+    const T& min = std::numeric_limits<T>::min(),
+    const T& max = std::numeric_limits<T>::max()) {
   return x < min ? min : (x > max ? max : x);
 }
 
@@ -104,27 +111,56 @@ inline bool isOutput(int channel) {
       Pololu::Usc::Usb::Settings::Channel::modeOutput);
 }
 
-inline double qusToRad(int channel, unsigned short position) {
+inline double qusToAngle(int channel, unsigned short position) {
   return (position-settings.channels[channel].neutral)*M_PI*
     0.25e-6/servosTransmission;
 }
 
-inline unsigned short radToQus(int channel, double angle) {
-  return round(angle/M_PI*servosTransmission/0.25e-6)+
-    settings.channels[channel].neutral;
+inline double qusToAngularSpeed(int channel, unsigned short speed) {
+  if (speed)
+    return speed*M_PI*0.25e-4/servosTransmission;
+  else
+    return std::numeric_limits<float>::infinity();
 }
 
-void getParameters() {
-  ros::param::param<double>(ros::this_node::getName()+"/connection/retry",
-    connectionRetry, connectionRetry);
-  ros::param::param<std::string>(ros::this_node::getName()+"/device/address",
-    deviceAddress, deviceAddress);
-  ros::param::param<double>(ros::this_node::getName()+"/device/timeout",
-    deviceTimeout, deviceTimeout);
-  ros::param::param<double>(ros::this_node::getName()+"/servos/transmission",
-    servosTransmission, servosTransmission);
-  ros::param::param<std::string>(
-    ros::this_node::getName()+"/configuration/file", configurationFile,
+inline double qusToAngularAcceleration(int channel, unsigned char
+    acceleration) {
+  if (acceleration)
+    return acceleration*M_PI*0.3125e-4/servosTransmission;
+  else
+    return std::numeric_limits<float>::infinity();
+}
+
+inline unsigned short angleToQus(int channel, double angle) {
+  return clamp<unsigned short>(round(angle/M_PI*servosTransmission/0.25e-6)+
+    settings.channels[channel].neutral, settings.channels[channel].minimum,
+    settings.channels[channel].maximum);
+}
+
+inline unsigned short angularSpeedToQus(int channel, double angularSpeed) {
+  if (fabs(angularSpeed) < std::numeric_limits<float>::infinity())
+    return clamp<unsigned short>(round(fabs(angularSpeed)/
+      M_PI*servosTransmission/0.25e-4), 1);
+  else
+    return 0;
+}
+
+inline unsigned char angularAccelerationToQus(int channel, double
+    angularAcceleration) {
+  if (fabs(angularAcceleration) < std::numeric_limits<float>::infinity())
+    return clamp<unsigned char>(round(fabs(angularAcceleration)/
+      M_PI*servosTransmission/0.3125e-4), 1);
+  else
+    return 0;
+}
+
+void getParameters(const ros::NodeHandle& node) {
+  node.param<double>("connection/retry", connectionRetry, connectionRetry);
+  node.param<std::string>("device/address", deviceAddress, deviceAddress);
+  node.param<double>("device/timeout", deviceTimeout, deviceTimeout);
+  node.param<double>("servos/transmission", servosTransmission,
+    servosTransmission);
+  node.param<std::string>("configuration/file", configurationFile,
     configurationFile);
 }
 
@@ -331,7 +367,7 @@ bool getErrors(GetErrors::Request& request, GetErrors::Response& response) {
 
 bool getChannels(GetChannels::Request& request, GetChannels::Response&
     response) {
-  if (settings.channels.size()) {
+  if (!settings.channels.empty()) {
     response.mode.resize(settings.channels.size());
 
     for (int i = 0; i < settings.channels.size(); ++i) {
@@ -364,9 +400,9 @@ bool getPositions(GetPositions::Request& request, GetPositions::Response&
 
     for (int i = 0; i < request.channels.size(); ++i) {
       if (isServo(request.channels[i])) {
-        response.actual[i] = qusToRad(request.channels[i],
+        response.actual[i] = qusToAngle(request.channels[i],
           variables[request.channels[i]].position);
-        response.target[i] = qusToRad(request.channels[i],
+        response.target[i] = qusToAngle(request.channels[i],
           variables[request.channels[i]].target);
       }
       else {
@@ -392,7 +428,7 @@ bool getSpeeds(GetSpeeds::Request& request, GetSpeeds::Response& response) {
 
     for (int i = 0; i < request.channels.size(); ++i) {
       if (isServo(request.channels[i]))
-        response.speed[i] = qusToRad(request.channels[i],
+        response.speed[i] = qusToAngularSpeed(request.channels[i],
           variables[request.channels[i]].speed);
       else
         response.speed[i] = std::numeric_limits<float>::quiet_NaN();
@@ -416,10 +452,46 @@ bool getAccelerations(GetAccelerations::Request& request,
 
     for (int i = 0; i < request.channels.size(); ++i) {
       if (isServo(request.channels[i]))
-        response.acceleration[i] = qusToRad(request.channels[i],
+        response.acceleration[i] = qusToAngularAcceleration(
+          request.channels[i],
           variables[request.channels[i]].acceleration);
       else
         response.acceleration[i] = std::numeric_limits<float>::quiet_NaN();
+    }
+  }
+  else
+    return false;
+
+  return true;
+}
+
+bool getProfiles(GetProfiles::Request& request, GetProfiles::Response&
+    response) {
+  Pololu::Usc::Usb::Mini::GetServoVariables
+    getServoVariablesRequest(settings.channels.size());
+
+  if (transfer(getServoVariablesRequest, "GetServoVariables")) {
+    Pololu::Usc::Usb::Variables::Servos variables =
+      getServoVariablesRequest.getResponse();
+    response.position.resize(request.channels.size());
+    response.speed.resize(request.channels.size());
+    response.acceleration.resize(request.channels.size());
+
+    for (int i = 0; i < request.channels.size(); ++i) {
+      if (isServo(request.channels[i])) {
+        response.position[i] = qusToAngle(request.channels[i],
+          variables[request.channels[i]].position);
+        response.speed[i] = qusToAngularSpeed(request.channels[i],
+          variables[request.channels[i]].speed);
+        response.acceleration[i] = qusToAngularAcceleration(
+          request.channels[i],
+          variables[request.channels[i]].acceleration);
+      }
+      else {
+        response.position[i] = std::numeric_limits<float>::quiet_NaN();
+        response.speed[i] = std::numeric_limits<float>::quiet_NaN();
+        response.acceleration[i] = std::numeric_limits<float>::quiet_NaN();
+      }
     }
   }
   else
@@ -479,11 +551,10 @@ bool setPositions(SetPositions::Request& request, SetPositions::Response&
   for (int i = 0; i < request.channels.size(); ++i) {
     if (isServo(request.channels[i])) {
       setTargetRequest.setServo(request.channels[i]);
-      setTargetRequest.setValue(radToQus(request.channels[i],
+      setTargetRequest.setValue(angleToQus(request.channels[i],
         request.position[i]));
 
-      if (!transfer(setTargetRequest, "SetTarget"))
-        result = false;
+      result &= transfer(setTargetRequest, "SetTarget");
     }
     else {
       ROS_WARN("SetTarget request failed: Channel %d not in servo mode.",
@@ -502,11 +573,10 @@ bool setSpeeds(SetSpeeds::Request& request, SetSpeeds::Response& response) {
   for (int i = 0; i < request.channels.size(); ++i) {
     if (isServo(request.channels[i])) {
       setSpeedRequest.setServo(request.channels[i]);
-      setSpeedRequest.setValue(radToQus(request.channels[i],
+      setSpeedRequest.setValue(angularSpeedToQus(request.channels[i],
         request.speed[i]));
 
-      if (!transfer(setSpeedRequest, "SetSpeed"))
-        result = false;
+      result &= transfer(setSpeedRequest, "SetSpeed");
     }
     else {
       ROS_WARN("SetSpeed request failed: Channel %d not in servo mode.",
@@ -527,15 +597,68 @@ bool setAccelerations(SetAccelerations::Request& request,
   for (int i = 0; i < request.channels.size(); ++i) {
     if (isServo(request.channels[i])) {
       setAccelerationRequest.setServo(request.channels[i]);
-      setAccelerationRequest.setValue(radToQus(request.channels[i],
-        request.acceleration[i]));
+      setAccelerationRequest.setValue(angularAccelerationToQus(
+        request.channels[i], request.acceleration[i]));
 
-      if (!transfer(setAccelerationRequest, "SetAcceleration"))
-        result = false;
+      result &= transfer(setAccelerationRequest, "SetAcceleration");
     }
     else {
       ROS_WARN("SetAcceleration request failed: Channel %d not in servo mode.",
         request.channels[i]);
+      result = false;
+    }
+  }
+
+  return result;
+}
+
+bool setProfiles(SetProfiles::Request& request, SetProfiles::Response&
+    response) {
+  Pololu::Usc::Usb::Mini::GetServoVariables
+    getServoVariablesRequest(settings.channels.size());
+  Pololu::Usc::Usb::Variables::Servos variables(settings.channels.size());
+  Pololu::Usc::Usb::SetTarget setTargetRequest(settings.channels.size());
+  Pololu::Usc::Usb::SetSpeed setSpeedRequest(settings.channels.size());
+  Pololu::Usc::Usb::SetAcceleration setAccelerationRequest(
+    settings.channels.size());
+  bool force = true, result = true;
+
+  if (transfer(getServoVariablesRequest, "GetServoVariables")) {
+    variables = getServoVariablesRequest.getResponse();
+    force = false;
+  }
+
+  for (int i = 0; i < request.channels.size(); ++i) {
+    if (isServo(request.channels[i])) {
+      setTargetRequest.setServo(request.channels[i]);
+      setSpeedRequest.setServo(request.channels[i]);
+      setAccelerationRequest.setServo(request.channels[i]);
+
+      unsigned short target = angleToQus(request.channels[i],
+        request.position[i]);
+      unsigned short speed = angularSpeedToQus(request.channels[i],
+        request.speed[i]);
+      unsigned char acceleration = angularAccelerationToQus(
+        request.channels[i], request.acceleration[i]);
+
+      if (force || (target != variables[i].position)) {
+        setTargetRequest.setValue(target);
+        result &= transfer(setTargetRequest, "SetTarget");
+      }
+
+      if (force || (speed != variables[i].speed)) {
+        setSpeedRequest.setValue(speed);
+        result &= transfer(setSpeedRequest, "SetSpeed");
+      }
+
+      if (force || (acceleration != variables[i].acceleration)) {
+        setAccelerationRequest.setValue(acceleration);
+        result &= transfer(setAccelerationRequest, "SetAccelerationRequest");
+      }
+    }
+    else {
+      ROS_WARN("SetTarget/Speed/Acceleration request failed: "
+        "Channel %d not in servo mode.", request.channels[i]);
       result = false;
     }
   }
@@ -579,7 +702,7 @@ void tryConnect(const ros::TimerEvent& event) {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "usc_server");
-  ros::NodeHandle node;
+  ros::NodeHandle node("~");
 
   updater.reset(new diagnostic_updater::Updater());
   updater->setHardwareID("none");
@@ -592,32 +715,26 @@ int main(int argc, char **argv) {
   updater->add("Transfer", diagnoseTransfer);
   updater->force_update();
 
-  getParameters();
+  getParameters(node);
 
   connect();
 
-  getErrorsService = node.advertiseService(
-    ros::this_node::getName()+"/get_errors", getErrors);
-  getChannelsService = node.advertiseService(
-    ros::this_node::getName()+"/get_channels", getChannels);
-  getPositionsService = node.advertiseService(
-    ros::this_node::getName()+"/get_positions", getPositions);
-  getSpeedsService = node.advertiseService(
-    ros::this_node::getName()+"/get_speeds", getSpeeds);
-  getAccelerationsService = node.advertiseService(
-    ros::this_node::getName()+"/get_acceleration", getAccelerations);
-  getInputsService = node.advertiseService(
-    ros::this_node::getName()+"/get_inputs", getInputs);
-  initializeService = node.advertiseService(
-    ros::this_node::getName()+"/initialize", initialize);
-  clearErrorsService = node.advertiseService(
-    ros::this_node::getName()+"/clear_errors", clearErrors);
-  setPositionsService = node.advertiseService(
-    ros::this_node::getName()+"/set_positions", setPositions);
-  setSpeedsService = node.advertiseService(
-    ros::this_node::getName()+"/set_speeds", setSpeeds);
-  setAccelerationsService = node.advertiseService(
-    ros::this_node::getName()+"/set_acceleration", setAccelerations);
+  getErrorsService = node.advertiseService("get_errors", getErrors);
+  getChannelsService = node.advertiseService("get_channels", getChannels);
+  getPositionsService = node.advertiseService("get_positions", getPositions);
+  getSpeedsService = node.advertiseService("get_speeds", getSpeeds);
+  getAccelerationsService = node.advertiseService("get_acceleration",
+    getAccelerations);
+  getProfilesService = node.advertiseService("get_profiles", getProfiles);
+  getInputsService = node.advertiseService("get_inputs", getInputs);
+  initializeService = node.advertiseService("initialize", initialize);
+  clearErrorsService = node.advertiseService("clear_errors", clearErrors);
+  setPositionsService = node.advertiseService("set_positions", setPositions);
+  setSpeedsService = node.advertiseService("set_speeds", setSpeeds);
+  setAccelerationsService = node.advertiseService("set_acceleration",
+    setAccelerations);
+  setProfilesService = node.advertiseService("set_profiles", setProfiles);
+  setOutputsService = node.advertiseService("set_outputs", setOutputs);
 
   ros::Timer diagnosticsTimer = node.createTimer(
     ros::Duration(1.0), updateDiagnostics);

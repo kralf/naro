@@ -15,8 +15,21 @@ remake_ros_package(
 )
 
 remake_ros_package(
+  naro_dive_ctrl
+  DEPENDS roscpp rospy diagnostic_updater naro_smc_srvs naro_usc_srvs
+  DESCRIPTION "dive controller"
+)
+
+remake_ros_package(
+  naro_fin_ctrl
+  DEPENDS roscpp rospy diagnostic_updater naro_usc_srvs
+  DESCRIPTION "fin controller"
+)
+
+remake_ros_package(
   naro_diagnostics
-  RUN_DEPENDS roscpp rospy diagnostic_aggregator
+  DEPENDS roscpp rospy diagnostic_aggregator
+  EXTRA_RUN_DEPENDS sysstat
   DESCRIPTION "diagnostics"
 )
 

@@ -1,0 +1,3 @@
+byte[] servos
+float32[] command # in [s]
+---

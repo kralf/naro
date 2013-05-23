@@ -1,6 +1,14 @@
 pub_rate: 1.0
 base_path: ''
 analyzers:
+  sensors:
+    type: AnalyzerGroup
+    path: Sensors
+    analyzers:
+      depth_sensor:
+        type: GenericAnalyzer
+        path: Depth Sensor
+        find_and_remove_prefix: 'depth_sensor:'
   motors:
     type: AnalyzerGroup
     path: Motors
@@ -13,3 +21,32 @@ analyzers:
         type: GenericAnalyzer
         path: USB Servo Controller
         find_and_remove_prefix: 'usc_server:'
+  controllers:
+    type: AnalyzerGroup
+    path: Controllers
+    analyzers:
+      dive_controller:
+        type: GenericAnalyzer
+        path: Dive Controller
+        find_and_remove_prefix: 'dive_controller:'
+      fin_controller:
+        type: GenericAnalyzer
+        path: Fin Controller
+        find_and_remove_prefix: 'fin_controller:'
+  system:
+    type: AnalyzerGroup
+    path: System
+    analyzers:
+      cpu:
+        type: GenericAnalyzer
+        path: CPU
+        expected: ['CPU Usage',
+                   'CPU Temperature']
+      mem:
+        type: GenericAnalyzer
+        path: Memory
+        expected: ['Memory Usage']
+      hdd:
+        type: GenericAnalyzer
+        path: HDD
+        expected: ['HDD Usage']

@@ -1,0 +1,4 @@
+byte[] servos
+---
+float32[] command # in [Hz]
+float32[] actual # in [Hz]

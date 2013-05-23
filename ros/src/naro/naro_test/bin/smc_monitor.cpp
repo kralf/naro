@@ -117,27 +117,25 @@ void update(const ros::TimerEvent& event) {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "smc_monitor");
-  ros::NodeHandle node;
+  ros::NodeHandle node("~");
 
-  ros::param::param<std::string>(ros::this_node::getName()+"/server/name",
-    serverName, serverName);
-  ros::param::param<double>(ros::this_node::getName()+"/client/update",
-    clientUpdate, clientUpdate);
+  node.param<std::string>("server/name", serverName, serverName);
+  node.param<double>("client/update", clientUpdate, clientUpdate);
 
   getErrorsClient = node.serviceClient<GetErrors>(
-    serverName+"/get_errors");
+    "/"+serverName+"/get_errors");
   getLimitsClient = node.serviceClient<GetLimits>(
-    serverName+"/get_limits");
+    "/"+serverName+"/get_limits");
   getInputsClient = node.serviceClient<GetInputs>(
-    serverName+"/get_inputs");
+    "/"+serverName+"/get_inputs");
   getVoltageClient = node.serviceClient<GetVoltage>(
-    serverName+"/get_voltage");
+    "/"+serverName+"/get_voltage");
   getTemperatureClient = node.serviceClient<GetTemperature>(
-    serverName+"/get_temperature");
+    "/"+serverName+"/get_temperature");
   getSpeedClient = node.serviceClient<GetSpeed>(
-    serverName+"/get_speed");
+    "/"+serverName+"/get_speed");
   getBrakeClient = node.serviceClient<GetBrake>(
-    serverName+"/get_brake");
+    "/"+serverName+"/get_brake");
 
   ros::Timer updateTimer = node.createTimer(
     ros::Duration(clientUpdate), update);

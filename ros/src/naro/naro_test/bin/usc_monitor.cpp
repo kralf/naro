@@ -110,21 +110,19 @@ void update(const ros::TimerEvent& event) {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "usc_monitor");
-  ros::NodeHandle node;
+  ros::NodeHandle node("~");
 
-  ros::param::param<std::string>(ros::this_node::getName()+"/server/name",
-    serverName, serverName);
-  ros::param::param<double>(ros::this_node::getName()+"/client/update",
-    clientUpdate, clientUpdate);
+  node.param<std::string>("server/name", serverName, serverName);
+  node.param<double>("client/update", clientUpdate, clientUpdate);
 
   getErrorsClient = node.serviceClient<GetErrors>(
-    serverName+"/get_errors");
+    "/"+serverName+"/get_errors");
   getChannelsClient = node.serviceClient<GetChannels>(
-    serverName+"/get_channels");
+    "/"+serverName+"/get_channels");
   getPositionsClient = node.serviceClient<GetPositions>(
-    serverName+"/get_positions");
+    "/"+serverName+"/get_positions");
   getInputsClient = node.serviceClient<GetInputs>(
-    serverName+"/get_inputs");
+    "/"+serverName+"/get_inputs");
 
   ros::Timer updateTimer = node.createTimer(
     ros::Duration(clientUpdate), update);

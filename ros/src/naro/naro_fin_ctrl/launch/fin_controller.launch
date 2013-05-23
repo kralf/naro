@@ -1,0 +1,5 @@
+<launch>
+  <node name="fin_controller" pkg="naro_fin_ctrl" type="fin_controller" respawn="true">
+    <rosparam command="load" file="$(find naro_fin_ctrl)/etc/fin_controller.yaml"/>
+  </node>
+</launch>

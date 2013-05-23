@@ -1,0 +1,5 @@
+servers:
+  smc:
+    name: smc_server
+  usc:
+    name: usc_server

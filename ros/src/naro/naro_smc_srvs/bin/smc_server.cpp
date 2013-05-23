@@ -79,15 +79,11 @@ template <typename T> inline T clamp(T x, T min, T max) {
   return x < min ? min : (x > max ? max : x);
 }
 
-void getParameters() {
-  ros::param::param<double>(ros::this_node::getName()+"/connection/retry",
-    connectionRetry, connectionRetry);
-  ros::param::param<std::string>(ros::this_node::getName()+"/device/address",
-    deviceAddress, deviceAddress);
-  ros::param::param<double>(ros::this_node::getName()+"/device/timeout",
-    deviceTimeout, deviceTimeout);
-  ros::param::param<std::string>(
-    ros::this_node::getName()+"/configuration/file", configurationFile,
+void getParameters(const ros::NodeHandle& node) {
+  node.param<double>("connection/retry", connectionRetry, connectionRetry);
+  node.param<std::string>("device/address", deviceAddress, deviceAddress);
+  node.param<double>("device/timeout", deviceTimeout, deviceTimeout);
+  node.param<std::string>("configuration/file", configurationFile,
     configurationFile);
 }
 
@@ -430,7 +426,7 @@ void tryConnect(const ros::TimerEvent& event) {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "smc_server");
-  ros::NodeHandle node;
+  ros::NodeHandle node("~");
 
   updater.reset(new diagnostic_updater::Updater());
   updater->setHardwareID("none");
@@ -443,32 +439,22 @@ int main(int argc, char **argv) {
   updater->add("Transfer", diagnoseTransfer);
   updater->force_update();
 
-  getParameters();
+  getParameters(node);
 
   connect();
 
-  getErrorsService = node.advertiseService(
-    ros::this_node::getName()+"/get_errors", getErrors);
-  getLimitsService = node.advertiseService(
-    ros::this_node::getName()+"/get_limits", getLimits);
-  getInputsService = node.advertiseService(
-    ros::this_node::getName()+"/get_inputs", getInputs);
-  getVoltageService = node.advertiseService(
-    ros::this_node::getName()+"/get_voltage", getVoltage);
-  getTemperatureService = node.advertiseService(
-    ros::this_node::getName()+"/get_temperature", getTemperature);
-  getSpeedService = node.advertiseService(
-    ros::this_node::getName()+"/get_speed", getSpeed);
-  getBrakeService = node.advertiseService(
-    ros::this_node::getName()+"/get_brake", getBrake);
-  startService = node.advertiseService(
-    ros::this_node::getName()+"/start", start);
-  killService = node.advertiseService(
-    ros::this_node::getName()+"/kill", kill);
-  setSpeedService = node.advertiseService(
-    ros::this_node::getName()+"/set_speed", setSpeed);
-  setBrakeService = node.advertiseService(
-    ros::this_node::getName()+"/set_brake", setBrake);
+  getErrorsService = node.advertiseService("get_errors", getErrors);
+  getLimitsService = node.advertiseService("get_limits", getLimits);
+  getInputsService = node.advertiseService("get_inputs", getInputs);
+  getVoltageService = node.advertiseService("get_voltage", getVoltage);
+  getTemperatureService = node.advertiseService("get_temperature",
+    getTemperature);
+  getSpeedService = node.advertiseService("get_speed", getSpeed);
+  getBrakeService = node.advertiseService("get_brake", getBrake);
+  startService = node.advertiseService("start", start);
+  killService = node.advertiseService("kill", kill);
+  setSpeedService = node.advertiseService("set_speed", setSpeed);
+  setBrakeService = node.advertiseService("set_brake", setBrake);
 
   ros::Timer diagnosticsTimer = node.createTimer(
     ros::Duration(1.0), updateDiagnostics);

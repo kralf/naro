@@ -1,0 +1,6 @@
+byte[] servos
+float32[] frequency # in [0, 1]
+float32[] amplitude # in [0, 1]
+float32[] phase # in [0, 1]
+float32[] offset # in [0, 1]
+---

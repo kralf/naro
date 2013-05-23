@@ -27,9 +27,9 @@ import sys, rospy, math
 from naro_usc_srvs.srv import *
 
 def setPosition(channel, angle):
-  rospy.wait_for_service("usc_server/set_positions")
+  rospy.wait_for_service("/usc_server/set_positions")
   try:
-    request = rospy.ServiceProxy("usc_server/set_positions", SetPositions)
+    request = rospy.ServiceProxy("/usc_server/set_positions", SetPositions)
     request([channel], [angle])
   except rospy.ServiceException, exception:
     print "SetPosition request failed: %s" % exception

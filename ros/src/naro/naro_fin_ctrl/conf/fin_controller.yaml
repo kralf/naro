@@ -1,0 +1,12 @@
+server:
+  usc:
+    name: usc_server
+  connection:
+    retry: 0.1
+controller:
+  frequency: 50.0
+  gain:
+    frequency: 0.9
+    amplitude: 0.9
+    phase: 0.9
+    offset: 0.9
