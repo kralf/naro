@@ -11,27 +11,51 @@ case "$1" in
       fi
     fi
 
-    if [ -x /etc/init.d/naro-smc-srvs ]; then
+    if [ -x /etc/init.d/naro-smc-server ]; then
       if [ -x /usr/sbin/invoke-rc.d ]; then
-        invoke-rc.d naro-smc-srvs stop
+        invoke-rc.d naro-smc-server stop
       else
-        /etc/init.d/naro-smc-srvs stop
+        /etc/init.d/naro-smc-server stop
       fi
     fi
 
-    if [ -x /etc/init.d/naro-usc-srvs ]; then
+    if [ -x /etc/init.d/naro-usc-server ]; then
       if [ -x /usr/sbin/invoke-rc.d ]; then
-        invoke-rc.d naro-usc-srvs stop
+        invoke-rc.d naro-usc-server stop
       else
-        /etc/init.d/naro-usc-srvs stop
+        /etc/init.d/naro-usc-server stop
       fi
     fi
 
-    if [ -x /etc/init.d/naro-diagnostics ]; then
+    if [ -x /etc/init.d/naro-depth-sensor ]; then
       if [ -x /usr/sbin/invoke-rc.d ]; then
-        invoke-rc.d naro-diagnostics stop
+        invoke-rc.d naro-depth-sensor stop
       else
-        /etc/init.d/naro-diagnostics stop
+        /etc/init.d/naro-depth-sensor stop
+      fi
+    fi
+
+    if [ -x /etc/init.d/naro-fin-controller ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-fin-controller stop
+      else
+        /etc/init.d/naro-fin-controller stop
+      fi
+    fi
+
+    if [ -x /etc/init.d/naro-system-monitors ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-system-monitors stop
+      else
+        /etc/init.d/naro-system-monitors stop
+      fi
+    fi
+
+    if [ -x /etc/init.d/naro-diagnostic-aggregator ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-diagnostic-aggregator stop
+      else
+        /etc/init.d/naro-diagnostic-aggregator stop
       fi
     fi
     ;;

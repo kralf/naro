@@ -1,14 +1,14 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          naro-roscore
+# Provides:          naro-smc-server
 # Required-Start:    $network
 # Required-Stop:     $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Naro Nanins roscore startup script.
-# Description:       This script starts and stops the roscore service for
-#                    the Naro Nanis ROS bindings and should be placed in
-#                    /etc/init.d.
+# Short-Description: Naro Nanins SMC server startup script.
+# Description:       This script starts and stops the simple motor controller
+#                    server for the Naro Nanis ROS bindings and should be
+#                    placed in /etc/init.d.
 ### END INIT INFO
 
 # Author: Ralf Kaestner <ralf.kaestner@gmail.com>
@@ -18,8 +18,8 @@ GROUP=naro
 HOME=/home/naro
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="Naro Nanins roscore service"
-SCRIPTNAME=/etc/init.d/naro-roscore
+DESC="Naro Nanins SMC server"
+SCRIPTNAME=/etc/init.d/naro-smc-server
 
 # Read configuration variable file if it is present
 [ -r /etc/naro/ros.conf ] && . /etc/naro/ros.conf
@@ -32,11 +32,10 @@ SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
 # Load the ROS environment
 . $SETUP
 
-NAME=roscore
-PORT=11311
-PIDFILE=$HOME/.ros/$NAME-$PORT.pid
-DAEMON=/opt/ros/$ROS_DISTRIBUTION/bin/$NAME
-DAEMON_ARGS="-p $PORT"
+NAME=smc_server
+PIDFILE=$HOME/.ros/$NAME.pid
+DAEMON=/opt/ros/$ROS_DISTRIBUTION/bin/roslaunch
+DAEMON_ARGS="--pid=$PIDFILE --wait naro_smc_srvs smc_server.launch"
 
 # Exit if daemon is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -78,7 +77,7 @@ do_stop()
   #   2 if daemon could not be stopped
   #   other if a failure occurred
   start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE \
-    --name $NAME --user $USER --group $GROUP
+    --name roslaunch --user $USER --group $GROUP
   RETVAL="$?"
   [ "$RETVAL" = 2 ] && return 2
   # Wait for children to finish too if this is a daemon that forks
@@ -105,7 +104,7 @@ do_reload()
   # then implement that here.
   #
   start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE \
-    --name $NAME --user $USER --group $GROUP
+    --name roslaunch --user $USER --group $GROUP
   return 0
 }
 
@@ -129,7 +128,7 @@ case "$1" in
     ;;
 
   status)
-    status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+    status_of_proc -p $PIDFILE "$DAEMON" "$NAME" && exit 0 || exit $?
     ;;
 
   restart|force-reload)

@@ -1,4 +1,13 @@
-naro-init (0.1-9) lucid; urgency=low
+naro-init (0.1-2) lucid; urgency=low
+
+  * Renamed existing startup scripts to indicate the ROS node rather
+    than the package name (packages may contain multiple nodes)
+  * Added depth-sensor, fin-controller, and system-monitors startup
+    scripts
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Fri, 24 May 2013 20:00:00 +0100
+
+naro-init (0.1-1) lucid; urgency=low
 
   * Initial commit with startup script project structure
   * System startup scripts for roscore, smc_server, usc_server and

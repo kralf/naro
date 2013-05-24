@@ -17,30 +17,57 @@ if [ -x /etc/init.d/naro-roscore ]; then
   fi
 fi
 
-if [ -x /etc/init.d/naro-smc-srvs ]; then
-  update-rc.d naro-smc-srvs start 90 2 3 4 5 . stop 10 0 1 6 . >/dev/null
+if [ -x /etc/init.d/naro-smc-server ]; then
+  update-rc.d naro-smc-server start 90 2 3 4 5 . stop 10 0 1 6 . >/dev/null
   if [ -x /usr/sbin/invoke-rc.d ]; then
-    invoke-rc.d naro-smc-srvs restart
+    invoke-rc.d naro-smc-server restart
   else
-    /etc/init.d/naro-smc-srvs restart
+    /etc/init.d/naro-smc-server restart
   fi
 fi
 
-if [ -x /etc/init.d/naro-usc-srvs ]; then
-  update-rc.d naro-usc-srvs start 90 2 3 4 5 . stop 10 0 1 6 . >/dev/null
+if [ -x /etc/init.d/naro-usc-server ]; then
+  update-rc.d naro-usc-server start 90 2 3 4 5 . stop 10 0 1 6 . >/dev/null
   if [ -x /usr/sbin/invoke-rc.d ]; then
-    invoke-rc.d naro-usc-srvs restart
+    invoke-rc.d naro-usc-server restart
   else
-    /etc/init.d/naro-usc-srvs restart
+    /etc/init.d/naro-usc-server restart
   fi
 fi
 
-if [ -x /etc/init.d/naro-diagnostics ]; then
-  update-rc.d naro-diagnostics start 99 2 3 4 5 . stop 1 0 1 6 . >/dev/null
+if [ -x /etc/init.d/naro-depth-sensor ]; then
+  update-rc.d naro-depth-sensor start 91 2 3 4 5 . stop 9 0 1 6 . >/dev/null
   if [ -x /usr/sbin/invoke-rc.d ]; then
-    invoke-rc.d naro-diagnostics restart
+    invoke-rc.d naro-depth-sensor restart
   else
-    /etc/init.d/naro-diagnostics restart
+    /etc/init.d/naro-depth-sensor restart
+  fi
+fi
+
+if [ -x /etc/init.d/naro-fin-controller ]; then
+  update-rc.d naro-fin-controller start 95 2 3 4 5 . stop 5 0 1 6 . >/dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-fin-controller restart
+  else
+    /etc/init.d/naro-fin-controller restart
+  fi
+fi
+
+if [ -x /etc/init.d/naro-system-monitors ]; then
+  update-rc.d naro-system-monitors start 98 2 3 4 5 . stop 2 0 1 6 . >/dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-system-monitors restart
+  else
+    /etc/init.d/naro-system-monitors restart
+  fi
+fi
+
+if [ -x /etc/init.d/naro-diagnostic-aggregator ]; then
+  update-rc.d naro-diagnostic-aggregator start 99 2 3 4 5 . stop 1 0 1 6 . >/dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-diagnostic-aggregator restart
+  else
+    /etc/init.d/naro-diagnostic-aggregator restart
   fi
 fi
 
