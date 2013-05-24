@@ -16,7 +16,7 @@ remake_ros_package(
 
 remake_ros_package(
   naro_sensor_srvs
-  DEPENDS roscpp rospy diagnostic_updater
+  DEPENDS roscpp rospy diagnostic_updater naro_usc_srvs
   DESCRIPTION "sensor services"
 )
 

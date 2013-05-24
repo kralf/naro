@@ -1,3 +1,9 @@
+naro-ros (0.1-8) lucid; urgency=low
+
+  * Fixed package dependency for naro_sensor_srvs
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Fri, 24 May 2013 13:35:00 +0100
+
 naro-ros (0.1-7) lucid; urgency=low
 
   * Added naro_sensor_srvs package
