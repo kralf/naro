@@ -1,3 +1,10 @@
+naro-ros (0.1-7) lucid; urgency=low
+
+  * Added naro_sensor_srvs package
+  * Added depth monitor to naro_test package
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Fri, 24 May 2013 13:07:00 +0100
+
 naro-ros (0.1-6) lucid; urgency=low
 
   * Added naro_fin_ctrl and naro_dive_ctrl packages

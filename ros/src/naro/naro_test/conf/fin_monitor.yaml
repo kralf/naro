@@ -1,0 +1,4 @@
+server:
+  name: fin_controller
+client:
+  update: 0.1

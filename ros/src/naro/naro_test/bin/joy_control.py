@@ -20,13 +20,11 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-import roslib;
-roslib.load_manifest("naro_smc_srvs")
-
-import sys, math, rospy
+import sys, math, roslib, rospy
 from sensor_msgs.msg import *
 from naro_smc_srvs.srv import *
 from naro_usc_srvs.srv import *
+from naro_fin_ctrl.srv import *
 
 class JoyControl(object):
   def __init__(self, name = "joy_control"):
@@ -36,13 +34,11 @@ class JoyControl(object):
 
     self.smcServerName = "/smc_server"
     self.uscServerName = "/usc_server"
+    self.finServerName = "/fin_controller"
 
     self.getParameters()
 
     rospy.Subscriber("/joy", Joy, self.receiveJoy, queue_size = 1)
-
-    angle = 30.0*math.pi/180.0
-    self.setPosition([0, 2, 4, 6], [1.5*angle, -angle, -angle, 1.5*angle])
     self.start()
 
   def getParameters(self):
@@ -50,6 +46,8 @@ class JoyControl(object):
       self.smcServerName)
     self.uscServerName = rospy.get_param("servers/usc/name",
       self.uscServerName)
+    self.finServerName = rospy.get_param("servers/fin/name",
+      self.finServerName)
 
   def getLimits(self):
     rospy.wait_for_service(self.smcServerName+"/get_limits")
@@ -76,21 +74,37 @@ class JoyControl(object):
     except rospy.ServiceException, exception:
       print "SetSpeed request failed: %s" % exception
 
-  def setPosition(self, channels, angles):
-    rospy.wait_for_service(self.uscServerName+"/set_positions")
+  def getHomes(self, servos):
+    rospy.wait_for_service(self.finServerName+"/get_homes")
     try:
-      request = rospy.ServiceProxy(self.uscServerName+"/set_positions",
-        SetPositions)
-      request(channels, angles)
+      request = rospy.ServiceProxy(self.finServerName+"/get_homes", GetHomes)
+      return request(servos).home
     except rospy.ServiceException, exception:
-      print "SetPosition request failed: %s" % exception
+      print "GetHomes request failed: %s" % exception
+
+  def setHomes(self, servos, home):
+    rospy.wait_for_service(self.finServerName+"/set_homes")
+    try:
+      request = rospy.ServiceProxy(self.finServerName+"/set_homes", SetHomes)
+      request(servos, home)
+    except rospy.ServiceException, exception:
+      print "SetHomes request failed: %s" % exception
+
+  def setCommands(self, servos, frequency, amplitude, phase, offset):
+    rospy.wait_for_service(self.finServerName+"/set_commands")
+    try:
+      request = rospy.ServiceProxy(self.finServerName+"/set_commands",
+        SetCommands)
+      request(servos, frequency, amplitude, phase, offset)
+    except rospy.ServiceException, exception:
+      print "SetCommands request failed: %s" % exception
 
   def receiveJoy(self, joy):
     limits = self.getLimits()
     speed = joy.axes[4];
     
     if limits & GetLimitsResponse.ANALOG1:
-      if speed < 0: 
+      if speed < 0:
         self.start()
         self.setSpeed(joy.axes[4])
     elif limits & GetLimitsResponse.ANALOG2:
@@ -100,8 +114,32 @@ class JoyControl(object):
     else:
       self.setSpeed(joy.axes[4])
 
-    angle = joy.axes[1]*45.0*math.pi/180.0
-    self.setPosition([1, 3, 5, 7], [-angle, angle, angle, -angle])
+    try:
+      button = joy.buttons.index(1)
+    except ValueError:
+      button = -1
+
+    if button >= 0 and button < 4:
+      servos = [2*button, 2*button+1]
+      home = self.getHomes(servos)
+
+      home = [home[0]+joy.axes[1]*0.1*math.pi/180.0,
+        home[1]+joy.axes[4]*0.1*math.pi/180.0]
+
+      self.setHomes(servos, home)
+    else:
+      servos = range(8)
+      frequency = [2.0]*len(servos)
+      amplitude = [0.0]*len(servos)
+      phase = [0.0]*len(servos)
+      offset = [0.0]*len(servos)
+
+      amplitude[1] = joy.axes[1]*25.0*math.pi/180.0
+      amplitude[3] = -joy.axes[1]*25.0*math.pi/180.0
+      phase[1] = joy.axes[0]*0.5*math.pi
+      phase[3] = -joy.axes[0]*0.5*math.pi
+    
+      self.setCommands(servos, frequency, amplitude, phase, offset)
 
 if __name__ == "__main__":
   control = JoyControl()

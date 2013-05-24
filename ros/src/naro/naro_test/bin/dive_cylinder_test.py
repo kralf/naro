@@ -20,10 +20,7 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-import roslib;
-roslib.load_manifest("naro_smc_srvs")
-
-import sys, rospy
+import sys, roslib, rospy
 from naro_smc_srvs.srv import *
 
 def start():

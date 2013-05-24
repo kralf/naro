@@ -1,0 +1,16 @@
+server:
+  usc:
+    name: usc_server
+  connection:
+    retry: 0.1
+sensor:
+  frequency: 25.0
+  input_channel: 11
+  input_voltage: 5.0
+  transfer_coefficient: 4e-6
+  transfer_offset: -0.04
+  standard_atmosphere: 101325.0
+  meter_sea_water: 9807.0
+  barometric_constant: 7990.0
+filter:
+  window_size: 50

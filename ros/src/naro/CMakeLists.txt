@@ -15,6 +15,12 @@ remake_ros_package(
 )
 
 remake_ros_package(
+  naro_sensor_srvs
+  DEPENDS roscpp rospy diagnostic_updater
+  DESCRIPTION "sensor services"
+)
+
+remake_ros_package(
   naro_dive_ctrl
   DEPENDS roscpp rospy diagnostic_updater naro_smc_srvs naro_usc_srvs
   DESCRIPTION "dive controller"
@@ -36,5 +42,6 @@ remake_ros_package(
 remake_ros_package(
   naro_test
   DEPENDS roscpp rospy std_msgs naro_smc_srvs naro_usc_srvs
+    naro_sensor_srvs naro_fin_ctrl naro_dive_ctrl
   DESCRIPTION "testing tools"
 )

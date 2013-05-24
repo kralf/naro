@@ -3,3 +3,5 @@ servers:
     name: smc_server
   usc:
     name: usc_server
+  fin:
+    name: fin_controller

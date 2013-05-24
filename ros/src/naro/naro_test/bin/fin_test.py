@@ -20,10 +20,7 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-import roslib;
-roslib.load_manifest("naro_usc_srvs")
-
-import sys, rospy, math
+import sys, math, roslib, rospy
 from naro_usc_srvs.srv import *
 
 def setPosition(channel, angle):

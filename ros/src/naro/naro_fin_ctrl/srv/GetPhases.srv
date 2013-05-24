@@ -1,4 +1,4 @@
 byte[] servos
 ---
-float32[] command # in [s]
-float32[] actual # in [s]
+float32[] command # in [rad]
+float32[] actual # in [rad]

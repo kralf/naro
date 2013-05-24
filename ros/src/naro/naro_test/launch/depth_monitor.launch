@@ -1,0 +1,5 @@
+<launch>
+  <node name="depth_monitor" pkg="naro_test" type="depth_monitor" output="screen">
+    <rosparam command="load" file="$(find naro_test)/etc/depth_monitor.yaml"/>
+  </node>
+</launch>

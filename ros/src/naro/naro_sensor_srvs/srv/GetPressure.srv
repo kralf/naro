@@ -1,0 +1,3 @@
+---
+float32 raw # in [Pa]
+float32 filtered # in [Pa]

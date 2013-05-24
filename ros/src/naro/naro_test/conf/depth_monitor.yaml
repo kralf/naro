@@ -1,0 +1,4 @@
+server:
+  name: depth_sensor
+client:
+  update: 0.1
