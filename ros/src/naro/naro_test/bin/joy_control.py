@@ -101,18 +101,25 @@ class JoyControl(object):
 
   def receiveJoy(self, joy):
     limits = self.getLimits()
-    speed = joy.axes[4];
+
+    if (joy.axes[2] < 1.0):
+      speed = (1.0-joy.axes[2])*0.5
+    elif (joy.axes[5] < 1.0):
+      speed = -(1.0-joy.axes[5])*0.5
+    else:
+      speed = 0.0
     
     if limits & GetLimitsResponse.ANALOG1:
-      if speed < 0:
+      if speed < 0.0:
         self.start()
-        self.setSpeed(joy.axes[4])
+        self.setSpeed(speed)
     elif limits & GetLimitsResponse.ANALOG2:
-      if speed > 0:
+      if speed > 0.0:
         self.start()
-        self.setSpeed(joy.axes[4])
+        self.setSpeed(speed)
     else:
-      self.setSpeed(joy.axes[4])
+      self.start()
+      self.setSpeed(speed)
 
     try:
       button = joy.buttons.index(1)
@@ -123,8 +130,8 @@ class JoyControl(object):
       servos = [2*button, 2*button+1]
       home = self.getHomes(servos)
 
-      home = [home[0]+joy.axes[1]*0.1*math.pi/180.0,
-        home[1]+joy.axes[4]*0.1*math.pi/180.0]
+      home = [home[0]+joy.axes[1]*1.0*math.pi/180.0,
+        home[1]+joy.axes[4]*1.0*math.pi/180.0]
 
       self.setHomes(servos, home)
     else:
@@ -134,10 +141,33 @@ class JoyControl(object):
       phase = [0.0]*len(servos)
       offset = [0.0]*len(servos)
 
-      amplitude[1] = joy.axes[1]*25.0*math.pi/180.0
-      amplitude[3] = -joy.axes[1]*25.0*math.pi/180.0
-      phase[1] = joy.axes[0]*0.5*math.pi
-      phase[3] = -joy.axes[0]*0.5*math.pi
+      if (joy.axes[3] > 0.0):
+        left_gain = 1.0-joy.axes[3]
+        right_gain = 1.0
+      else:
+        left_gain = 1.0
+        right_gain = 1.0+joy.axes[3]
+
+      # left and right flap
+      amplitude[0] = joy.axes[1]*left_gain*20.0*math.pi/180.0
+      amplitude[2] = -joy.axes[1]*right_gain*20.0*math.pi/180.0
+
+      # left and right pitch
+      amplitude[1] = joy.axes[1]*left_gain*25.0*math.pi/180.0
+      amplitude[3] = -joy.axes[1]*right_gain*25.0*math.pi/180.0
+
+      phase[1] = -90*math.pi/180.0
+      phase[3] = -90*math.pi/180.0
+
+      # top pitch
+      offset[7] = joy.axes[3]*20.0*math.pi/180.0
+
+      # back flap
+      amplitude[4] = joy.axes[1]*20.0*math.pi/180.0
+      offset[4] = joy.axes[3]*30.0*math.pi/180.0
+      
+      #phase[1] = joy.axes[0]*0.5*math.pi
+      #phase[3] = -joy.axes[0]*0.5*math.pi
     
       self.setCommands(servos, frequency, amplitude, phase, offset)
 

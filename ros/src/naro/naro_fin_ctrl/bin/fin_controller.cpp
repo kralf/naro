@@ -101,9 +101,7 @@ public:
 
   Servo(int channel = -1) :
     channel(channel),
-    home(0.0),
-    gain(controllerFrequencyGain, controllerAmplitudeGain,
-      controllerPhaseGain, controllerOffsetGain) {
+    home(0.0) {
   };
 
   int channel;
@@ -143,8 +141,14 @@ void initializeServos() {
 
   if (getChannelsClient.call(getChannels)) {
     for (int i = 0; i < getChannels.response.mode.size(); ++i)
-      if (getChannels.response.mode[i] == GetChannels::Response::SERVO)
-        servos.push_back(i);
+        if (getChannels.response.mode[i] == GetChannels::Response::SERVO) {
+      servos.push_back(i);
+
+      servos.back().gain.frequency = controllerFrequencyGain;
+      servos.back().gain.amplitude = controllerAmplitudeGain;
+      servos.back().gain.phase = controllerPhaseGain;
+      servos.back().gain.offset = controllerOffsetGain;
+    }
 
     ROS_INFO("USC server reported %d available servo(s).",
       (unsigned int)servos.size());

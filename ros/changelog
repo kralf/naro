@@ -1,3 +1,11 @@
+naro-ros (0.1-9) lucid; urgency=low
+
+  * Updated joy_control.py during 2013-05-24 testing session in
+    "Hallenbad Bungertwies"
+  * Quick-fix of fin_controller servo gain parameter initialization
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Mon, 27 May 2013 10:36:00 +0100
+
 naro-ros (0.1-8) lucid; urgency=low
 
   * Fixed package dependency for naro_sensor_srvs
