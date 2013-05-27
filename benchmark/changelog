@@ -1,0 +1,5 @@
+naro-benchmark (0.1-1) lucid; urgency=low
+
+  * Initial commit with project structure and linpack benchmark
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Mon, 27 May 2013 10:33:00 +0100
