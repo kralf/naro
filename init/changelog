@@ -1,3 +1,9 @@
+naro-init (0.1-3) lucid; urgency=low
+
+  * Moved (fixed naming) of diagnostic-aggregator startup script
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Mon, 27 May 2013 10:37:00 +0100
+
 naro-init (0.1-2) lucid; urgency=low
 
   * Renamed existing startup scripts to indicate the ROS node rather
