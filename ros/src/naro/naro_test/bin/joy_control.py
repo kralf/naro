@@ -166,9 +166,6 @@ class JoyControl(object):
       amplitude[4] = joy.axes[1]*20.0*math.pi/180.0
       offset[4] = joy.axes[3]*30.0*math.pi/180.0
       
-      #phase[1] = joy.axes[0]*0.5*math.pi
-      #phase[3] = -joy.axes[0]*0.5*math.pi
-    
       self.setCommands(servos, frequency, amplitude, phase, offset)
 
 if __name__ == "__main__":

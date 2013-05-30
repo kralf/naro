@@ -51,11 +51,12 @@ using namespace naro_usc_srvs;
 
 std::string uscServerName = "usc_server";
 double connectionRetry = 0.1;
+int controllerMaxServos = 8;
 double controllerFrequency = 50.0;
-double controllerFrequencyGain = 0.9;
-double controllerAmplitudeGain = 0.9;
-double controllerPhaseGain = 0.9;
-double controllerOffsetGain = 0.9;
+float controllerFrequencyGain = 0.9f;
+float controllerAmplitudeGain = 0.9f;
+float controllerPhaseGain = 0.9f;
+float controllerOffsetGain = 0.9f;
 
 boost::shared_ptr<diagnostic_updater::Updater> updater;
 boost::shared_ptr<diagnostic_updater::FrequencyStatus> diagnoseFrequency;
@@ -81,12 +82,14 @@ ros::ServiceServer setPhasesService;
 ros::ServiceServer setOffsetsService;
 ros::ServiceServer setCommandsService;
 
+const float pi2 = M_PI*2.0f;
+
 class Servo {
 public:
   class Parameters {
   public:
-    Parameters(float frequency = 0.0, float amplitude = 0.0, float
-        offset = 0.0, float phase = 0.0) :
+    Parameters(float frequency = 0.0f, float amplitude = 0.0f, float
+        offset = 0.0f, float phase = 0.0f) :
       frequency(frequency),
       amplitude(amplitude),
       phase(phase),
@@ -101,7 +104,7 @@ public:
 
   Servo(int channel = -1) :
     channel(channel),
-    home(0.0) {
+    home(0.0f) {
   };
 
   int channel;
@@ -114,22 +117,33 @@ public:
 
 std::vector<Servo> servos;
 ros::Time timeOffset;
-ros::Time lastTime(0.0);
+ros::Time lastTime;
 
 void getParameters(const ros::NodeHandle& node) {
   node.param<std::string>("server/usc/name", uscServerName, uscServerName);
   node.param<double>("server/connection/retry", connectionRetry,
     connectionRetry);
+
+  node.param<int>("controller/max_servos", controllerMaxServos,
+    controllerMaxServos);
   node.param<double>("controller/frequency", controllerFrequency,
     controllerFrequency);
+  double controllerFrequencyGain = ::controllerFrequencyGain;
   node.param<double>("controller/gain/frequency", controllerFrequencyGain,
     controllerFrequencyGain);
+  ::controllerFrequencyGain = controllerFrequencyGain;
+  double controllerAmplitudeGain = ::controllerAmplitudeGain;
   node.param<double>("controller/gain/amplitude", controllerAmplitudeGain,
     controllerAmplitudeGain);
+  ::controllerAmplitudeGain = controllerAmplitudeGain;
+  double controllerPhaseGain = ::controllerPhaseGain;
   node.param<double>("controller/gain/phase", controllerPhaseGain,
     controllerPhaseGain);
+  ::controllerPhaseGain = controllerPhaseGain;
+  double controllerOffsetGain = ::controllerOffsetGain;
   node.param<double>("controller/gain/offset", controllerOffsetGain,
     controllerOffsetGain);
+  ::controllerOffsetGain = controllerOffsetGain;
 }
 
 void initializeServos() {
@@ -140,8 +154,9 @@ void initializeServos() {
   GetChannels getChannels;
 
   if (getChannelsClient.call(getChannels)) {
-    for (int i = 0; i < getChannels.response.mode.size(); ++i)
-        if (getChannels.response.mode[i] == GetChannels::Response::SERVO) {
+    for (int i = 0; (i < getChannels.response.mode.size()) &&
+        (servos.size() < controllerMaxServos); ++i)
+      if (getChannels.response.mode[i] == GetChannels::Response::SERVO) {
       servos.push_back(i);
 
       servos.back().gain.frequency = controllerFrequencyGain;
@@ -487,16 +502,16 @@ void updateControl(const ros::TimerEvent& event) {
   setProfiles.request.speed.resize(servos.size());
   setProfiles.request.acceleration.resize(servos.size());
 
-  double dt = 0.0;
+  float dt = 0.0f;
   if (!lastTime.isZero())
     dt = (ros::Time::now()-lastTime).toSec();
   lastTime = ros::Time::now();
 
-  double t_0 = (lastTime-timeOffset).toSec();
-  double t_2 = t_0+2.0/controllerFrequency;
+  float t_0 = (lastTime-timeOffset).toSec();
+  float t_2 = t_0+2.0f/controllerFrequency;
 
   for (int i = 0; i < servos.size(); ++i) {
-    if (dt > 0.0) {
+    if (dt > 0.0f) {
       servos[i].actual.frequency += servos[i].gain.frequency*dt*
         (servos[i].command.frequency-servos[i].actual.frequency);
       servos[i].actual.amplitude += servos[i].gain.amplitude*dt*
@@ -507,7 +522,7 @@ void updateControl(const ros::TimerEvent& event) {
         (servos[i].command.offset-servos[i].actual.offset);
     }
 
-    double omega_i = 2.0*M_PI*servos[i].actual.frequency;
+    float omega_i = pi2*servos[i].actual.frequency;
     setProfiles.request.channels[i] = servos[i].channel;
     setProfiles.request.position[i] = servos[i].home+
       servos[i].actual.offset+servos[i].actual.amplitude*

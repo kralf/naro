@@ -59,7 +59,7 @@ using namespace naro_usc_srvs;
 double connectionRetry = 0.1;
 std::string deviceAddress = "/dev/naro/usc";
 double deviceTimeout = 0.1;
-double servosTransmission = 0.001;
+float servosTransmission = 0.001f;
 std::string configurationFile = "etc/usc.xml";
 
 boost::shared_ptr<diagnostic_updater::Updater> updater;
@@ -84,6 +84,8 @@ ros::ServiceServer setSpeedsService;
 ros::ServiceServer setAccelerationsService;
 ros::ServiceServer setProfilesService;
 ros::ServiceServer setOutputsService;
+
+const float pi = M_PI;
 
 template <typename T> inline T clamp(const T& x,
     const T& min = std::numeric_limits<T>::min(),
@@ -111,45 +113,45 @@ inline bool isOutput(int channel) {
       Pololu::Usc::Usb::Settings::Channel::modeOutput);
 }
 
-inline double qusToAngle(int channel, unsigned short position) {
-  return (position-settings.channels[channel].neutral)*M_PI*
-    0.25e-6/servosTransmission;
+inline float qusToAngle(int channel, unsigned short position) {
+  return (position-settings.channels[channel].neutral)*pi*
+    0.25e-6f/servosTransmission;
 }
 
-inline double qusToAngularSpeed(int channel, unsigned short speed) {
+inline float qusToAngularSpeed(int channel, unsigned short speed) {
   if (speed)
-    return speed*M_PI*0.25e-4/servosTransmission;
+    return speed*pi*0.25e-4f/servosTransmission;
   else
     return std::numeric_limits<float>::infinity();
 }
 
-inline double qusToAngularAcceleration(int channel, unsigned char
+inline float qusToAngularAcceleration(int channel, unsigned char
     acceleration) {
   if (acceleration)
-    return acceleration*M_PI*0.3125e-4/servosTransmission;
+    return acceleration*pi*0.3125e-4f/servosTransmission;
   else
     return std::numeric_limits<float>::infinity();
 }
 
-inline unsigned short angleToQus(int channel, double angle) {
-  return clamp<unsigned short>(round(angle/M_PI*servosTransmission/0.25e-6)+
+inline unsigned short angleToQus(int channel, float angle) {
+  return clamp<unsigned short>(roundf(angle/pi*servosTransmission/0.25e-6f)+
     settings.channels[channel].neutral, settings.channels[channel].minimum,
     settings.channels[channel].maximum);
 }
 
-inline unsigned short angularSpeedToQus(int channel, double angularSpeed) {
-  if (fabs(angularSpeed) < std::numeric_limits<float>::infinity())
-    return clamp<unsigned short>(round(fabs(angularSpeed)/
-      M_PI*servosTransmission/0.25e-4), 1);
+inline unsigned short angularSpeedToQus(int channel, float angularSpeed) {
+  if (fabsf(angularSpeed) < std::numeric_limits<float>::infinity())
+    return clamp<unsigned short>(roundf(fabsf(angularSpeed)/
+      pi*servosTransmission/0.25e-4f), 1);
   else
     return 0;
 }
 
-inline unsigned char angularAccelerationToQus(int channel, double
+inline unsigned char angularAccelerationToQus(int channel, float
     angularAcceleration) {
-  if (fabs(angularAcceleration) < std::numeric_limits<float>::infinity())
-    return clamp<unsigned char>(round(fabs(angularAcceleration)/
-      M_PI*servosTransmission/0.3125e-4), 1);
+  if (fabsf(angularAcceleration) < std::numeric_limits<float>::infinity())
+    return clamp<unsigned char>(roundf(fabsf(angularAcceleration)/
+      pi*servosTransmission/0.3125e-4f), 1);
   else
     return 0;
 }
@@ -158,8 +160,10 @@ void getParameters(const ros::NodeHandle& node) {
   node.param<double>("connection/retry", connectionRetry, connectionRetry);
   node.param<std::string>("device/address", deviceAddress, deviceAddress);
   node.param<double>("device/timeout", deviceTimeout, deviceTimeout);
+  double servosTransmission = ::servosTransmission;
   node.param<double>("servos/transmission", servosTransmission,
     servosTransmission);
+  ::servosTransmission = servosTransmission;
   node.param<std::string>("configuration/file", configurationFile,
     configurationFile);
 }

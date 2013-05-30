@@ -301,24 +301,24 @@ bool getInputs(GetInputs::Request& request, GetInputs::Response& response) {
     Pololu::Smc::Usb::Variables variables = getVariablesRequest.getResponse();
 
     response.raw[GetInputs::Response::RC1] = variables.inputChannels[
-      Pololu::Smc::Device::inputChannelRc1].rawValue*0.25e-6;
+      Pololu::Smc::Device::inputChannelRc1].rawValue*0.25e-6f;
     response.scaled[GetInputs::Response::RC1] = variables.inputChannels[
-      Pololu::Smc::Device::inputChannelRc1].scaledValue/3200.0;
+      Pololu::Smc::Device::inputChannelRc1].scaledValue/3200.0f;
 
     response.raw[GetInputs::Response::RC2] = variables.inputChannels[
-      Pololu::Smc::Device::inputChannelRc2].rawValue*0.25e-6;
+      Pololu::Smc::Device::inputChannelRc2].rawValue*0.25e-6f;
     response.scaled[GetInputs::Response::RC2] = variables.inputChannels[
-      Pololu::Smc::Device::inputChannelRc2].scaledValue/3200.0;
+      Pololu::Smc::Device::inputChannelRc2].scaledValue/3200.0f;
 
     response.raw[GetInputs::Response::ANALOG1] = variables.inputChannels[
-      Pololu::Smc::Device::inputChannelAnalog1].rawValue/4095.0*3.3;
+      Pololu::Smc::Device::inputChannelAnalog1].rawValue/4095.0f*3.3f;
     response.scaled[GetInputs::Response::ANALOG1] = variables.inputChannels[
-      Pololu::Smc::Device::inputChannelAnalog1].scaledValue/3200.0;
+      Pololu::Smc::Device::inputChannelAnalog1].scaledValue/3200.0f;
 
     response.raw[GetInputs::Response::ANALOG2] = variables.inputChannels[
-      Pololu::Smc::Device::inputChannelAnalog2].rawValue/4095.0*3.3;
+      Pololu::Smc::Device::inputChannelAnalog2].rawValue/4095.0f*3.3f;
     response.scaled[GetInputs::Response::ANALOG2] = variables.inputChannels[
-      Pololu::Smc::Device::inputChannelAnalog2].scaledValue/3200.0;
+      Pololu::Smc::Device::inputChannelAnalog2].scaledValue/3200.0f;
   }
   else
     return false;
@@ -331,7 +331,7 @@ bool getVoltage(GetVoltage::Request& request, GetVoltage::Response&
   Pololu::Smc::Usb::GetVariables getVariablesRequest;
 
   if (transfer(getVariablesRequest, "GetVariables"))
-    response.voltage = getVariablesRequest.getResponse().vinMv*1e-3;
+    response.voltage = getVariablesRequest.getResponse().vinMv*1e-3f;
   else
     return false;
 
@@ -343,7 +343,8 @@ bool getTemperature(GetTemperature::Request& request,
   Pololu::Smc::Usb::GetVariables getVariablesRequest;
 
   if (transfer(getVariablesRequest, "GetVariables"))
-    response.temperature = getVariablesRequest.getResponse().temperature*1e-1;
+    response.temperature =
+      getVariablesRequest.getResponse().temperature*1e-1f;
   else
     return false;
 
@@ -355,8 +356,8 @@ bool getSpeed(GetSpeed::Request& request, GetSpeed::Response& response) {
 
   if (transfer(getVariablesRequest, "GetVariables")) {
     Pololu::Smc::Usb::Variables variables = getVariablesRequest.getResponse();
-    response.actual = variables.speed/3200.0;
-    response.target = variables.targetSpeed/3200.0;
+    response.actual = variables.speed/3200.0f;
+    response.target = variables.targetSpeed/3200.0f;
   }
   else
     return false;
@@ -368,7 +369,7 @@ bool getBrake(GetBrake::Request& request, GetBrake::Response& response) {
   Pololu::Smc::Usb::GetVariables getVariablesRequest;
 
   if (transfer(getVariablesRequest, "GetVariables"))
-    response.brake = getVariablesRequest.getResponse().brakeAmount/32.0;
+    response.brake = getVariablesRequest.getResponse().brakeAmount/32.0f;
   else
     return false;
 
@@ -395,7 +396,7 @@ bool kill(Kill::Request& request, Kill::Response& response) {
 
 bool setSpeed(SetSpeed::Request& request, SetSpeed::Response& response) {
   Pololu::Smc::Usb::SetSpeed setSpeedRequest(
-    round(clamp<float>(request.speed, -1.0, 1.0)*3200.0));
+    round(clamp<float>(request.speed, -1.0f, 1.0f)*3200.0f));
 
   if (!transfer(setSpeedRequest, "SetSpeed"))
     return false;
@@ -405,7 +406,7 @@ bool setSpeed(SetSpeed::Request& request, SetSpeed::Response& response) {
 
 bool setBrake(SetBrake::Request& request, SetBrake::Response& response) {
   Pololu::Smc::Usb::SetBrake setBrakeRequest(
-    round(clamp<float>(request.brake, 0.0, 1.0)*32.0));
+    round(clamp<float>(request.brake, 0.0f, 1.0f)*32.0f));
 
   if (!transfer(setBrakeRequest, "SetBrake"))
     return false;

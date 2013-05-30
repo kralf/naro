@@ -1,3 +1,14 @@
+naro-ros (0.1-10) lucid; urgency=low
+
+  * Efficiency fixes:
+    + All nodes revised to float instead of double computations where
+      applicable
+    + Fin controller uses a parameter-defined maximum number of servos
+  * New features:
+    + Added calibrate service call to depth sensor
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 30 May 2013 15:22:00 +0100
+
 naro-ros (0.1-9) lucid; urgency=low
 
   * Updated joy_control.py during 2013-05-24 testing session in

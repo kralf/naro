@@ -14,3 +14,5 @@ sensor:
   barometric_constant: 7990.0
 filter:
   window_size: 50
+calibration:
+  window_size: 100
