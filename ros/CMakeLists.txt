@@ -16,4 +16,4 @@ remake_project(
   CONFIGURATION_DESTINATION /etc/naro
 )
 
-remake_ros_pack_deb()
+# remake_ros_pack_deb()

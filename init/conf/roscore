@@ -1,0 +1,13 @@
+# This configuration file contains the default parameters of the Naro Nanins
+# roscore startup script. Make sure to restart the corresponding service for
+# changed parameters to take effect.
+
+# Set RUN=yes to start roscore at boot time.
+RUN=yes
+
+# Set the port to run the master on.
+PORT=11311
+
+# Set _TIMEOUT_MASTER_START in launch.py to the given value to prevent startup
+# failures on slow machines.
+TIMEOUT=60.0

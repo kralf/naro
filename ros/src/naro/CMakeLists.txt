@@ -23,6 +23,7 @@ remake_ros_package(
 remake_ros_package(
   naro_dive_ctrl
   DEPENDS roscpp rospy diagnostic_updater naro_smc_srvs naro_usc_srvs
+  EXTRA_BUILD_DEPENDS eigen3
   DESCRIPTION "dive controller"
 )
 

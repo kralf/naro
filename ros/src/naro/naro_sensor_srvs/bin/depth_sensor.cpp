@@ -39,14 +39,14 @@ using namespace naro_usc_srvs;
 
 std::string uscServerName = "usc_server";
 double connectionRetry = 0.1;
+float modelStandardAtmosphere = 101325.0f;
+float modelMeterSeaWater = 9625.0f;
+float modelBarometricConstant = 7990.0f;
 double sensorFrequency = 25.0;
 int sensorInputChannel = 11;
 float sensorInputVoltage = 5.0f;
 float sensorTransferCoefficient = 4e-6f;
 float sensorTransferOffset = -0.04f;
-float sensorStandardAtmosphere = 101325.0f;
-float sensorMeterSeaWater = 9807.0f;
-float sensorBarometricConstant = 7990.0f;
 int filterWindowSize = 50;
 int calibrationWindowSize = 100;
 
@@ -74,19 +74,32 @@ inline float voltageToPressure(float voltage) {
 }
 
 inline float voltageToDepth(float voltage) {
-  return (voltageToPressure(voltage)-sensorStandardAtmosphere)/
-    sensorMeterSeaWater;
+  return (voltageToPressure(voltage)-modelStandardAtmosphere)/
+    modelMeterSeaWater;
 }
 
 inline float voltageToElevation(float voltage) {
-  return -(logf(voltageToPressure(voltage))-logf(sensorStandardAtmosphere))*
-    sensorBarometricConstant;
+  return -(logf(voltageToPressure(voltage))-logf(modelStandardAtmosphere))*
+    modelBarometricConstant;
 }
 
 void getParameters(const ros::NodeHandle& node) {
   node.param<std::string>("server/usc/name", uscServerName, uscServerName);
   node.param<double>("server/connection/retry", connectionRetry,
     connectionRetry);
+
+  double modelStandardAtmosphere = ::modelStandardAtmosphere;
+  node.param<double>("model/standard_atmosphere", modelStandardAtmosphere,
+    modelStandardAtmosphere);
+  ::modelStandardAtmosphere = modelStandardAtmosphere;
+  double modelMeterSeaWater = ::modelMeterSeaWater;
+  node.param<double>("model/meter_sea_water", modelMeterSeaWater,
+    modelMeterSeaWater);
+  ::modelMeterSeaWater = modelMeterSeaWater;
+  double modelBarometricConstant = ::modelBarometricConstant;
+  node.param<double>("model/barometric_constant", modelBarometricConstant,
+    modelBarometricConstant);
+  ::modelBarometricConstant = modelBarometricConstant;
 
   node.param<double>("sensor/frequency", sensorFrequency, sensorFrequency);
   node.param<int>("sensor/input_channel", sensorInputChannel,
@@ -103,18 +116,6 @@ void getParameters(const ros::NodeHandle& node) {
   node.param<double>("sensor/transfer_offset", sensorTransferOffset,
     sensorTransferOffset);
   ::sensorTransferOffset = sensorTransferOffset;
-  double sensorStandardAtmosphere = ::sensorStandardAtmosphere;
-  node.param<double>("sensor/standard_atmosphere", sensorStandardAtmosphere,
-    sensorStandardAtmosphere);
-  ::sensorStandardAtmosphere = sensorStandardAtmosphere;
-  double sensorMeterSeaWater = ::sensorMeterSeaWater;
-  node.param<double>("sensor/meter_sea_water", sensorMeterSeaWater,
-    sensorMeterSeaWater);
-  ::sensorMeterSeaWater = sensorMeterSeaWater;
-  double sensorBarometricConstant = ::sensorBarometricConstant;
-  node.param<double>("sensor/barometric_constant", sensorBarometricConstant,
-    sensorBarometricConstant);
-  ::sensorBarometricConstant = sensorBarometricConstant;
 
   node.param<int>("filter/window_size", filterWindowSize, filterWindowSize);
 

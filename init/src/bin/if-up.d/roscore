@@ -1,0 +1,33 @@
+#!/bin/sh
+
+set -e
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+# Naro roscore shall not bind to the loopback interface.
+[ "$IFACE" == eth0 ] || exit 0
+
+# Check whether the system startup script is installed.
+[ -x /etc/init.d/naro-roscore ] || exit 0
+
+LOCKFILE=/var/lock/naro-roscore-ifup
+
+# Avoid running more than one at a time
+if [ -x /usr/bin/lockfile-create ]; then
+  lockfile-create $LOCKFILE
+  lockfile-touch $LOCKFILE &
+  LOCKTOUCHPID="$!"
+fi
+
+if [ -x /usr/sbin/invoke-rc.d ]; then
+  invoke-rc.d --quiet naro-roscore restart
+else
+  /etc/init.d/naro-roscore restart
+fi
+
+if [ -x /usr/bin/lockfile-create ] ; then
+  kill $LOCKTOUCHPID
+  lockfile-remove $LOCKFILE
+fi
+
+) &

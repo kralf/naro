@@ -1,13 +1,13 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          naro-fin-controller
+# Provides:          naro-system-monitors
 # Required-Start:    $network
 # Required-Stop:     $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Naro Nanins fin controller startup script.
-# Description:       This script starts and stops the fin controller for
-#                    the Naro Nanis ROS bindings and should be placed in
+# Short-Description: Naro Nanins system monitors startup script.
+# Description:       This script starts and stops the system monitors for
+#                    the Naro Nanins ROS bindings and should be placed in
 #                    /etc/init.d.
 ### END INIT INFO
 
@@ -18,8 +18,8 @@ GROUP=naro
 HOME=/home/naro
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="Naro Nanins fin controller"
-SCRIPTNAME=/etc/init.d/naro-fin-controller
+DESC="Naro Nanins system monitors"
+SCRIPTNAME=/etc/init.d/naro-system-monitors
 
 # Read configuration variable file if it is present
 [ -r /etc/naro/ros.conf ] && . /etc/naro/ros.conf
@@ -32,10 +32,17 @@ SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
 # Load the ROS environment
 . $SETUP
 
-NAME=fin_controller
+# Read defaults if they are present
+[ -r /etc/naro/default/system-monitors ] && \
+  . /etc/naro/default/system-monitors
+
+# Exit if daemon shall not run at boot time
+[ "$RUN" = "yes" ] || exit 0
+
+NAME=system_monitors
 PIDFILE=$HOME/.ros/$NAME.pid
 DAEMON=/opt/ros/$ROS_DISTRIBUTION/bin/roslaunch
-DAEMON_ARGS="--pid=$PIDFILE --wait naro_fin_ctrl fin_controller.launch"
+DAEMON_ARGS="--pid=$PIDFILE --wait naro_diagnostics system_monitors.launch"
 
 # Exit if daemon is not installed
 [ -x "$DAEMON" ] || exit 0

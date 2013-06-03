@@ -3,5 +3,32 @@ server:
     name: smc_server
   usc:
     name: usc_server
+model:
+  gravitational_acceleration: 9.80665
+  fluid:
+    density: 1000.0
+  platform:
+    mass: 10.0
+    area: 0.1
+    volume: 0.012
+    drag_coefficient: 1.0
+filter:
+  initial_state:
+    noise:
+      depth: 0.02
+      velocity: 0.01
+      acceleration: 0.01
+  process:
+    noise:
+      depth: 0.01
+      velocity: 0.01
+      acceleration: 0.1
+  observation:
+    noise:
+      depth: 0.02
 controller:
   frequency: 5.0
+  gain:
+    proportional: 1.0
+    differential: 0.0
+    integral: 0.0

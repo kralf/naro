@@ -13,7 +13,8 @@ remake_project(
   LICENSE "GNU Lesser General Public License (LGPL)"
   PREFIX naro-
   INSTALL /usr
-  SCRIPT_DESTINATION /etc/init.d
+  SCRIPT_DESTINATION /etc
+  CONFIGURATION_DESTINATION /etc/naro
 )
 
 remake_pack_deb(
