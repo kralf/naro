@@ -8,4 +8,4 @@ SUBSYSTEM=="platform", KERNEL=="bcm2708_i2c.[0-9]*", RUN+="/sbin/modprobe i2c_bc
 SUBSYSTEM=="i2c", ACTION=="add", RUN+="/sbin/modprobe i2c-dev"
 
 # BlinkM smart LED device permissions and symlinks
-SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", MODE="0664", GROUP="plugdev", SYMLINK+="naro/led%n"
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c-1", MODE="0664", GROUP="plugdev", SYMLINK+="naro/blinkm"
