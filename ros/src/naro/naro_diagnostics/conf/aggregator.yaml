@@ -9,30 +9,42 @@ analyzers:
         type: GenericAnalyzer
         path: Depth Sensor
         find_and_remove_prefix: 'depth_sensor:'
-  motors:
+  actuators:
     type: AnalyzerGroup
-    path: Motors
+    path: Actuators
     analyzers:
-      smc_server:
-        type: GenericAnalyzer
-        path: Simple Motor Controller
-        find_and_remove_prefix: 'smc_server:'
-      usc_server:
-        type: GenericAnalyzer
-        path: USB Servo Controller
-        find_and_remove_prefix: 'usc_server:'
-  controllers:
-    type: AnalyzerGroup
-    path: Controllers
-    analyzers:
-      dive_controller:
-        type: GenericAnalyzer
-        path: Dive Controller
-        find_and_remove_prefix: 'dive_controller:'
-      fin_controller:
-        type: GenericAnalyzer
-        path: Fin Controller
-        find_and_remove_prefix: 'fin_controller:'
+      lights:
+        type: AnalyzerGroup
+        path: Lights
+        analyzers:
+          blinkm_server:
+            type: GenericAnalyzer
+            path: Smart LEDs
+            find_and_remove_prefix: 'blinkm_server:'
+      motors:
+        type: AnalyzerGroup
+        path: Motors
+        analyzers:
+          smc_server:
+            type: GenericAnalyzer
+            path: Simple Motor Controller
+            find_and_remove_prefix: 'smc_server:'
+          usc_server:
+            type: GenericAnalyzer
+            path: USB Servo Controller
+            find_and_remove_prefix: 'usc_server:'
+      controllers:
+        type: AnalyzerGroup
+        path: Controllers
+        analyzers:
+          dive_controller:
+            type: GenericAnalyzer
+            path: Dive Controller
+            find_and_remove_prefix: 'dive_controller:'
+          fin_controller:
+            type: GenericAnalyzer
+            path: Fin Controller
+            find_and_remove_prefix: 'fin_controller:'
   system:
     type: AnalyzerGroup
     path: System

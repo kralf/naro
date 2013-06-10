@@ -15,6 +15,14 @@ remake_ros_package(
 )
 
 remake_ros_package(
+  naro_blinkm_srvs
+  DEPENDS roscpp rospy diagnostic_updater
+  EXTRA_BUILD_DEPENDS libblinkm-dev
+  EXTRA_RUN_DEPENDS libblinkm
+  DESCRIPTION "smart LED services"
+)
+
+remake_ros_package(
   naro_sensor_srvs
   DEPENDS roscpp rospy diagnostic_updater naro_usc_srvs
   DESCRIPTION "sensor services"
@@ -23,7 +31,7 @@ remake_ros_package(
 remake_ros_package(
   naro_dive_ctrl
   DEPENDS roscpp rospy diagnostic_updater naro_smc_srvs naro_usc_srvs
-  EXTRA_BUILD_DEPENDS eigen3
+  EXTRA_BUILD_DEPENDS libeigen3-dev
   DESCRIPTION "dive controller"
 )
 

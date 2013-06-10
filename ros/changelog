@@ -1,3 +1,11 @@
+naro-ros (0.1-11) lucid; urgency=low
+
+  * Added naro_blinkm_srvs package
+  * Adapted diagnostic aggregrator configuration to group motors,
+    controllers, and LEDs under actuators
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Mon, 10 Jun 2013 13:42:00 +0100
+
 naro-ros (0.1-10) lucid; urgency=low
 
   * Efficiency fixes:

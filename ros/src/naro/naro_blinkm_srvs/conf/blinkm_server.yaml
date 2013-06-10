@@ -1,0 +1,5 @@
+connection:
+  retry: 0.1
+device:
+  address: /dev/naro/blinkm
+  timeout: 0.1
