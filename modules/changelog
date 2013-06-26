@@ -1,0 +1,6 @@
+naro-kernel-source (0.1-1) precise; urgency=low
+
+  * Initial commit with project structure
+  * Added xpad joystick driver module
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 26 Jun 2013 10:25:00 +0100
