@@ -71,4 +71,13 @@ if [ -x /etc/init.d/naro-diagnostic-aggregator ]; then
   fi
 fi
 
+if [ -x /etc/init.d/naro-joy-control ]; then
+  update-rc.d naro-joy-control start 99 2 3 4 5 . stop 1 0 1 6 . > /dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-joy-control restart
+  else
+    /etc/init.d/naro-joy-control restart
+  fi
+fi
+
 exit 0

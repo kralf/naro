@@ -58,7 +58,15 @@ case "$1" in
         /etc/init.d/naro-diagnostic-aggregator stop
       fi
     fi
-    ;;
+
+    if [ -x /etc/init.d/naro-joy-control ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-naro-joy-control stop
+      else
+        /etc/init.d/naro-naro-joy-control stop
+      fi
+    fi
+  ;;
   upgrade)
     ;;
   failed-upgrade)
