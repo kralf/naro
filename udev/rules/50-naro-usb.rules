@@ -4,3 +4,6 @@
 # Pololu controller device permissions and symlinks
 SUBSYSTEM=="usb", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="008a", MODE="0664", GROUP="plugdev", SYMLINK+="naro/usc"
 SUBSYSTEM=="usb", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="00a1", MODE="0664", GROUP="plugdev", SYMLINK+="naro/smc"
+
+# Logitech gamepad symlinks
+SUBSYSTEM=="usb", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21f", SYMLINK+="naro/joystick"

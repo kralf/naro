@@ -1,3 +1,9 @@
+naro-udev (0.1-6) lucid; urgency=low
+
+  * Added Logitech gamepad rule
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 26 Jun 2013 13:54:00 +0100
+
 naro-udev (0.1-5) lucid; urgency=low
 
   * Revised BlinkM symlink naming
