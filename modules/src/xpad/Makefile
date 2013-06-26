@@ -25,6 +25,7 @@ module: xpad.c
 install: module-install
 
 module-install: xpad.ko
+	mkdir -p $(KERNELMODS)/kernel/drivers/input/joystick
 	install -c -o root -g root -m 644 xpad.ko \
 	$(KERNELMODS)/kernel/drivers/input/joystick
 	$(DEPMOD) -ae

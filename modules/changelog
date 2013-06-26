@@ -1,3 +1,12 @@
+naro-kernel-source (0.1-2) precise; urgency=low
+
+  * Fixed Makefile and dkms.conf, addressing post-installation problems on
+    the Raspberry Pi
+  * Kernel module still does not install properly due to missing kernel
+    headers on the Raspberry Pi
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 26 Jun 2013 13:58:00 +0100
+
 naro-kernel-source (0.1-1) precise; urgency=low
 
   * Initial commit with project structure

@@ -1,7 +1,7 @@
 PACKAGE_NAME="${REMAKE_PROJECT_FILENAME}"
 PACKAGE_VERSION="${REMAKE_PROJECT_FILENAME_VERSION}"
 CLEAN="make clean"
-BUILT_MODULE_NAME[0]="cpc-usb"
+BUILT_MODULE_NAME[0]="xpad"
 MAKE[0]="make module KERNELDIR=/lib/modules/$kernelver/build KERNELSRC=$kernel_source_dir"
-DEST_MODULE_LOCATION[0]="/kernel/drivers/usb/misc"
+DEST_MODULE_LOCATION[0]="/kernel/drivers/input/joystick"
 REMAKE_INITRD=yes
