@@ -5,6 +5,7 @@ if [ "$1" = "purge" ] ; then
   update-rc.d naro-roscore remove > /dev/null
   update-rc.d naro-smc-server remove > /dev/null
   update-rc.d naro-usc-server remove > /dev/null
+  update-rc.d naro-blinkm-server remove > /dev/null
   update-rc.d naro-depth-sensor remove > /dev/null
   update-rc.d naro-fin-controller remove > /dev/null
   update-rc.d naro-system-monitors remove > /dev/null

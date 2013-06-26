@@ -35,6 +35,15 @@ if [ -x /etc/init.d/naro-usc-server ]; then
   fi
 fi
 
+if [ -x /etc/init.d/naro-blinkm-server ]; then
+  update-rc.d naro-blinkm-server start 90 2 3 4 5 . stop 10 0 1 6 . > /dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-blinkm-server restart
+  else
+    /etc/init.d/naro-blinkm-server restart
+  fi
+fi
+
 if [ -x /etc/init.d/naro-depth-sensor ]; then
   update-rc.d naro-depth-sensor start 91 2 3 4 5 . stop 9 0 1 6 . > /dev/null
   if [ -x /usr/sbin/invoke-rc.d ]; then

@@ -1,0 +1,6 @@
+# This configuration file contains the default parameters of the Naro Nanins
+# smart LED server startup script. Make sure to restart the corresponding
+# service for changed parameters to take effect.
+
+# Set RUN=yes to start the smart LED server at boot time.
+RUN=yes

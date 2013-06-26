@@ -27,6 +27,14 @@ case "$1" in
       fi
     fi
 
+    if [ -x /etc/init.d/naro-blinkm-server ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-blinkm-server stop
+      else
+        /etc/init.d/naro-blinkm-server stop
+      fi
+    fi
+
     if [ -x /etc/init.d/naro-depth-sensor ]; then
       if [ -x /usr/sbin/invoke-rc.d ]; then
         invoke-rc.d naro-depth-sensor stop
