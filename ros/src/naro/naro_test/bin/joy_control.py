@@ -160,11 +160,11 @@ class JoyControl(object):
       phase[3] = -90*math.pi/180.0
 
       # top pitch
-      offset[7] = joy.axes[3]*20.0*math.pi/180.0
+      offset[5] = -joy.axes[3]*20.0*math.pi/180.0
 
       # back flap
-      amplitude[4] = joy.axes[1]*20.0*math.pi/180.0
-      offset[4] = joy.axes[3]*30.0*math.pi/180.0
+      amplitude[6] = joy.axes[1]*20.0*math.pi/180.0
+      offset[6] = joy.axes[3]*30.0*math.pi/180.0
       
       self.setCommands(servos, frequency, amplitude, phase, offset)
 

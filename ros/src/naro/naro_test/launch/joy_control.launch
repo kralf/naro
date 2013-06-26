@@ -2,7 +2,7 @@
   <node name="joy_node" pkg="joy" type="joy_node">
     <param name="dev" value="/dev/naro/joystick"/>
   </node>
-  <node name="joy_control" pkg="naro_test" type="joy_control" output="screen">
+  <node name="joy_control" pkg="naro_test" type="joy_control.py" output="screen">
     <rosparam command="load" file="$(find naro_test)/etc/joy_control.yaml"/>
   </node>
 </launch>

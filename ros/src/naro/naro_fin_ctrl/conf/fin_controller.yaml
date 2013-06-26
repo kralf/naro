@@ -5,7 +5,7 @@ server:
     retry: 0.1
 controller:
   max_servos: 8
-  frequency: 50.0
+  frequency: 25.0
   gain:
     frequency: 0.9
     amplitude: 0.9
