@@ -1,3 +1,9 @@
+naro-init (0.1-6) lucid; urgency=low
+
+  * Added missing configuration file for joystick control startup script
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 26 Jun 2013 14:57:00 +0100
+
 naro-init (0.1-5) lucid; urgency=low
 
   * Added startup script for joystick control node (optional)
