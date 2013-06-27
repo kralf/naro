@@ -44,7 +44,7 @@ class JoyControl(object):
       0: [0.0, 1.0, 0.0],
       1: [1.0, 0.0, 0.0],
       2: [0.0, 0.0, 1.0],
-      3: [1.0, 1.0, 0.0]
+      3: [1.0, 0.3, 0.0]
     }
 
     rospy.Subscriber("/joy", Joy, self.receiveJoy, queue_size = 1)
@@ -85,14 +85,14 @@ class JoyControl(object):
     except rospy.ServiceException, exception:
       print "SetSpeed request failed: %s" % exception
 
-  def setColor(self, color, speed = 1.0):
-    rospy.wait_for_service(self.blinkmServerName+"/fade_to_color")
+  def setColor(self, color):
+    rospy.wait_for_service(self.blinkmServerName+"/set_color")
     try:
-      request = rospy.ServiceProxy(self.blinkmServerName+"/fade_to_color",
-        FadeToColor)
-      request(color, speed)
+      request = rospy.ServiceProxy(self.blinkmServerName+"/set_color",
+        SetColor)
+      request(color)
     except rospy.ServiceException, exception:
-      print "FadeToColor request failed: %s" % exception
+      print "SetColor request failed: %s" % exception
 
   def getHomes(self, servos):
     rospy.wait_for_service(self.finServerName+"/get_homes")
