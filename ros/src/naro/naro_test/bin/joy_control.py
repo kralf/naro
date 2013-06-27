@@ -24,6 +24,7 @@ import sys, math, roslib, rospy
 from sensor_msgs.msg import *
 from naro_smc_srvs.srv import *
 from naro_usc_srvs.srv import *
+from naro_blinkm_srvs.srv import *
 from naro_fin_ctrl.srv import *
 
 class JoyControl(object):
@@ -34,9 +35,17 @@ class JoyControl(object):
 
     self.smcServerName = "/smc_server"
     self.uscServerName = "/usc_server"
+    self.blinkmServerName = "/blinkm_server"
     self.finServerName = "/fin_controller"
 
     self.getParameters()
+    
+    self.colors = {
+      0: [1.0, 0.0, 0.0],
+      1: [0.0, 1.0, 0.0],
+      2: [0.0, 0.0, 1.0],
+      3: [1.0, 1.0, 0.0]
+    }
 
     rospy.Subscriber("/joy", Joy, self.receiveJoy, queue_size = 1)
     self.start()
@@ -46,6 +55,8 @@ class JoyControl(object):
       self.smcServerName)
     self.uscServerName = rospy.get_param("servers/usc/name",
       self.uscServerName)
+    self.blinkmServerName = rospy.get_param("servers/blinkm/name",
+      self.blinkmServerName)
     self.finServerName = rospy.get_param("servers/fin/name",
       self.finServerName)
 
@@ -73,6 +84,15 @@ class JoyControl(object):
       request(speed)
     except rospy.ServiceException, exception:
       print "SetSpeed request failed: %s" % exception
+
+  def setColor(self, color, speed = 1.0):
+    rospy.wait_for_service(self.blinkmServerName+"/fade_to_color")
+    try:
+      request = rospy.ServiceProxy(self.blinkmServerName+"/fade_to_color",
+        FadeToColor)
+      request(color, speed)
+    except rospy.ServiceException, exception:
+      print "FadeToColor request failed: %s" % exception
 
   def getHomes(self, servos):
     rospy.wait_for_service(self.finServerName+"/get_homes")
@@ -127,13 +147,16 @@ class JoyControl(object):
       button = -1
 
     if button >= 0 and button < 4:
-      servos = [2*button, 2*button+1]
-      home = self.getHomes(servos)
+      if joy.buttons[5]:
+        self.setColor(self.colors[button])
+      else:
+        servos = [2*button, 2*button+1]
+        home = self.getHomes(servos)
 
-      home = [home[0]+joy.axes[1]*1.0*math.pi/180.0,
-        home[1]+joy.axes[4]*1.0*math.pi/180.0]
+        home = [home[0]+joy.axes[1]*1.0*math.pi/180.0,
+          home[1]+joy.axes[4]*1.0*math.pi/180.0]
 
-      self.setHomes(servos, home)
+        self.setHomes(servos, home)
     else:
       servos = range(8)
       frequency = [2.0]*len(servos)

@@ -3,3 +3,7 @@ connection:
 device:
   address: /dev/naro/blinkm
   timeout: 0.1
+led:
+  startup:
+    color: [1.0, 1.0, 1.0]
+    speed: 1.0

@@ -26,6 +26,7 @@
 #include <setfadespeed.h>
 #include <setstartupparameters.h>
 #include <fadetocolor.h>
+#include <stopscript.h>
 
 #include <ros/ros.h>
 #include <diagnostic_updater/diagnostic_updater.h>
@@ -38,6 +39,8 @@ using namespace naro_blinkm_srvs;
 double connectionRetry = 0.1;
 std::string deviceAddress = "/dev/naro/blinkm";
 double deviceTimeout = 0.1;
+float ledStartupColor[] = {1.0f, 1.0f, 1.0f};
+float ledStartupSpeed = 1.0f;
 
 boost::shared_ptr<diagnostic_updater::Updater> updater;
 
@@ -52,14 +55,21 @@ template <typename T> inline T clamp(const T& x,
   return x < min ? min : (x > max ? max : x);
 }
 
-inline unsigned char secsToTicks(float seconds) {
-  return clamp<float>(roundf(seconds/30.0f), 1.0f, 255.0f);
+inline unsigned char speedToUnits(float speed) {
+  return clamp<float>(roundf(speed*255.0f/30.0f), 1.0f, 255.0f);
 }
 
 void getParameters(const ros::NodeHandle& node) {
   node.param<double>("connection/retry", connectionRetry, connectionRetry);
   node.param<std::string>("device/address", deviceAddress, deviceAddress);
   node.param<double>("device/timeout", deviceTimeout, deviceTimeout);
+  XmlRpc::XmlRpcValue ledStartupColor;
+  node.getParam("led/startup/color", ledStartupColor);
+  for (int i = 0; i < 3; ++i)
+    ::ledStartupColor[i] = static_cast<double>(ledStartupColor[i]);
+  double ledStartupSpeed = ::ledStartupSpeed;
+  node.param<double>("led/startup/speed", ledStartupSpeed, ledStartupSpeed);
+  ::ledStartupSpeed = ledStartupSpeed;
 }
 
 void diagnoseDevice(diagnostic_updater::DiagnosticStatusWrapper &status) {
@@ -100,6 +110,16 @@ void diagnoseTransfer(diagnostic_updater::DiagnosticStatusWrapper &status) {
       "Transfer to BlinkM device failed: No connection.");
 }
 
+void stopStartupScript() {
+  try {
+    BlinkM::StopScript stopScriptRequest;
+    device->send(stopScriptRequest);
+  }
+  catch (const BlinkM::Exception& exception) {
+    ROS_WARN("Failed to stop startup script: %s", exception.what());
+  }
+}
+
 void setStartupParameters() {
   try {
     BlinkM::SetStartupParameters setStartupParametersRequest(
@@ -108,6 +128,22 @@ void setStartupParameters() {
   }
   catch (const BlinkM::Exception& exception) {
     ROS_WARN("Failed to set device startup parameters: %s", exception.what());
+  }
+}
+
+void fadeToStartupColor() {
+  try {
+    BlinkM::SetFadeSpeed setFadeSpeedRequest(speedToUnits(ledStartupSpeed));
+    BlinkM::FadeToColor fadeToColorRequest(BlinkM::Color::Rgb(
+      clamp<float>(ledStartupColor[0], 0.0f, 1.0f),
+      clamp<float>(ledStartupColor[1], 0.0f, 1.0f),
+      clamp<float>(ledStartupColor[2], 0.0f, 1.0f)));
+
+    device->send(setFadeSpeedRequest);
+    device->send(fadeToColorRequest);
+  }
+  catch (const BlinkM::Exception& exception) {
+    ROS_WARN("Failed to fade to device startup color: %s", exception.what());
   }
 }
 
@@ -124,7 +160,9 @@ bool connect() {
     ROS_INFO("BlinkM device connected at %s.",
       device->getAdapter().getAddress().c_str());
 
+    stopStartupScript();
     setStartupParameters();
+    fadeToStartupColor();
 
     return true;
   }
@@ -184,8 +222,8 @@ bool setColor(SetColor::Request& request, SetColor::Response& response) {
 
 bool fadeToColor(FadeToColor::Request& request, FadeToColor::Response&
     response) {
-  BlinkM::SetFadeSpeed setFadeSpeedRequest(secsToTicks(request.time));
-  BlinkM::SetColor fadeToColorRequest(BlinkM::Color::Rgb(
+  BlinkM::SetFadeSpeed setFadeSpeedRequest(speedToUnits(request.speed));
+  BlinkM::FadeToColor fadeToColorRequest(BlinkM::Color::Rgb(
     clamp<float>(request.rgb[0], 0.0f, 1.0f),
     clamp<float>(request.rgb[1], 0.0f, 1.0f),
     clamp<float>(request.rgb[2], 0.0f, 1.0f)));

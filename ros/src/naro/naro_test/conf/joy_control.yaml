@@ -3,5 +3,7 @@ servers:
     name: smc_server
   usc:
     name: usc_server
+  blinkm:
+    name: blinkm_server
   fin:
     name: fin_controller
