@@ -7,3 +7,6 @@ led:
   startup:
     color: [1.0, 1.0, 1.0]
     speed: 1.0
+  shutdown:
+    color: [0.0, 0.0, 0.0]
+    speed: 1.0

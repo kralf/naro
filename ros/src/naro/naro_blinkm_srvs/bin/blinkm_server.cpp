@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include <fstream>
+#include <signal.h>
 
 #include <device.h>
 #include <getfirmwareversion.h>
@@ -41,6 +42,8 @@ std::string deviceAddress = "/dev/naro/blinkm";
 double deviceTimeout = 0.1;
 float ledStartupColor[] = {1.0f, 1.0f, 1.0f};
 float ledStartupSpeed = 1.0f;
+float ledShutdownColor[] = {0.0f, 0.0f, 0.0f};
+float ledShutdownSpeed = 1.0f;
 
 boost::shared_ptr<diagnostic_updater::Updater> updater;
 
@@ -63,13 +66,29 @@ void getParameters(const ros::NodeHandle& node) {
   node.param<double>("connection/retry", connectionRetry, connectionRetry);
   node.param<std::string>("device/address", deviceAddress, deviceAddress);
   node.param<double>("device/timeout", deviceTimeout, deviceTimeout);
+  
   XmlRpc::XmlRpcValue ledStartupColor;
   node.getParam("led/startup/color", ledStartupColor);
-  for (int i = 0; i < 3; ++i)
-    ::ledStartupColor[i] = static_cast<double>(ledStartupColor[i]);
+  if ((ledStartupColor.getType() == XmlRpc::XmlRpcValue::TypeArray) &&
+      (ledStartupColor.size() == 3)) {
+    for (int i = 0; i < 3; ++i)
+      ::ledStartupColor[i] = static_cast<double>(ledStartupColor[i]);
+  }
   double ledStartupSpeed = ::ledStartupSpeed;
   node.param<double>("led/startup/speed", ledStartupSpeed, ledStartupSpeed);
   ::ledStartupSpeed = ledStartupSpeed;
+
+  XmlRpc::XmlRpcValue ledShutdownColor;
+  node.getParam("led/shutdown/color", ledShutdownColor);
+  if ((ledShutdownColor.getType() == XmlRpc::XmlRpcValue::TypeArray) &&
+      (ledShutdownColor.size() == 3)) {
+    for (int i = 0; i < 3; ++i)
+      ::ledShutdownColor[i] = static_cast<double>(ledShutdownColor[i]);
+  }
+  double ledShutdownSpeed = ::ledShutdownSpeed;
+  node.param<double>("led/shutdown/speed", ledShutdownSpeed, ledShutdownSpeed);
+  ::ledShutdownSpeed = ledShutdownSpeed;
+
 }
 
 void diagnoseDevice(diagnostic_updater::DiagnosticStatusWrapper &status) {
@@ -147,6 +166,22 @@ void fadeToStartupColor() {
   }
 }
 
+void fadeToShutdownColor() {
+  try {
+    BlinkM::SetFadeSpeed setFadeSpeedRequest(speedToUnits(ledShutdownSpeed));
+    BlinkM::FadeToColor fadeToColorRequest(BlinkM::Color::Rgb(
+      clamp<float>(ledShutdownColor[0], 0.0f, 1.0f),
+      clamp<float>(ledShutdownColor[1], 0.0f, 1.0f),
+      clamp<float>(ledShutdownColor[2], 0.0f, 1.0f)));
+
+    device->send(setFadeSpeedRequest);
+    device->send(fadeToColorRequest);
+  }
+  catch (const BlinkM::Exception& exception) {
+    ROS_WARN("Failed to fade to device shutdown color: %s", exception.what());
+  }
+}
+
 bool connect() {
   try {
     if (device.isNull())
@@ -178,6 +213,8 @@ bool connect() {
 
 void disconnect() {
   if (!device.isNull() && device->isConnected()) {
+    fadeToShutdownColor();
+    
     try {
       device->disconnect();
       updater->force_update();
@@ -188,6 +225,11 @@ void disconnect() {
       ROS_FATAL("Disonnecting device failed: %s", exception.what());
     }
   }
+}
+
+void shutdown(int signal) {
+  fadeToShutdownColor();
+  ros::shutdown();
 }
 
 bool transfer(BlinkM::Request& request, const std::string& name) {
@@ -250,6 +292,8 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "blinkm_server");
   ros::NodeHandle node("~");
 
+  signal(SIGINT, shutdown);
+  
   updater.reset(new diagnostic_updater::Updater());
   updater->setHardwareID("none");
 

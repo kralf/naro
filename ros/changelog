@@ -1,3 +1,9 @@
+naro-ros (0.1-16) lucid; urgency=low
+
+  * Implemented BlinkM server shutdown procedure
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 27 Jun 2013 09:11:00 +0100
+
 naro-ros (0.1-15) lucid; urgency=low
 
   * Revised BlinkM server FadeToColor request
