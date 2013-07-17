@@ -24,6 +24,7 @@ if(ROS_DISTRIBUTION STRLESS "groovy")
   remake_ros_distribute_deb(
     DISTRIBUTION lucid
     SECTION misc
+    ARCH "i386 amd64"
     UPLOAD ppa:kralf/naro
     PASS CMAKE_BUILD_TYPE ${GIT_REVISION_VAR}
     FORCE_CONSISTENCY
@@ -33,6 +34,7 @@ endif(ROS_DISTRIBUTION STRLESS "groovy")
 remake_ros_distribute_deb(
   DISTRIBUTION precise
   SECTION misc
+  ARCH "i386 amd64"
   UPLOAD ppa:kralf/naro
   PASS CMAKE_BUILD_TYPE ${GIT_REVISION_VAR}
   FORCE_CONSISTENCY
