@@ -1,3 +1,9 @@
+naro-ros (0.1-20) lucid; urgency=low
+
+  * Added missing build dependency on remake
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 17 Jul 2013 15:26:00 +0100
+
 naro-ros (0.1-19) lucid; urgency=low
 
   * Limited architecture for release builds (Naro PPA also builds armel
