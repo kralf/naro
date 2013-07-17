@@ -1,3 +1,9 @@
+naro-ros (0.1-18) lucid; urgency=low
+
+  * Release distributions
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 17 Jul 2013 14:01:00 +0100
+
 naro-ros (0.1-17) lucid; urgency=low
 
   * Revised joy_control script for demonstration
