@@ -1,0 +1,15 @@
+# Naro "Nanins" USB auto-configuration rules for udev.
+# See udev(7) for syntax.
+
+# Pololu controller device permissions and symlinks
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="008a", MODE="0664", GROUP="plugdev", SYMLINK+="naro/usc"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="00a1", MODE="0664", GROUP="plugdev", SYMLINK+="naro/smc"
+
+# Logitech gamepad symlinks
+SUBSYSTEM=="input", KERNEL=="js[0-9]*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21f", SYMLINK+="naro/joystick"
+
+# 4-joystick setup
+SUBSYSTEM=="input", KERNEL=="js[0-9]*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21f", ATTRS{serial}=="B1979DA4", SYMLINK+="naro/joysticks/bruce"
+SUBSYSTEM=="input", KERNEL=="js[0-9]*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21f", ATTRS{serial}=="C10097C4", SYMLINK+="naro/joysticks/blubbel"
+SUBSYSTEM=="input", KERNEL=="js[0-9]*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21f", ATTRS{serial}=="9F809A4B", SYMLINK+="naro/joysticks/marlin"
+SUBSYSTEM=="input", KERNEL=="js[0-9]*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21f", ATTRS{serial}=="1CF39919", SYMLINK+="naro/joysticks/sushi"

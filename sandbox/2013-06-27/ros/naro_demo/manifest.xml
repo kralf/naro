@@ -1,0 +1,25 @@
+<package>
+  <description brief="Naro Nanins ROS bindings (demo tools)"/>
+  <author>Ralf Kaestner</author>
+  <maintainer email="ralf.kaestner@gmail.com">Ralf Kaestner</maintainer>
+  <license>GNU Lesser General Public License (LGPL)</license>
+  <url>http://github.com/kralf/naro</url>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="std_msgs"/>
+  <depend package="naro_smc_srvs"/>
+  <depend package="naro_usc_srvs"/>
+  <depend package="naro_sensor_srvs"/>
+  <depend package="naro_fin_ctrl"/>
+  <depend package="naro_dive_ctrl"/>
+  <depend package="rosbash"/>
+  <depend package="rosbash"/>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="std_msgs"/>
+  <depend package="naro_smc_srvs"/>
+  <depend package="naro_usc_srvs"/>
+  <depend package="naro_sensor_srvs"/>
+  <depend package="naro_fin_ctrl"/>
+  <depend package="naro_dive_ctrl"/>
+</package>
