@@ -1,3 +1,9 @@
+naro-udev (0.1-8) lucid; urgency=low
+
+  * Revised release distributions
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 17 Jul 2013 14:50:00 +0100
+
 naro-udev (0.1-7) lucid; urgency=low
 
   * Fixed Logitech gamepad rule (to match input subsystem)
