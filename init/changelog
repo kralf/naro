@@ -1,3 +1,9 @@
+naro-init (0.1-8) lucid; urgency=low
+
+  * Revised release distributions
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 17 Jul 2013 14:52:00 +0100
+
 naro-init (0.1-7) lucid; urgency=low
 
   * Added startup script for smart LED server

@@ -24,9 +24,15 @@ remake_pack_deb(
 )
 
 remake_distribute_deb(
+  DISTRIBUTION lucid
+  SECTION admin
+  UPLOAD ppa:kralf/naro
+  DEPENDS lsb-base base-files naro-ros remake
+  PASS CMAKE_BUILD_TYPE NARO_INIT_GIT_REVISION
+)
+
+remake_distribute_deb(
   DISTRIBUTION precise
-  ALIAS raspbian
-  ARCH armhf
   SECTION admin
   UPLOAD ppa:kralf/naro
   DEPENDS lsb-base base-files naro-ros remake
