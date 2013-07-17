@@ -1,5 +1,5 @@
 <package>
-  <description brief="Naro Nanins ROS bindings (demo tools)"/>
+  <description brief="Naro Nanins ROS bindings (sandbox)"/>
   <author>Ralf Kaestner</author>
   <maintainer email="ralf.kaestner@gmail.com">Ralf Kaestner</maintainer>
   <license>GNU Lesser General Public License (LGPL)</license>

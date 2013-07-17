@@ -20,11 +20,11 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-NAME=bruce
+NAME=blubbel
 
 source /opt/ros/fuerte/setup.bash
 
 export ROS_MASTER_URI=http://$NAME:11311
-export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:/home/kralf/git/github/naro/demo/2013-06-27/ros
+export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:/home/kralf/git/github/naro/sandbox/2013-06-27/ros
 
-roslaunch naro_demo ${NAME}_joy_control.launch
+roslaunch naro_sandbox ${NAME}_joy_control.launch

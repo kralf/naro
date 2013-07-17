@@ -1,0 +1,8 @@
+<launch>
+  <node name="joy_node" pkg="joy" type="joy_node">
+    <param name="dev" value="/dev/naro/joysticks/bruce"/>
+  </node>
+  <node name="bruce_joy_control" pkg="naro_sandbox" type="bruce_joy_control.py" output="screen">
+    <rosparam command="load" file="$(find naro_sandbox)/etc/bruce_joy_control.yaml"/>
+  </node>
+</launch>

@@ -1,0 +1,8 @@
+<launch>
+  <node name="joy_node" pkg="joy" type="joy_node">
+    <param name="dev" value="/dev/naro/joysticks/sushi"/>
+  </node>
+  <node name="sushi_joy_control" pkg="naro_sandbox" type="sushi_joy_control.py" output="screen">
+    <rosparam command="load" file="$(find naro_sandbox)/etc/sushi_joy_control.yaml"/>
+  </node>
+</launch>

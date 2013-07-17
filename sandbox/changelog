@@ -1,3 +1,9 @@
+naro-sandbox (0.1-2) lucid; urgency=low
+
+  * Added 16 Jul 2013 fin configuration testing
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 17 Jul 2013 14:17:00 +0100
+
 naro-sandbox (0.1-1) lucid; urgency=low
 
   * Initial commit of sandbox
