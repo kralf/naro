@@ -1,3 +1,9 @@
+naro-ros (0.1-21) lucid; urgency=low
+
+  * Added pkg-config build dependency
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 18 Jul 2013 07:06:00 +0100
+
 naro-ros (0.1-20) lucid; urgency=low
 
   * Added missing build dependency on remake
