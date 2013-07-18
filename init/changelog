@@ -1,3 +1,10 @@
+naro-init (0.1-9) lucid; urgency=low
+
+  * Removed dependency on naro-ros (which is now named
+    naro-ros-${ROS_DISTRIBUTION})
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 18 Jul 2013 10:01:00 +0100
+
 naro-init (0.1-8) lucid; urgency=low
 
   * Revised release distributions

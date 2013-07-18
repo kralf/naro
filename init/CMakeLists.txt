@@ -19,7 +19,7 @@ remake_project(
 
 remake_pack_deb(
   ARCH all
-  DEPENDS lsb-base base-files naro-ros
+  DEPENDS lsb-base base-files
   EXTRA debian/*
 )
 
@@ -27,7 +27,7 @@ remake_distribute_deb(
   DISTRIBUTION lucid
   SECTION admin
   UPLOAD ppa:kralf/naro
-  DEPENDS lsb-base base-files naro-ros remake
+  DEPENDS lsb-base base-files remake
   PASS CMAKE_BUILD_TYPE NARO_INIT_GIT_REVISION
 )
 
@@ -35,6 +35,6 @@ remake_distribute_deb(
   DISTRIBUTION precise
   SECTION admin
   UPLOAD ppa:kralf/naro
-  DEPENDS lsb-base base-files naro-ros remake
+  DEPENDS lsb-base base-files remake
   PASS CMAKE_BUILD_TYPE NARO_INIT_GIT_REVISION
 )
