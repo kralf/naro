@@ -1,1 +1,1 @@
-remake_add_configurations(*.xml *.yaml)
+remake_add_configurations(*.yaml)
