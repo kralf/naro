@@ -45,6 +45,10 @@ analyzers:
             type: GenericAnalyzer
             path: Fin Controller
             find_and_remove_prefix: 'fin_controller:'
+          led_controller:
+            type: GenericAnalyzer
+            path: LED Controller
+            find_and_remove_prefix: 'led_controller:'
   system:
     type: AnalyzerGroup
     path: System

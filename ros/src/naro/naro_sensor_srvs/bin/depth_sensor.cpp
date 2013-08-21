@@ -176,13 +176,14 @@ bool getPressure(GetPressure::Request& request, GetPressure::Response&
 
 bool getDepth(GetDepth::Request& request, GetDepth::Response& response) {
   if (!filterReadings.empty())
-    response.raw = voltageToDepth(filterReadings.back())+depthOffset;
+    response.raw = fmaxf(0.0f, voltageToDepth(filterReadings.back())+
+      depthOffset);
   else
     response.raw = std::numeric_limits<float>::quiet_NaN();
 
   if (filterReadings.size() == filterWindowSize)
-    response.filtered = voltageToDepth(filterSumReadings/filterWindowSize)+
-      depthOffset;
+    response.filtered = fmaxf(0.0f, voltageToDepth(filterSumReadings/
+      filterWindowSize)+depthOffset);
   else
     response.filtered = std::numeric_limits<float>::quiet_NaN();
 
@@ -192,13 +193,13 @@ bool getDepth(GetDepth::Request& request, GetDepth::Response& response) {
 bool getElevation(GetElevation::Request& request, GetElevation::Response&
     response) {
   if (!filterReadings.empty())
-    response.raw = voltageToElevation(filterReadings.back());
+    response.raw = fmaxf(0.0f, voltageToElevation(filterReadings.back()));
   else
     response.raw = std::numeric_limits<float>::quiet_NaN();
 
   if (filterReadings.size() == filterWindowSize)
-    response.filtered = voltageToElevation(filterSumReadings/
-      filterWindowSize);
+    response.filtered = fmaxf(0.0f, voltageToElevation(filterSumReadings/
+      filterWindowSize));
   else
     response.filtered = std::numeric_limits<float>::quiet_NaN();
 

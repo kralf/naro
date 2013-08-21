@@ -397,8 +397,11 @@ bool kill(Kill::Request& request, Kill::Response& response) {
 bool setSpeed(SetSpeed::Request& request, SetSpeed::Response& response) {
   Pololu::Smc::Usb::SetSpeed setSpeedRequest(
     round(clamp<float>(request.speed, -1.0f, 1.0f)*3200.0f));
+  Pololu::Smc::Usb::ExitSafeStart startRequest;
 
   if (!transfer(setSpeedRequest, "SetSpeed"))
+    return false;
+  if (request.start && !transfer(startRequest, "ExitSafeStart"))
     return false;
 
   return true;

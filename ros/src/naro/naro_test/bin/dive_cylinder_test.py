@@ -23,19 +23,11 @@
 import sys, roslib, rospy
 from naro_smc_srvs.srv import *
 
-def start():
-  rospy.wait_for_service("/smc_server/start")
-  try:
-    request = rospy.ServiceProxy("/smc_server/start", Start)
-    request()
-  except rospy.ServiceException, exception:
-    print "Start request failed: %s" % exception
-
 def setSpeed(speed):
   rospy.wait_for_service("/smc_server/set_speed")
   try:
     request = rospy.ServiceProxy("/smc_server/set_speed", SetSpeed)
-    request(speed)
+    request(speed, True)
   except rospy.ServiceException, exception:
     print "SetSpeed request failed: %s" % exception
 
@@ -63,7 +55,6 @@ if __name__ == "__main__":
     sys.exit(0)
 
   for i in range(1, numCycles):
-    start()
     setSpeed(speed)
 
     if speed > 0:

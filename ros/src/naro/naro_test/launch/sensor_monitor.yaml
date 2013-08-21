@@ -1,0 +1,5 @@
+<launch>
+  <node name="sensor_monitor" pkg="naro_test" type="sensor_monitor" output="screen">
+    <rosparam command="load" file="$(find naro_test)/etc/sensor_monitor.yaml"/>
+  </node>
+</launch>

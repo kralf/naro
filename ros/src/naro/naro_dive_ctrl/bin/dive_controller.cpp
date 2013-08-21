@@ -18,9 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <fstream>
-
-#include <Eigen/Dense>
+#include <limits>
 
 #include <ros/ros.h>
 #include <diagnostic_updater/diagnostic_updater.h>
@@ -28,127 +26,100 @@
 
 #include <naro_smc_srvs/GetLimits.h>
 #include <naro_smc_srvs/SetSpeed.h>
-#include <naro_smc_srvs/Start.h>
-#include <naro_usc_srvs/GetInputs.h>
+#include <naro_sensor_srvs/GetDepth.h>
 
+#include "naro_dive_ctrl/GetEnabled.h"
 #include "naro_dive_ctrl/GetGains.h"
 #include "naro_dive_ctrl/GetCommand.h"
+#include "naro_dive_ctrl/GetError.h"
+#include "naro_dive_ctrl/Enable.h"
+#include "naro_dive_ctrl/Disable.h"
 #include "naro_dive_ctrl/Emerge.h"
 #include "naro_dive_ctrl/SetGains.h"
 #include "naro_dive_ctrl/SetCommand.h"
 
-using namespace Eigen;
-
 using namespace naro_dive_ctrl;
 using namespace naro_smc_srvs;
-using namespace naro_usc_srvs;
+using namespace naro_sensor_srvs;
 
 std::string smcServerName = "smc_server";
-std::string uscServerName = "usc_server";
+std::string sensorServerName = "depth_sensor";
+double connectionRetry = 0.1;
 float modelGravitationalAcceleration = 9.80665f;  // [m/s^2]
 float modelFluidDensity = 1000.0f;                // [kg/m^3]
 float modelPlatformMass = 10.0f;                  // [kg]
 float modelPlatformArea = 0.1f;                   // [m^2]
 float modelPlatformVolume = 0.012f;               // [m^3]
 float modelPlatformDragCoefficient = 1.0f;
-float filterInitialStateNoiseDepth = 0.02f;
-float filterInitialStateNoiseVelocity = 0.01f;
-float filterInitialStateNoiseAcceleration = 0.01f;
-float filterProcessNoiseDepth = 0.01f;
-float filterProcessNoiseVelocity = 0.01f;
-float filterProcessNoiseAcceleration = 0.1f;
-float filterObservationNoiseDepth = 0.02f;
+float modelActuatorMaxFlowRate = 20e-6f;          // [m^3/s]
+int actuatorLimitsMinInputChannel = 3;
+int actuatorLimitsMaxInputChannel = 2;
 double controllerFrequency = 5.0;
-float controllerGainProportional = 1.0f;
+float controllerToleranceDepth = 0.1f;             // [m]
+float controllerToleranceVelocity = 0.0f;          // [m/s^2]
+float controllerGainProportional = 1e-2f;
+float controllerGainIntegral = 1e-1f;
 float controllerGainDifferential = 0.0f;
-float controllerGainIntegral = 0.0f;
 
 boost::shared_ptr<diagnostic_updater::Updater> updater;
 boost::shared_ptr<diagnostic_updater::FrequencyStatus> diagnoseFrequency;
 
 ros::ServiceClient getLimitsClient;
-ros::ServiceClient startClient;
 ros::ServiceClient setSpeedClient;
-ros::ServiceClient getInputsClient;
+ros::ServiceClient getDepthClient;
 
+ros::ServiceServer getEnabledService;
 ros::ServiceServer getGainsService;
 ros::ServiceServer getCommandService;
+ros::ServiceServer getErrorService;
+ros::ServiceServer enableService;
+ros::ServiceServer disableService;
 ros::ServiceServer emergeService;
 ros::ServiceServer setGainsService;
 ros::ServiceServer setCommandService;
 
-/** Experimente:
-    Abtauchen auf 3.50m mit vollem Zylinder ca. 24s
-    Auftauchen von 3.50 mit leerem Zylinder ca. 17s
-  */
-
-class KalmanFilter {
+class Controller {
 public:
-  KalmanFilter() :
-    sigma_z(0.0f),
-    s_t(0.0f),
-    time(0.0) {
+  class Parameters {
+  public:
+    Parameters(float depth = 0.0f, float velocity = 0.0f) :
+      depth(depth),
+      velocity(velocity) {
+    };
+
+    float depth;
+    float velocity;
   };
 
-  void initialize(float z_0) {
-    I = Matrix<float, 3, 3>::Identity();
-    h = Matrix<float, 1, 3>::Zero();
-    Sigma_x = Matrix<float, 3, 3>::Zero();
-
-    F_t = Matrix<float, 3, 3>::Identity();
-    P_t = Matrix<float, 3, 3>::Zero();
-    k_t = Matrix<float, 3, 1>::Zero();
-    mu_t = Matrix<float, 3, 1>::Zero();
-    Sigma_t = Matrix<float, 3, 3>::Zero();
-
-    h(0, 0) = 1.0f;
-    Sigma_x(0, 0) = filterProcessNoiseDepth;
-    Sigma_x(1, 1) = filterProcessNoiseVelocity;
-    Sigma_x(2, 2) = filterProcessNoiseAcceleration;
-    sigma_z = filterObservationNoiseDepth;
-
-    mu_t(0, 0) = z_0;
-    Sigma_t(0, 0) = filterInitialStateNoiseDepth;
-    Sigma_t(1, 1) = filterInitialStateNoiseVelocity;
-    Sigma_t(2, 2) = filterInitialStateNoiseAcceleration;
-
-    time = ros::Time::now().toSec();
+  Controller(float lastError = std::numeric_limits<float>::quiet_NaN(),
+      float integralError = 0.0f) :
+    lastError(lastError),
+    integralError(integralError),
+    enabled(false) {
+  };
+  
+  Controller& reset() {
+    integralError = 0.0f;
+    lastError = std::numeric_limits<float>::quiet_NaN();
   };
 
-  void update(float z_t) {
-    double time = ros::Time::now().toSec();
-    float dt = time-this->time;
-
-    F_t(0, 1) = dt;
-    F_t(0, 2) = 0.5f*dt*dt;
-    F_t(1, 2) = dt;
-
-    P_t = F_t*Sigma_t*F_t.transpose()+Sigma_x;
-    s_t = h*P_t*h.transpose()+sigma_z;
-    k_t = P_t*h.transpose()*1.0f/s_t;
-    mu_t = F_t*mu_t+k_t*(z_t-h*F_t*mu_t);
-    Sigma_t = (I-k_t*h)*P_t;
-
-    this->time = time;
-  };
-
-  Matrix<float, 3, 3> I;
-  Matrix<float, 1, 3> h;
-  Matrix<float, 3, 3> Sigma_x;
-  float sigma_z;
-
-  Matrix<float, 3, 3> F_t;
-  Matrix<float, 3, 3> P_t;
-  Matrix<float, 3, 1> k_t;
-  Matrix<float, 3, 1> mu_t;
-  Matrix<float, 3, 3> Sigma_t;
-  float s_t;
-
-  double time;
+  bool enabled;
+  float lastError;
+  float integralError;
+  Parameters command;
+  Parameters actual;
 };
 
-float command = 0.0f;
+Controller controller;
+ros::Time lastTime;
 
+template <typename T> inline T clamp(T x, T min, T max) {
+  return x < min ? min : (x > max ? max : x);
+}
+
+/** Calculate the net force [N] acting on the platform for a given platform
+  * velocity [m/s]
+  */
 inline float velocityToForce(float velocity) {
   float gravitationalForce = modelPlatformMass*
     modelGravitationalAcceleration;
@@ -163,13 +134,23 @@ inline float velocityToForce(float velocity) {
     return gravitationalForce-buoyancyForce+dragForce;
 }
 
+/** Calculate the platform acceleration [m/s^2] for a given platform
+  * velocity [m/s]
+  */
 inline float velocityToAcceleration(float velocity) {
   return velocityToForce(velocity)/modelPlatformMass;
 }
 
+inline float outputToSpeed(float output) {
+  return clamp(output/modelActuatorMaxFlowRate, -1.0f, 1.0f);
+}
+
 void getParameters(const ros::NodeHandle& node) {
   node.param<std::string>("server/smc/name", smcServerName, smcServerName);
-  node.param<std::string>("server/usc/name", uscServerName, uscServerName);
+  node.param<std::string>("server/sensor/name", sensorServerName,
+    sensorServerName);
+  node.param<double>("server/connection/retry", connectionRetry,
+    connectionRetry);
 
   double modelGravitationalAcceleration = ::modelGravitationalAcceleration;
   node.param<double>("model/gravitational_acceleration",
@@ -195,51 +176,43 @@ void getParameters(const ros::NodeHandle& node) {
   node.param<double>("model/platform/drag_coefficient",
     modelPlatformDragCoefficient, modelPlatformDragCoefficient);
   ::modelPlatformDragCoefficient = modelPlatformDragCoefficient;
+  double modelActuatorMaxFlowRate = ::modelActuatorMaxFlowRate;
+  node.param<double>("model/actuator/max_flow_rate",
+    modelActuatorMaxFlowRate, modelActuatorMaxFlowRate);
+  ::modelActuatorMaxFlowRate = modelActuatorMaxFlowRate;
 
-  double filterInitialStateNoiseDepth = ::filterInitialStateNoiseDepth;
-  node.param<double>("filter/initial_state/noise/depth",
-    filterInitialStateNoiseDepth, filterInitialStateNoiseDepth);
-  ::filterInitialStateNoiseDepth = filterInitialStateNoiseDepth;
-  double filterInitialStateNoiseVelocity = ::filterInitialStateNoiseVelocity;
-  node.param<double>("filter/initial_state/noise/velocity",
-    filterInitialStateNoiseVelocity, filterInitialStateNoiseVelocity);
-  ::filterInitialStateNoiseVelocity = filterInitialStateNoiseVelocity;
-  double filterInitialStateNoiseAcceleration =
-    ::filterInitialStateNoiseAcceleration;
-  node.param<double>("filter/initial_state/noise/acceleration",
-    filterInitialStateNoiseAcceleration, filterInitialStateNoiseAcceleration);
-  ::filterInitialStateNoiseAcceleration = filterInitialStateNoiseAcceleration;
-  double filterProcessNoiseDepth = ::filterProcessNoiseDepth;
-  node.param<double>("filter/process/noise/depth",
-    filterProcessNoiseDepth, filterProcessNoiseDepth);
-  ::filterProcessNoiseDepth = filterProcessNoiseDepth;
-  double filterProcessNoiseVelocity = ::filterProcessNoiseVelocity;
-  node.param<double>("filter/process/noise/velocity",
-    filterProcessNoiseVelocity, filterProcessNoiseVelocity);
-  ::filterProcessNoiseVelocity = filterProcessNoiseVelocity;
-  double filterProcessNoiseAcceleration = ::filterProcessNoiseAcceleration;
-  node.param<double>("filter/process/noise/acceleration",
-    filterProcessNoiseAcceleration, filterProcessNoiseAcceleration);
-  ::filterProcessNoiseAcceleration = filterProcessNoiseAcceleration;
-  double filterObservationNoiseDepth = ::filterObservationNoiseDepth;
-  node.param<double>("filter/observation/noise/depth",
-    filterObservationNoiseDepth, filterObservationNoiseDepth);
-  ::filterObservationNoiseDepth = filterObservationNoiseDepth;
+  node.param<int>("actuator/limits/minimum/input_channel",
+    actuatorLimitsMinInputChannel, actuatorLimitsMinInputChannel);
+  node.param<int>("actuator/limits/maximum/input_channel",
+    actuatorLimitsMaxInputChannel, actuatorLimitsMaxInputChannel);
 
   node.param<double>("controller/frequency", controllerFrequency,
     controllerFrequency);
+  double controllerToleranceDepth = ::controllerToleranceDepth;
+  node.param<double>("controller/tolerance/depth",
+    controllerToleranceDepth, controllerToleranceDepth);
+  ::controllerToleranceDepth = controllerToleranceDepth;
+  double controllerToleranceVelocity = ::controllerToleranceVelocity;
+  node.param<double>("controller/tolerance/velocity",
+    controllerToleranceVelocity, controllerToleranceVelocity);
+  ::controllerToleranceVelocity = controllerToleranceVelocity;
   double controllerGainProportional = ::controllerGainProportional;
   node.param<double>("controller/gain/proportional",
     controllerGainProportional, controllerGainProportional);
   ::controllerGainProportional = controllerGainProportional;
-  double controllerGainDifferential = ::controllerGainDifferential;
-  node.param<double>("controller/gain/differential",
-    controllerGainDifferential, controllerGainDifferential);
-  ::controllerGainDifferential = controllerGainDifferential;
   double controllerGainIntegral = ::controllerGainIntegral;
   node.param<double>("controller/gain/integral",
     controllerGainIntegral, controllerGainIntegral);
   ::controllerGainIntegral = controllerGainIntegral;
+  double controllerGainDifferential = ::controllerGainDifferential;
+  node.param<double>("controller/gain/differential",
+    controllerGainDifferential, controllerGainDifferential);
+  ::controllerGainDifferential = controllerGainDifferential;
+}
+
+bool getEnabled(GetEnabled::Request& request, GetEnabled::Response& response) {
+  response.enabled = controller.enabled;
+  return true;
 }
 
 bool getGains(GetGains::Request& request, GetGains::Response& response) {
@@ -252,12 +225,47 @@ bool getGains(GetGains::Request& request, GetGains::Response& response) {
 
 bool getCommand(GetCommand::Request& request, GetCommand::Response&
     response) {
-  response.depth = command;
+  response.depth = controller.command.depth;
+  response.velocity = controller.command.velocity;
+  
+  return true;
+}
+
+bool getError(GetError::Request& request, GetError::Response& response) {
+  response.error = controller.lastError;
+  return true;
+}
+
+bool enable(Enable::Request& request, Enable::Response& response) {
+  controller.enabled = true;
+  return true;
+}
+
+bool disable(Disable::Request& request, Disable::Response& response) {
+  controller.enabled = false;
+  controller.reset();
+  lastTime.fromSec(0.0);
+  
   return true;
 }
 
 bool emerge(Emerge::Request& request, Emerge::Response& response) {
-  command = 0.0;
+  controller.enabled = false;
+  controller.reset();
+
+  GetLimits getLimits;
+  if (!getLimitsClient.call(getLimits))
+    return false;
+  
+  if (!(getLimits.response.limits & actuatorLimitsMinInputChannel)) {
+    SetSpeed setSpeed;
+  
+    setSpeed.request.speed = -1.0f;
+    setSpeed.request.start = true;
+    
+    return setSpeedClient.call(setSpeed);
+  }
+
   return true;
 }
 
@@ -265,14 +273,23 @@ bool setGains(SetGains::Request& request, SetGains::Response& response) {
   controllerGainProportional = request.proportional;
   controllerGainDifferential = request.differential;
   controllerGainIntegral = request.integral;
-
-  return true;
 }
 
 bool setCommand(SetCommand::Request& request, SetCommand::Response&
     response) {
-  command = request.depth;
+  controller.command.depth = request.depth;
+  controller.command.velocity = request.velocity;
+  
   return true;
+}
+
+void diagnoseConnections(diagnostic_updater::DiagnosticStatusWrapper &status) {
+  if (!getLimitsClient || !setSpeedClient || !getDepthClient)
+    status.summaryf(diagnostic_msgs::DiagnosticStatus::ERROR,
+      "Not all required services are connected.");
+  else
+    status.summaryf(diagnostic_msgs::DiagnosticStatus::OK,
+      "All required services are connected.");
 }
 
 void updateDiagnostics(const ros::TimerEvent& event) {
@@ -280,7 +297,94 @@ void updateDiagnostics(const ros::TimerEvent& event) {
 }
 
 void updateControl(const ros::TimerEvent& event) {
-  diagnoseFrequency->tick();
+  if (!controller.enabled) {
+    diagnoseFrequency->tick();
+    return;
+  }
+  
+  GetDepth getDepth;
+  GetLimits getLimits;
+  SetSpeed setSpeed;
+
+  if (!getDepthClient.call(getDepth) ||
+      (getDepth.response.filtered != getDepth.response.filtered))
+    return;
+
+  if (lastTime.isZero()) {
+    controller.actual.depth = getDepth.response.filtered;
+    lastTime = ros::Time::now();
+    
+    return;
+  }
+  
+  float dt = (ros::Time::now()-lastTime).toSec();
+  lastTime = ros::Time::now();
+
+  controller.actual.velocity = (getDepth.response.filtered-
+    controller.actual.depth)/dt;
+  controller.actual.depth = getDepth.response.filtered;
+
+  if (!getLimitsClient.call(getLimits))
+    return;
+  
+  /** On-off depth control with tolerances
+    */ 
+  float commandVelocity = 0.0f;
+  if (controller.actual.depth > controller.command.depth+
+      controllerToleranceDepth)
+    commandVelocity = -controller.command.velocity;
+  else if (controller.actual.depth < controller.command.depth-
+      controllerToleranceDepth)
+    commandVelocity = controller.command.velocity;
+  
+  float error = commandVelocity-controller.actual.velocity;
+  controller.integralError += error*dt;
+  float derivativeError = 0.0f;
+  if (!(controller.lastError != controller.lastError))
+    derivativeError = (error-controller.lastError)/dt;
+  controller.lastError = error;
+  
+  /** PID velocity control with tolerances
+    */ 
+  setSpeed.request.speed = outputToSpeed(
+    controllerGainProportional*error+
+    controllerGainIntegral*controller.integralError+
+    controllerGainDifferential*derivativeError);
+  setSpeed.request.start = true;
+
+  /** Check limits to saturate control output
+    */ 
+  bool saturate = true;
+  bool minLimit = (getLimits.response.limits & actuatorLimitsMinInputChannel);
+  bool maxLimit = (getLimits.response.limits & actuatorLimitsMaxInputChannel);
+  
+  if (fabsf(error) > controllerToleranceVelocity) {
+    if (minLimit) {
+      if (setSpeed.request.speed > 0.0f)
+        saturate = false;
+    }
+    else if (maxLimit) {
+      if (setSpeed.request.speed < 0.0f)
+        saturate = false;
+    }
+    else
+      saturate = false;
+  }
+    
+  if (saturate || setSpeedClient.call(setSpeed))
+    diagnoseFrequency->tick();
+}
+
+void tryConnect(const ros::TimerEvent& event = ros::TimerEvent()) {
+  if (!getLimitsClient)
+    getLimitsClient = ros::NodeHandle("~").serviceClient<GetLimits>(
+      "/"+smcServerName+"/get_limits", true);
+  if (!setSpeedClient)
+    setSpeedClient = ros::NodeHandle("~").serviceClient<SetSpeed>(
+      "/"+smcServerName+"/set_speed", true);
+  if (!getDepthClient)
+    getDepthClient = ros::NodeHandle("~").serviceClient<GetDepth>(
+      "/"+sensorServerName+"/get_depth", true);
 }
 
 int main(int argc, char **argv) {
@@ -290,6 +394,7 @@ int main(int argc, char **argv) {
   updater.reset(new diagnostic_updater::Updater());
   updater->setHardwareID("none");
 
+  updater->add("Connections", diagnoseConnections);
   diagnoseFrequency.reset(new diagnostic_updater::FrequencyStatus(
     diagnostic_updater::FrequencyStatusParam(&controllerFrequency,
     &controllerFrequency)));
@@ -299,25 +404,22 @@ int main(int argc, char **argv) {
 
   getParameters(node);
 
-  getLimitsClient = node.serviceClient<GetLimits>(
-    "/"+smcServerName+"/get_limits");
-  startClient = node.serviceClient<Start>(
-    "/"+smcServerName+"/start");
-  setSpeedClient = node.serviceClient<SetSpeed>(
-    "/"+smcServerName+"/set_speed");
-  getInputsClient = node.serviceClient<GetInputs>(
-    "/"+uscServerName+"/get_inputs");
-
+  getEnabledService = node.advertiseService("get_enabled", getEnabled);
   getGainsService = node.advertiseService("get_gains", getGains);
   getCommandService = node.advertiseService("get_command", getCommand);
+  getErrorService = node.advertiseService("get_error", getError);
   emergeService = node.advertiseService("emerge", emerge);
   setGainsService = node.advertiseService("set_gains", setGains);
   setCommandService = node.advertiseService("set_command", setCommand);
 
   ros::Timer diagnosticsTimer = node.createTimer(
     ros::Duration(1.0), updateDiagnostics);
+  ros::Timer connectionTimer = node.createTimer(
+    ros::Duration(connectionRetry), tryConnect);
   ros::Timer controllerTimer = node.createTimer(
     ros::Duration(1.0/controllerFrequency), updateControl);
+
+  tryConnect();
 
   ros::spin();
 

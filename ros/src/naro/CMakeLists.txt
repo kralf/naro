@@ -30,8 +30,7 @@ remake_ros_package(
 
 remake_ros_package(
   naro_dive_ctrl
-  DEPENDS roscpp rospy diagnostic_updater naro_smc_srvs naro_usc_srvs
-  EXTRA_BUILD_DEPENDS libeigen3-dev
+  DEPENDS roscpp rospy diagnostic_updater naro_smc_srvs naro_sensor_srvs
   DESCRIPTION "dive controller"
 )
 
@@ -39,6 +38,25 @@ remake_ros_package(
   naro_fin_ctrl
   DEPENDS roscpp rospy diagnostic_updater naro_usc_srvs
   DESCRIPTION "fin controller"
+)
+
+remake_ros_package(
+  naro_led_ctrl
+  DEPENDS roscpp rospy diagnostic_updater naro_blinkm_srvs
+  DESCRIPTION "LED controller"
+)
+
+remake_ros_package(
+  naro_joy_cmd
+  DEPENDS roscpp rospy diagnostic_updater naro_dive_ctrl naro_fin_ctrl
+    naro_led_ctrl
+  DESCRIPTION "joystick command"
+)
+
+remake_ros_package(
+  naro_safety_srvs
+  DEPENDS roscpp rospy
+  DESCRIPTION "safety services"
 )
 
 remake_ros_package(

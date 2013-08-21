@@ -49,7 +49,6 @@ class JoyControl(object):
     }
 
     rospy.Subscriber("/joy", Joy, self.receiveJoy, queue_size = 1)
-    self.start()
 
   def getParameters(self):
     self.smcServerName = rospy.get_param("servers/smc/name",
@@ -70,19 +69,11 @@ class JoyControl(object):
       print "GetLimits request failed: %s" % exception
       return 0
 
-  def start(self):
-    rospy.wait_for_service(self.smcServerName+"/start")
-    try:
-      request = rospy.ServiceProxy(self.smcServerName+"/start", Start)
-      request()
-    except rospy.ServiceException, exception:
-      print "Start request failed: %s" % exception
-
   def setSpeed(self, speed):
     rospy.wait_for_service(self.smcServerName+"/set_speed")
     try:
       request = rospy.ServiceProxy(self.smcServerName+"/set_speed", SetSpeed)
-      request(speed)
+      request(speed, True)
     except rospy.ServiceException, exception:
       print "SetSpeed request failed: %s" % exception
 
@@ -261,14 +252,11 @@ class JoyControl(object):
     
     if limits & GetLimitsResponse.ANALOG1:
       if speed < 0.0:
-        self.start()
         self.setSpeed(speed)
     elif limits & GetLimitsResponse.ANALOG2:
       if speed > 0.0:
-        self.start()
         self.setSpeed(speed)
     else:
-      self.start()
       self.setSpeed(speed)
 
     try:

@@ -1,8 +1,10 @@
 server:
   smc:
     name: smc_server
-  usc:
-    name: usc_server
+  sensor:
+    name: depth_sensor
+  connection:
+    retry: 0.1
 model:
   gravitational_acceleration: 9.80665
   fluid:
@@ -12,23 +14,20 @@ model:
     area: 0.1
     volume: 0.012
     drag_coefficient: 1.0
-filter:
-  initial_state:
-    noise:
-      depth: 0.02
-      velocity: 0.01
-      acceleration: 0.01
-  process:
-    noise:
-      depth: 0.01
-      velocity: 0.01
-      acceleration: 0.1
-  observation:
-    noise:
-      depth: 0.02
+  actuator:
+    max_flow_rate: 20e-6
+actuator:
+  limits:
+    minimum:
+      input_channel: 3
+    maximum:
+      input_channel: 2
 controller:
   frequency: 5.0
+  tolerance:
+    depth: 0.1
+    velocity: 0.0
   gain:
-    proportional: 1.0
+    proportional: 1e-2
+    integral: 1e-1
     differential: 0.0
-    integral: 0.0

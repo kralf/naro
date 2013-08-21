@@ -1,3 +1,11 @@
+naro-ros (0.1-24) lucid; urgency=low
+
+  * Changed depth sensor to clamp elevation and depth values
+  * Revised dive controller, untested
+  * Renamed depth_monitor to sensor_monitor in naro_test
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 09:14:00 +0100
+
 naro-ros (0.1-23) lucid; urgency=low
 
   * Adapted joy_control launch file to pass configuration parameter
