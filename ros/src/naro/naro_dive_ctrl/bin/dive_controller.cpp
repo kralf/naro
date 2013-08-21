@@ -100,7 +100,7 @@ public:
     enabled(false) {
   };
   
-  Controller& reset() {
+  void reset() {
     integralError = 0.0f;
     lastError = std::numeric_limits<float>::quiet_NaN();
   };

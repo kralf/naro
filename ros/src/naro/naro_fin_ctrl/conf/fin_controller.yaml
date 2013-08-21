@@ -3,6 +3,10 @@ server:
     name: usc_server
   connection:
     retry: 0.1
+servo:
+  homing:
+    speed: 10.0
+    acceleration: 5.0
 controller:
   max_servos: 8
   frequency: 25.0

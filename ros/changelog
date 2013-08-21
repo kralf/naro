@@ -1,3 +1,11 @@
+naro-ros (0.1-26) lucid; urgency=low
+
+  * Added GetEnabled, Enable, and Disable service requests to
+    naro_fin_ctrl
+  * Adapted joy_control.py in naro_test to send Enable request on startup
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 12:48:00 +0100
+
 naro-ros (0.1-25) lucid; urgency=low
 
   * Added GetActual service request to naro_dive_ctrl

@@ -30,6 +30,7 @@
 #include <naro_usc_srvs/SetProfiles.h>
 
 #include "naro_fin_ctrl/GetServos.h"
+#include "naro_fin_ctrl/GetEnabled.h"
 #include "naro_fin_ctrl/GetHomes.h"
 #include "naro_fin_ctrl/GetGains.h"
 #include "naro_fin_ctrl/GetFrequencies.h"
@@ -45,12 +46,16 @@
 #include "naro_fin_ctrl/SetPhases.h"
 #include "naro_fin_ctrl/SetOffsets.h"
 #include "naro_fin_ctrl/SetCommands.h"
+#include "naro_fin_ctrl/Enable.h"
+#include "naro_fin_ctrl/Disable.h"
 
 using namespace naro_fin_ctrl;
 using namespace naro_usc_srvs;
 
 std::string uscServerName = "usc_server";
 double connectionRetry = 0.1;
+float servoHomingSpeed = 10.0f*M_PI/180.0f;
+float servoHomingAcceleration = 5.0f*M_PI/180.0f;
 int controllerMaxServos = 8;
 double controllerFrequency = 50.0;
 float controllerFrequencyGain = 0.9f;
@@ -66,6 +71,7 @@ ros::ServiceClient getPositionsClient;
 ros::ServiceClient setProfilesClient;
 
 ros::ServiceServer getServosService;
+ros::ServiceServer getEnabledService;
 ros::ServiceServer getHomesService;
 ros::ServiceServer getGainsService;
 ros::ServiceServer getFrequenciesService;
@@ -81,10 +87,12 @@ ros::ServiceServer setAmplitudesService;
 ros::ServiceServer setPhasesService;
 ros::ServiceServer setOffsetsService;
 ros::ServiceServer setCommandsService;
+ros::ServiceServer enableService;
+ros::ServiceServer disableService;
 
 const float pi2 = M_PI*2.0f;
 
-class Servo {
+class Controller {
 public:
   class Parameters {
   public:
@@ -102,20 +110,29 @@ public:
     float offset;
   };
 
-  Servo(int channel = -1) :
+  Controller(int channel = -1) :
     channel(channel),
+    enabled(false),
     home(0.0f) {
   };
 
+  void reset() {
+    actual.frequency = 0.0f;
+    actual.amplitude = 0.0f;
+    actual.offset = 0.0f;
+    actual.phase = 0.0f;
+  };
+  
   int channel;
 
+  bool enabled;
   float home;
   Parameters gain;
   Parameters command;
   Parameters actual;
 };
 
-std::vector<Servo> servos;
+std::vector<Controller> controllers;
 ros::Time timeOffset;
 ros::Time lastTime;
 
@@ -124,6 +141,13 @@ void getParameters(const ros::NodeHandle& node) {
   node.param<double>("server/connection/retry", connectionRetry,
     connectionRetry);
 
+  double servoHomingSpeed = ::servoHomingSpeed*180.0f/M_PI;
+  node.param<double>("servo/homing/speed", servoHomingSpeed, servoHomingSpeed);
+  ::servoHomingSpeed = servoHomingSpeed*M_PI/180.0f;
+  double servoHomingAcceleration= ::servoHomingAcceleration*180.0f/M_PI;
+  node.param<double>("servo/homing/acceleration", servoHomingAcceleration,
+    servoHomingAcceleration);
+  ::servoHomingAcceleration = servoHomingAcceleration*M_PI/180.0f;
   node.param<int>("controller/max_servos", controllerMaxServos,
     controllerMaxServos);
   node.param<double>("controller/frequency", controllerFrequency,
@@ -146,8 +170,8 @@ void getParameters(const ros::NodeHandle& node) {
   ::controllerOffsetGain = controllerOffsetGain;
 }
 
-void initializeServos() {
-  servos.clear();
+void initializeControllers() {
+  controllers.clear();
 
   getChannelsClient = ros::NodeHandle("~").serviceClient<GetChannels>(
     "/"+uscServerName+"/get_channels");
@@ -155,25 +179,34 @@ void initializeServos() {
 
   if (getChannelsClient.call(getChannels)) {
     for (int i = 0; (i < getChannels.response.mode.size()) &&
-        (servos.size() < controllerMaxServos); ++i)
+        (controllers.size() < controllerMaxServos); ++i)
       if (getChannels.response.mode[i] == GetChannels::Response::SERVO) {
-      servos.push_back(i);
+      controllers.push_back(i);
 
-      servos.back().gain.frequency = controllerFrequencyGain;
-      servos.back().gain.amplitude = controllerAmplitudeGain;
-      servos.back().gain.phase = controllerPhaseGain;
-      servos.back().gain.offset = controllerOffsetGain;
+      controllers.back().gain.frequency = controllerFrequencyGain;
+      controllers.back().gain.amplitude = controllerAmplitudeGain;
+      controllers.back().gain.phase = controllerPhaseGain;
+      controllers.back().gain.offset = controllerOffsetGain;
     }
 
     ROS_INFO("USC server reported %d available servo(s).",
-      (unsigned int)servos.size());
+      (unsigned int)controllers.size());
   }
   else
     ROS_FATAL("No servos available: GetChannels request failed.");
 }
 
 bool getServos(GetServos::Request& request, GetServos::Response& response) {
-  response.servos = servos.size();
+  response.servos = controllers.size();
+  return true;
+}
+
+bool getEnabled(GetEnabled::Request& request, GetEnabled::Response& response) {
+  response.enabled.resize(request.servos.size());
+
+  for (int i = 0; i < request.servos.size(); ++i)
+    response.enabled[i] = controllers[request.servos[i]].enabled;
+
   return true;
 }
 
@@ -181,8 +214,8 @@ bool getHomes(GetHomes::Request& request, GetHomes::Response& response) {
   response.home.resize(request.servos.size());
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size())
-      response.home[i] = servos[request.servos[i]].home;
+    if (request.servos[i] < controllers.size())
+      response.home[i] = controllers[request.servos[i]].home;
     else
       response.home[i] = std::numeric_limits<float>::quiet_NaN();
   }
@@ -197,11 +230,11 @@ bool getGains(GetGains::Request& request, GetGains::Response& response) {
   response.offset.resize(request.servos.size());
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size()) {
-      response.frequency[i] = servos[request.servos[i]].gain.frequency;
-      response.amplitude[i] = servos[request.servos[i]].gain.amplitude;
-      response.phase[i] = servos[request.servos[i]].gain.phase;
-      response.offset[i] = servos[request.servos[i]].gain.offset;
+    if (request.servos[i] < controllers.size()) {
+      response.frequency[i] = controllers[request.servos[i]].gain.frequency;
+      response.amplitude[i] = controllers[request.servos[i]].gain.amplitude;
+      response.phase[i] = controllers[request.servos[i]].gain.phase;
+      response.offset[i] = controllers[request.servos[i]].gain.offset;
     }
     else {
       response.frequency[i] = std::numeric_limits<float>::quiet_NaN();
@@ -220,9 +253,9 @@ bool getFrequencies(GetFrequencies::Request& request,
   response.actual.resize(request.servos.size());
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size()) {
-      response.command[i] = servos[request.servos[i]].command.frequency;
-      response.actual[i] = servos[request.servos[i]].actual.frequency;
+    if (request.servos[i] < controllers.size()) {
+      response.command[i] = controllers[request.servos[i]].command.frequency;
+      response.actual[i] = controllers[request.servos[i]].actual.frequency;
     }
     else {
       response.command[i] = std::numeric_limits<float>::quiet_NaN();
@@ -239,9 +272,9 @@ bool getAmplitudes(GetAmplitudes::Request& request, GetAmplitudes::Response&
   response.actual.resize(request.servos.size());
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size()) {
-      response.command[i] = servos[request.servos[i]].command.amplitude;
-      response.actual[i] = servos[request.servos[i]].actual.amplitude;
+    if (request.servos[i] < controllers.size()) {
+      response.command[i] = controllers[request.servos[i]].command.amplitude;
+      response.actual[i] = controllers[request.servos[i]].actual.amplitude;
     }
     else {
       response.command[i] = std::numeric_limits<float>::quiet_NaN();
@@ -257,9 +290,9 @@ bool getPhases(GetPhases::Request& request, GetPhases::Response& response) {
   response.actual.resize(request.servos.size());
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size()) {
-      response.command[i] = servos[request.servos[i]].command.phase;
-      response.actual[i] = servos[request.servos[i]].actual.phase;
+    if (request.servos[i] < controllers.size()) {
+      response.command[i] = controllers[request.servos[i]].command.phase;
+      response.actual[i] = controllers[request.servos[i]].actual.phase;
     }
     else {
       response.command[i] = std::numeric_limits<float>::quiet_NaN();
@@ -275,9 +308,9 @@ bool getOffsets(GetOffsets::Request& request, GetOffsets::Response& response) {
   response.actual.resize(request.servos.size());
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size()) {
-      response.command[i] = servos[request.servos[i]].command.offset;
-      response.actual[i] = servos[request.servos[i]].actual.offset;
+    if (request.servos[i] < controllers.size()) {
+      response.command[i] = controllers[request.servos[i]].command.offset;
+      response.actual[i] = controllers[request.servos[i]].actual.offset;
     }
     else {
       response.command[i] = std::numeric_limits<float>::quiet_NaN();
@@ -296,11 +329,11 @@ bool getCommands(GetCommands::Request& request, GetCommands::Response&
   response.offset.resize(request.servos.size());
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size()) {
-      response.frequency[i] = servos[request.servos[i]].command.frequency;
-      response.amplitude[i] = servos[request.servos[i]].command.amplitude;
-      response.phase[i] = servos[request.servos[i]].command.phase;
-      response.offset[i] = servos[request.servos[i]].command.offset;
+    if (request.servos[i] < controllers.size()) {
+      response.frequency[i] = controllers[request.servos[i]].command.frequency;
+      response.amplitude[i] = controllers[request.servos[i]].command.amplitude;
+      response.phase[i] = controllers[request.servos[i]].command.phase;
+      response.offset[i] = controllers[request.servos[i]].command.offset;
     }
     else {
       response.frequency[i] = std::numeric_limits<float>::quiet_NaN();
@@ -321,11 +354,11 @@ bool getActuals(GetActuals::Request& request, GetActuals::Response&
   response.offset.resize(request.servos.size());
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size()) {
-      response.frequency[i] = servos[request.servos[i]].actual.frequency;
-      response.amplitude[i] = servos[request.servos[i]].actual.amplitude;
-      response.phase[i] = servos[request.servos[i]].actual.phase;
-      response.offset[i] = servos[request.servos[i]].actual.offset;
+    if (request.servos[i] < controllers.size()) {
+      response.frequency[i] = controllers[request.servos[i]].actual.frequency;
+      response.amplitude[i] = controllers[request.servos[i]].actual.amplitude;
+      response.phase[i] = controllers[request.servos[i]].actual.phase;
+      response.offset[i] = controllers[request.servos[i]].actual.offset;
     }
     else {
       response.frequency[i] = std::numeric_limits<float>::quiet_NaN();
@@ -342,8 +375,8 @@ bool setHomes(SetHomes::Request& request, SetHomes::Response& response) {
   bool result = true;
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size())
-      servos[request.servos[i]].home = request.home[i];
+    if (request.servos[i] < controllers.size())
+      controllers[request.servos[i]].home = request.home[i];
     else {
       ROS_WARN("SetHomes request failed: Servo %d does not exist.",
         request.servos[i]);
@@ -358,11 +391,11 @@ bool setGains(SetGains::Request& request, SetGains::Response& response) {
   bool result = true;
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size()) {
-      servos[request.servos[i]].gain.frequency = request.frequency[i];
-      servos[request.servos[i]].gain.amplitude = request.amplitude[i];
-      servos[request.servos[i]].gain.phase = request.phase[i];
-      servos[request.servos[i]].gain.offset = request.offset[i];
+    if (request.servos[i] < controllers.size()) {
+      controllers[request.servos[i]].gain.frequency = request.frequency[i];
+      controllers[request.servos[i]].gain.amplitude = request.amplitude[i];
+      controllers[request.servos[i]].gain.phase = request.phase[i];
+      controllers[request.servos[i]].gain.offset = request.offset[i];
     }
     else {
       ROS_WARN("SetGains request failed: Servo %d does not exist.",
@@ -379,8 +412,8 @@ bool setFrequencies(SetFrequencies::Request& request,
   bool result = true;
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size())
-      servos[request.servos[i]].command.frequency = request.command[i];
+    if (request.servos[i] < controllers.size())
+      controllers[request.servos[i]].command.frequency = request.command[i];
     else {
       ROS_WARN("SetFrequencies request failed: Servo %d does not exist.",
         request.servos[i]);
@@ -396,8 +429,8 @@ bool setAmplitudes(SetAmplitudes::Request& request, SetAmplitudes::Response&
   bool result = true;
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size())
-      servos[request.servos[i]].command.amplitude = request.command[i];
+    if (request.servos[i] < controllers.size())
+      controllers[request.servos[i]].command.amplitude = request.command[i];
     else {
       ROS_WARN("SetAmplitudes request failed: Servo %d does not exist.",
         request.servos[i]);
@@ -412,8 +445,8 @@ bool setPhases(SetPhases::Request& request, SetPhases::Response& response) {
   bool result = true;
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size())
-      servos[request.servos[i]].command.phase = request.command[i];
+    if (request.servos[i] < controllers.size())
+      controllers[request.servos[i]].command.phase = request.command[i];
     else {
       ROS_WARN("SetPhases request failed: Servo %d does not exist.",
         request.servos[i]);
@@ -428,8 +461,8 @@ bool setOffsets(SetOffsets::Request& request, SetOffsets::Response& response) {
   bool result = true;
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size())
-      servos[request.servos[i]].command.offset = request.command[i];
+    if (request.servos[i] < controllers.size())
+      controllers[request.servos[i]].command.offset = request.command[i];
     else {
       ROS_WARN("SetOffsets request failed: Servo %d does not exist.",
         request.servos[i]);
@@ -445,11 +478,11 @@ bool setCommands(SetCommands::Request& request, SetCommands::Response&
   bool result = true;
 
   for (int i = 0; i < request.servos.size(); ++i) {
-    if (request.servos[i] < servos.size()) {
-      servos[request.servos[i]].command.frequency = request.frequency[i];
-      servos[request.servos[i]].command.amplitude = request.amplitude[i];
-      servos[request.servos[i]].command.phase = request.phase[i];
-      servos[request.servos[i]].command.offset = request.offset[i];
+    if (request.servos[i] < controllers.size()) {
+      controllers[request.servos[i]].command.frequency = request.frequency[i];
+      controllers[request.servos[i]].command.amplitude = request.amplitude[i];
+      controllers[request.servos[i]].command.phase = request.phase[i];
+      controllers[request.servos[i]].command.offset = request.offset[i];
     }
     else {
       ROS_WARN("SetCommands request failed: Servo %d does not exist.",
@@ -459,6 +492,69 @@ bool setCommands(SetCommands::Request& request, SetCommands::Response&
   }
 
   return result;
+}
+
+bool enable(Enable::Request& request, Enable::Response& response) {
+  bool result = true;
+  
+  for (int i = 0; i < request.servos.size(); ++i) {
+    if (request.servos[i] < controllers.size())
+      controllers[request.servos[i]].enabled = true;
+    else {
+      ROS_WARN("Enable request failed: Servo %d does not exist.",
+        request.servos[i]);
+      result = false;
+    }
+  }
+
+  return result;
+}
+
+bool disable(Disable::Request& request, Disable::Response& response) {
+  bool result = true;
+  
+  unsigned int numEnabled = 0;
+  if (!request.servos.empty()) {
+    for (int i = 0; i < request.servos.size(); ) {
+      if (request.servos[i] >= controllers.size()) {
+        ROS_WARN("Enable request failed: Servo %d does not exist.",
+          request.servos[i]);
+        result = false;
+      }
+      else
+        numEnabled += controllers[request.servos[i]].enabled;
+    }
+  }
+  else {
+    for (int i = 0; i < controllers.size(); ++i)
+      if (controllers[i].enabled)
+        request.servos.push_back(i);
+      
+    numEnabled = request.servos.size();
+  }
+  
+  SetProfiles setProfiles;
+  setProfiles.request.channels.resize(numEnabled);
+  setProfiles.request.position.resize(numEnabled);
+  setProfiles.request.speed.resize(numEnabled);
+  setProfiles.request.acceleration.resize(numEnabled);
+  
+  int j = 0;
+  for (int i = 0; i < request.servos.size(); ++i)
+    if ((request.servos[i] < controllers.size()) &&
+      controllers[request.servos[i]].enabled) {
+    controllers[request.servos[i]].enabled = false;
+    controllers[request.servos[i]].reset();
+    
+    setProfiles.request.channels[j] = controllers[request.servos[i]].channel;
+    setProfiles.request.position[j] = controllers[request.servos[i]].home;
+    setProfiles.request.speed[j] = servoHomingSpeed;
+    setProfiles.request.acceleration[j] = servoHomingAcceleration;
+  
+    ++j;
+  }
+
+  return setProfilesClient.call(setProfiles);
 }
 
 void diagnoseConnections(diagnostic_updater::DiagnosticStatusWrapper &status) {
@@ -471,9 +567,9 @@ void diagnoseConnections(diagnostic_updater::DiagnosticStatusWrapper &status) {
 }
 
 void diagnoseServos(diagnostic_updater::DiagnosticStatusWrapper &status) {
-  if (!servos.empty())
+  if (!controllers.empty())
     status.summaryf(diagnostic_msgs::DiagnosticStatus::OK,
-      "%d servos available.", (unsigned int)servos.size());
+      "%d servos available.", (unsigned int)controllers.size());
   else
     status.summaryf(diagnostic_msgs::DiagnosticStatus::ERROR,
       "No servos available.");
@@ -484,8 +580,8 @@ void updateDiagnostics(const ros::TimerEvent& event) {
 }
 
 void tryConnect(const ros::TimerEvent& event = ros::TimerEvent()) {
-  if (servos.empty())
-    initializeServos();
+  if (controllers.empty())
+    initializeControllers();
 
   if (!getPositionsClient)
     getPositionsClient = ros::NodeHandle("~").serviceClient<GetPositions>(
@@ -496,12 +592,21 @@ void tryConnect(const ros::TimerEvent& event = ros::TimerEvent()) {
 }
 
 void updateControl(const ros::TimerEvent& event) {
-  SetProfiles setProfiles;
-  setProfiles.request.channels.resize(servos.size());
-  setProfiles.request.position.resize(servos.size());
-  setProfiles.request.speed.resize(servos.size());
-  setProfiles.request.acceleration.resize(servos.size());
+  unsigned int numEnabled = 0;
+  for (int i = 0; i < controllers.size(); ++i)
+    numEnabled += controllers[i].enabled;
 
+  if (!numEnabled) {
+    diagnoseFrequency->tick();
+    return;
+  }
+  
+  SetProfiles setProfiles;
+  setProfiles.request.channels.resize(numEnabled);
+  setProfiles.request.position.resize(numEnabled);
+  setProfiles.request.speed.resize(numEnabled);
+  setProfiles.request.acceleration.resize(numEnabled);
+  
   float dt = 0.0f;
   if (!lastTime.isZero())
     dt = (ros::Time::now()-lastTime).toSec();
@@ -510,27 +615,32 @@ void updateControl(const ros::TimerEvent& event) {
   float t_0 = (lastTime-timeOffset).toSec();
   float t_2 = t_0+2.0f/controllerFrequency;
 
-  for (int i = 0; i < servos.size(); ++i) {
-    if (dt > 0.0f) {
-      servos[i].actual.frequency += servos[i].gain.frequency*dt*
-        (servos[i].command.frequency-servos[i].actual.frequency);
-      servos[i].actual.amplitude += servos[i].gain.amplitude*dt*
-        (servos[i].command.amplitude-servos[i].actual.amplitude);
-      servos[i].actual.phase += servos[i].gain.phase*dt*
-        (servos[i].command.phase-servos[i].actual.phase);
-      servos[i].actual.offset += servos[i].gain.offset*dt*
-        (servos[i].command.offset-servos[i].actual.offset);
-    }
+  int j = 0;
+  for (int i = 0; i < controllers.size(); ++i) {
+    if (controllers[i].enabled) {
+      if (dt > 0.0f) {
+        controllers[i].actual.frequency += controllers[i].gain.frequency*dt*
+          (controllers[i].command.frequency-controllers[i].actual.frequency);
+        controllers[i].actual.amplitude += controllers[i].gain.amplitude*dt*
+          (controllers[i].command.amplitude-controllers[i].actual.amplitude);
+        controllers[i].actual.phase += controllers[i].gain.phase*dt*
+          (controllers[i].command.phase-controllers[i].actual.phase);
+        controllers[i].actual.offset += controllers[i].gain.offset*dt*
+          (controllers[i].command.offset-controllers[i].actual.offset);
+      }
 
-    float omega_i = pi2*servos[i].actual.frequency;
-    setProfiles.request.channels[i] = servos[i].channel;
-    setProfiles.request.position[i] = servos[i].home+
-      servos[i].actual.offset+servos[i].actual.amplitude*
-      sin(omega_i*t_2+servos[i].actual.phase);
-    setProfiles.request.speed[i] = omega_i*servos[i].actual.amplitude*
-      cos(omega_i*t_0+servos[i].actual.phase);
-    setProfiles.request.acceleration[i] =
-      std::numeric_limits<float>::infinity();
+      float omega_i = pi2*controllers[i].actual.frequency;
+      setProfiles.request.channels[j] = controllers[i].channel;
+      setProfiles.request.position[j] = controllers[i].home+
+        controllers[i].actual.offset+controllers[i].actual.amplitude*
+        sin(omega_i*t_2+controllers[i].actual.phase);
+      setProfiles.request.speed[j] = omega_i*controllers[i].actual.amplitude*
+        cos(omega_i*t_0+controllers[i].actual.phase);
+      setProfiles.request.acceleration[j] =
+        std::numeric_limits<float>::infinity();
+        
+      ++j;
+    }
   }
 
   if (setProfilesClient.call(setProfiles))
@@ -556,6 +666,7 @@ int main(int argc, char **argv) {
   getParameters(node);
 
   getServosService = node.advertiseService("get_servos", getServos);
+  getEnabledService = node.advertiseService("get_enabled", getEnabled);
   getHomesService = node.advertiseService("get_homes", getHomes);
   getGainsService = node.advertiseService("get_gains", getGains);
   getFrequenciesService = node.advertiseService("get_frequencies",
@@ -575,6 +686,8 @@ int main(int argc, char **argv) {
   setPhasesService = node.advertiseService("set_phases", setPhases);
   setOffsetsService = node.advertiseService("set_offsets", setOffsets);
   setCommandsService = node.advertiseService("set_commands", setCommands);
+  enableService = node.advertiseService("enable", enable);
+  disableService = node.advertiseService("disable", disable);
 
   ros::Timer diagnosticsTimer = node.createTimer(
     ros::Duration(1.0), updateDiagnostics);
@@ -583,7 +696,7 @@ int main(int argc, char **argv) {
   ros::Timer controllerTimer = node.createTimer(
     ros::Duration(1.0/controllerFrequency), updateControl);
 
-  initializeServos();
+  initializeControllers();
   tryConnect();
   timeOffset = ros::Time::now();
 

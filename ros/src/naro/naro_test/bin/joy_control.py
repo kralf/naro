@@ -48,8 +48,9 @@ class JoyControl(object):
       3: [1.0, 0.3, 0.0]
     }
 
+    enable(range(8))
     rospy.Subscriber("/joy", Joy, self.receiveJoy, queue_size = 1)
-
+    
   def getParameters(self):
     self.smcServerName = rospy.get_param("servers/smc/name",
       self.smcServerName)
@@ -86,6 +87,14 @@ class JoyControl(object):
     except rospy.ServiceException, exception:
       print "SetColor request failed: %s" % exception
 
+  def enable(self, servos):
+    rospy.wait_for_service(self.finServerName+"/enable")
+    try:
+      request = rospy.ServiceProxy(self.finServerName+"/enable", Enable)
+      request(servos)
+    except rospy.ServiceException, exception:
+      print "Enable request failed: %s" % exception
+      
   def getHomes(self, servos):
     rospy.wait_for_service(self.finServerName+"/get_homes")
     try:
