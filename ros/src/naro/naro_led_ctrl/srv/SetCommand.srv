@@ -1,0 +1,3 @@
+float32[3] color # in [0, 1]
+float32 period # in [s]
+---

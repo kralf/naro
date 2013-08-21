@@ -1,0 +1,9 @@
+server:
+  blinkm:
+    name: blinkm_server
+  connection:
+    retry: 0.1
+controller:
+  frequency: 1.0
+default:
+  color: white

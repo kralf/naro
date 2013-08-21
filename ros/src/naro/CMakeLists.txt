@@ -47,10 +47,10 @@ remake_ros_package(
 )
 
 remake_ros_package(
-  naro_joy_cmd
+  naro_cmd_srvs
   DEPENDS roscpp rospy diagnostic_updater naro_dive_ctrl naro_fin_ctrl
     naro_led_ctrl
-  DESCRIPTION "joystick command"
+  DESCRIPTION "command services"
 )
 
 remake_ros_package(

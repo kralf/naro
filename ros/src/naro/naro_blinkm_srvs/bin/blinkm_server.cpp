@@ -40,7 +40,7 @@ using namespace naro_blinkm_srvs;
 double connectionRetry = 0.1;
 std::string deviceAddress = "/dev/naro/blinkm";
 double deviceTimeout = 0.1;
-float ledStartupColor[] = {1.0f, 1.0f, 1.0f};
+float ledStartupColor[] = {0.0f, 0.0f, 0.0f};
 float ledStartupSpeed = 1.0f;
 float ledShutdownColor[] = {0.0f, 0.0f, 0.0f};
 float ledShutdownSpeed = 1.0f;
@@ -58,6 +58,31 @@ template <typename T> inline T clamp(const T& x,
   return x < min ? min : (x > max ? max : x);
 }
 
+inline bool parameterToColor(const ros::NodeHandle& node, const
+    std::string& key, float* color) {
+  XmlRpc::XmlRpcValue value;
+  node.getParam(key, value);
+  if (value.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+    if (value.size() == 3) {
+      color[0] = static_cast<double>(value[0]);
+      color[1] = static_cast<double>(value[1]);
+      color[2] = static_cast<double>(value[2]);
+    }
+    else {
+      ROS_WARN("Invalid array size for color parameter %s: %d", key.c_str(),
+        (unsigned int)value.size());
+      return false;
+    }
+  }
+  else {
+    ROS_WARN("Invalid type for color parameter %s: expecting array",
+      key.c_str(), (unsigned int)value.size());
+    return false;
+  }
+  
+  return true;
+}
+
 inline unsigned char speedToUnits(float speed) {
   return clamp<float>(roundf(speed*255.0f/30.0f), 1.0f, 255.0f);
 }
@@ -66,29 +91,9 @@ void getParameters(const ros::NodeHandle& node) {
   node.param<double>("connection/retry", connectionRetry, connectionRetry);
   node.param<std::string>("device/address", deviceAddress, deviceAddress);
   node.param<double>("device/timeout", deviceTimeout, deviceTimeout);
-  
-  XmlRpc::XmlRpcValue ledStartupColor;
-  node.getParam("led/startup/color", ledStartupColor);
-  if ((ledStartupColor.getType() == XmlRpc::XmlRpcValue::TypeArray) &&
-      (ledStartupColor.size() == 3)) {
-    for (int i = 0; i < 3; ++i)
-      ::ledStartupColor[i] = static_cast<double>(ledStartupColor[i]);
-  }
-  double ledStartupSpeed = ::ledStartupSpeed;
-  node.param<double>("led/startup/speed", ledStartupSpeed, ledStartupSpeed);
-  ::ledStartupSpeed = ledStartupSpeed;
 
-  XmlRpc::XmlRpcValue ledShutdownColor;
-  node.getParam("led/shutdown/color", ledShutdownColor);
-  if ((ledShutdownColor.getType() == XmlRpc::XmlRpcValue::TypeArray) &&
-      (ledShutdownColor.size() == 3)) {
-    for (int i = 0; i < 3; ++i)
-      ::ledShutdownColor[i] = static_cast<double>(ledShutdownColor[i]);
-  }
-  double ledShutdownSpeed = ::ledShutdownSpeed;
-  node.param<double>("led/shutdown/speed", ledShutdownSpeed, ledShutdownSpeed);
-  ::ledShutdownSpeed = ledShutdownSpeed;
-
+  parameterToColor(node, "led/startup/color", ledStartupColor);
+  parameterToColor(node, "led/shutdown/color", ledShutdownColor);
 }
 
 void diagnoseDevice(diagnostic_updater::DiagnosticStatusWrapper &status) {

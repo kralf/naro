@@ -1,3 +1,9 @@
+naro-ros (0.1-27) lucid; urgency=low
+
+  * Implemented led_controller in naro_led_ctrl
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 16:13:00 +0100
+
 naro-ros (0.1-26) lucid; urgency=low
 
   * Added GetEnabled, Enable, and Disable service requests to
