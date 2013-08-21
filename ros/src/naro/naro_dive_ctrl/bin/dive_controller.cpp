@@ -31,6 +31,7 @@
 #include "naro_dive_ctrl/GetEnabled.h"
 #include "naro_dive_ctrl/GetGains.h"
 #include "naro_dive_ctrl/GetCommand.h"
+#include "naro_dive_ctrl/GetActual.h"
 #include "naro_dive_ctrl/GetError.h"
 #include "naro_dive_ctrl/Enable.h"
 #include "naro_dive_ctrl/Disable.h"
@@ -71,6 +72,7 @@ ros::ServiceClient getDepthClient;
 ros::ServiceServer getEnabledService;
 ros::ServiceServer getGainsService;
 ros::ServiceServer getCommandService;
+ros::ServiceServer getActualService;
 ros::ServiceServer getErrorService;
 ros::ServiceServer enableService;
 ros::ServiceServer disableService;
@@ -231,8 +233,17 @@ bool getCommand(GetCommand::Request& request, GetCommand::Response&
   return true;
 }
 
+bool getActual(GetActual::Request& request, GetActual::Response& response) {
+  response.depth = controller.actual.depth;
+  response.velocity = controller.actual.velocity;
+  
+  return true;
+}
+
 bool getError(GetError::Request& request, GetError::Response& response) {
-  response.error = controller.lastError;
+  response.depth = controller.command.depth-controller.actual.depth;
+  response.velocity = controller.command.velocity-controller.actual.velocity;
+  
   return true;
 }
 
@@ -407,6 +418,7 @@ int main(int argc, char **argv) {
   getEnabledService = node.advertiseService("get_enabled", getEnabled);
   getGainsService = node.advertiseService("get_gains", getGains);
   getCommandService = node.advertiseService("get_command", getCommand);
+  getActualService = node.advertiseService("get_actual", getActual);
   getErrorService = node.advertiseService("get_error", getError);
   emergeService = node.advertiseService("emerge", emerge);
   setGainsService = node.advertiseService("set_gains", setGains);

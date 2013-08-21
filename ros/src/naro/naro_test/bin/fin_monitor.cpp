@@ -22,6 +22,7 @@
 
 #include "naro_fin_ctrl/GetServos.h"
 #include "naro_fin_ctrl/GetActuals.h"
+#include "naro_fin_ctrl/GetCommands.h"
 
 using namespace naro_fin_ctrl;
 
@@ -29,6 +30,7 @@ std::string serverName = "fin_controller";
 double clientUpdate = 0.1;
 
 ros::ServiceClient getServosClient;
+ros::ServiceClient getCommandsClient;
 ros::ServiceClient getActualsClient;
 
 unsigned int numLines = 0;
@@ -37,13 +39,30 @@ void update(const ros::TimerEvent& event) {
   GetServos getServos;
   getServosClient.call(getServos);
 
+  GetCommands getCommands;
+  for (int i = 0; i < getServos.response.servos; ++i)
+    getCommands.request.servos.push_back(i);
+  if (getCommandsClient.call(getCommands)) {
+    for (int i = 0; i < getCommands.request.servos.size(); ++i)
+      printf("\r%s %2d: F %8.2f Hz  A %8.2f deg  P %8.3f deg  O %8.2f deg\n",
+        "Cmd Servo", getCommands.request.servos[i],
+        getCommands.response.frequency[i],
+        getCommands.response.amplitude[i]*180.0/M_PI,
+        getCommands.response.phase[i]*180.0/M_PI,
+        getCommands.response.offset[i]*180.0/M_PI);
+  }
+  else {
+    for (int i = 0; i < getCommands.request.servos.size(); ++i)
+      printf("\r%s %2d: n/a\n", "Cmd Servo", getCommands.request.servos[i]);
+  }
+    
   GetActuals getActuals;
   for (int i = 0; i < getServos.response.servos; ++i)
     getActuals.request.servos.push_back(i);
   if (getActualsClient.call(getActuals)) {
     for (int i = 0; i < getActuals.request.servos.size(); ++i)
       printf("\r%s %2d: F %8.2f Hz  A %8.2f deg  P %8.3f deg  O %8.2f deg\n",
-        "Servo", getActuals.request.servos[i],
+        "Act Servo", getActuals.request.servos[i],
         getActuals.response.frequency[i],
         getActuals.response.amplitude[i]*180.0/M_PI,
         getActuals.response.phase[i]*180.0/M_PI,
@@ -51,10 +70,11 @@ void update(const ros::TimerEvent& event) {
   }
   else {
     for (int i = 0; i < getActuals.request.servos.size(); ++i)
-      printf("\r%s %2d: n/a\n", "Servo", getActuals.request.servos[i]);
+      printf("\r%s %2d: n/a\n", "Act Servo", getActuals.request.servos[i]);
   }
-
-  numLines = getActuals.request.servos.size();
+  
+  numLines = getCommands.request.servos.size()+
+    getActuals.request.servos.size();
   printf("%c[%dA\r", 0x1B, numLines);
 }
 
@@ -67,6 +87,8 @@ int main(int argc, char **argv) {
 
   getServosClient = node.serviceClient<GetServos>(
     "/"+serverName+"/get_servos");
+  getCommandsClient = node.serviceClient<GetCommands>(
+    "/"+serverName+"/get_commands");
   getActualsClient = node.serviceClient<GetActuals>(
     "/"+serverName+"/get_actuals");
 

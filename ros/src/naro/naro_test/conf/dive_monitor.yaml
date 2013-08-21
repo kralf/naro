@@ -1,0 +1,4 @@
+server:
+  name: dive_controller
+client:
+  update: 0.1

@@ -20,63 +20,69 @@
 
 #include <ros/ros.h>
 
-#include "naro_sensor_srvs/GetPressure.h"
-#include "naro_sensor_srvs/GetDepth.h"
-#include "naro_sensor_srvs/GetElevation.h"
+#include "naro_dive_ctrl/GetActual.h"
+#include "naro_dive_ctrl/GetCommand.h"
+#include "naro_dive_ctrl/GetError.h"
 
-using namespace naro_sensor_srvs;
+using namespace naro_dive_ctrl;
 
-std::string serverName = "depth_sensor";
+std::string serverName = "dive_controller";
 double clientUpdate = 0.1;
 
-ros::ServiceClient getPressureClient;
-ros::ServiceClient getDepthClient;
-ros::ServiceClient getElevationClient;
+ros::ServiceClient getCommandClient;
+ros::ServiceClient getActualClient;
+ros::ServiceClient getErrorClient;
+
+unsigned int numLines = 0;
 
 void update(const ros::TimerEvent& event) {
-  GetPressure getPressure;
-  if (getPressureClient.call(getPressure))
-    printf("\r%10s: %8.2f / %8.2f kPa\n", "Pressure",
-      getPressure.response.raw*1e-3, getPressure.response.filtered*1e-3);
-  else
-    printf("\r%10s: %19s\n", "Pressure", "n/a");
+  GetCommand getCommand;
+  if (getCommandClient.call(getCommand))
+    printf("\rCmd: D %8.2f m  V %8.2f m/s\n",
+      getCommand.response.depth,
+      getCommand.response.velocity);
+  else 
+    printf("\rCmd: n/a\n");
 
-  GetDepth getDepth;
-  if (getDepthClient.call(getDepth))
-    printf("\r%10s: %8.2f / %8.2f m\n", "Depth",
-      getDepth.response.raw, getDepth.response.filtered);
-  else
-    printf("\r%10s: %19s\n", "Depth", "n/a");
+  GetActual getActual;
+  if (getActualClient.call(getActual))
+    printf("\rAct: D %8.2f m  V %8.2f m/s\n",
+      getActual.response.depth,
+      getActual.response.velocity);
+  else 
+    printf("\rAct: n/a\n");
 
-  GetElevation getElevation;
-  if (getElevationClient.call(getElevation))
-    printf("\r%10s: %8.2f / %8.2f m\n", "Elevation",
-      getElevation.response.raw, getElevation.response.filtered);
-  else
-    printf("\r%10s: %19s\n", "Elevation", "n/a");
-
-  printf("%c[3A\r", 0x1B);
+  GetError getError;
+  if (getErrorClient.call(getError))
+    printf("\rErr: D %8.2f m  V %8.2f m/s\n",
+      getActual.response.depth,
+      getActual.response.velocity);
+  else 
+    printf("\rErr: n/a\n");
+  
+  numLines = 3;
+  printf("%c[%dA\r", 0x1B, numLines);
 }
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "sensor_monitor");
+  ros::init(argc, argv, "dive_monitor");
   ros::NodeHandle node("~");
 
   node.param<std::string>("server/name", serverName, serverName);
   node.param<double>("client/update", clientUpdate, clientUpdate);
 
-  getPressureClient = node.serviceClient<GetPressure>(
-    "/"+serverName+"/get_pressure");
-  getDepthClient = node.serviceClient<GetDepth>(
-    "/"+serverName+"/get_depth");
-  getElevationClient = node.serviceClient<GetElevation>(
-    "/"+serverName+"/get_elevation");
+  getCommandClient = node.serviceClient<GetCommand>(
+    "/"+serverName+"/get_command");
+  getActualClient = node.serviceClient<GetActual>(
+    "/"+serverName+"/get_actual");
+  getErrorClient = node.serviceClient<GetError>(
+    "/"+serverName+"/get_error");
 
   ros::Timer updateTimer = node.createTimer(
     ros::Duration(clientUpdate), update);
   ros::spin();
 
-  printf("%c[3B\n", 0x1B);
+  printf("%c[%dB\n", 0x1B, numLines);
 
   return 0;
 }

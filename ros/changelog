@@ -1,3 +1,10 @@
+naro-ros (0.1-25) lucid; urgency=low
+
+  * Added GetActual service request to naro_dive_ctrl
+  * Added dive_monitor to naro_test
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 09:37:00 +0100
+
 naro-ros (0.1-24) lucid; urgency=low
 
   * Changed depth sensor to clamp elevation and depth values
