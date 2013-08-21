@@ -1,3 +1,9 @@
+naro-ros (0.1-28) lucid; urgency=low
+
+  * Some bug fixes in blinkm_server and led_controller
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 19:12:00 +0100
+
 naro-ros (0.1-27) lucid; urgency=low
 
   * Implemented led_controller in naro_led_ctrl

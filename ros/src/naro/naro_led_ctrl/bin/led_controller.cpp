@@ -128,6 +128,18 @@ inline bool parameterToColor(const ros::NodeHandle& node, const
   return true;
 }
 
+bool fadeToDefaultColor() {
+  if (fadeToColorClient) {
+    FadeToColor fadeToColor;
+    copy(defaultColor, fadeToColor.request.rgb);
+    fadeToColor.request.speed = 1.0f/controllerFrequency;
+  
+    return fadeToColorClient.call(fadeToColor);
+  }
+  else
+    return false;
+}
+
 void getParameters(const ros::NodeHandle& node) {
   node.param<std::string>("server/blinkm/name", blinkmServerName,
     blinkmServerName);
@@ -160,12 +172,8 @@ bool getCommand(GetCommand::Request& request, GetCommand::Response& response) {
 bool setDefault(SetDefault::Request& request, SetDefault::Response& response) {
   copy(request.color, defaultColor);
 
-  if (!controller.enabled) {
-    FadeToColor fadeToColor;
-    copy(defaultColor, fadeToColor.request.rgb);
-    
-    return fadeToColorClient.call(fadeToColor);
-  }
+  if (!controller.enabled)
+    return fadeToDefaultColor();
   else
     return true;
 }
@@ -187,11 +195,7 @@ bool disable(Disable::Request& request, Disable::Response& response) {
   controller.reset();
   lastTime.fromSec(0.0);
 
-  FadeToColor fadeToColor;
-  copy(defaultColor, fadeToColor.request.rgb);
-  fadeToColor.request.speed = 1.0f/controllerFrequency;
-  
-  return fadeToColorClient.call(fadeToColor);
+  return fadeToDefaultColor();
 }
 
 void diagnoseConnections(diagnostic_updater::DiagnosticStatusWrapper &status) {
@@ -208,9 +212,11 @@ void updateDiagnostics(const ros::TimerEvent& event) {
 }
 
 void tryConnect(const ros::TimerEvent& event = ros::TimerEvent()) {
-  if (!fadeToColorClient)
+  if (!fadeToColorClient) {
     fadeToColorClient = ros::NodeHandle("~").serviceClient<FadeToColor>(
       "/"+blinkmServerName+"/fade_to_color", true);
+    fadeToDefaultColor();
+  }
 }
 
 void updateControl(const ros::TimerEvent& event) {
@@ -260,6 +266,9 @@ int main(int argc, char **argv) {
   updater->setHardwareID("none");
 
   updater->add("Connections", diagnoseConnections);
+  diagnoseFrequency.reset(new diagnostic_updater::FrequencyStatus(
+    diagnostic_updater::FrequencyStatusParam(&controllerFrequency,
+    &controllerFrequency)));
   updater->add("Frequency", &*diagnoseFrequency,
     &diagnostic_updater::FrequencyStatus::run);
   updater->force_update();

@@ -6,4 +6,4 @@ server:
 controller:
   frequency: 1.0
 default:
-  color: white
+  color: [1.0, 1.0, 1.0]

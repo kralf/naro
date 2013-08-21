@@ -275,8 +275,9 @@ bool fadeToColor(FadeToColor::Request& request, FadeToColor::Response&
     clamp<float>(request.rgb[1], 0.0f, 1.0f),
     clamp<float>(request.rgb[2], 0.0f, 1.0f)));
 
-  if (!transfer(setFadeSpeedRequest, "SetFadeSpeed") &&
-      !transfer(fadeToColorRequest, "FadeToColor"))
+  if (!transfer(setFadeSpeedRequest, "SetFadeSpeed"))
+    return false;
+  if (!transfer(fadeToColorRequest, "FadeToColor"))
     return false;
 
   return true;
