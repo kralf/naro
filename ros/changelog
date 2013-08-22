@@ -1,3 +1,9 @@
+naro-ros (0.1-30) lucid; urgency=low
+
+  * Added inversion variable to dive controller
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 22 Aug 2013 10:20:00 +0100
+
 naro-ros (0.1-29) lucid; urgency=low
 
   * More bug fixes

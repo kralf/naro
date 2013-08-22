@@ -19,9 +19,10 @@ model:
 actuator:
   limits:
     minimum:
-      input_channel: 3
+      input_channel: 128
     maximum:
-      input_channel: 2
+      input_channel: 256
+  inverted: true
 controller:
   frequency: 5.0
   tolerance:

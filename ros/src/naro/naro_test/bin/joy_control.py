@@ -48,7 +48,7 @@ class JoyControl(object):
       3: [1.0, 0.3, 0.0]
     }
 
-    enable(range(8))
+    self.enable(range(8))
     rospy.Subscriber("/joy", Joy, self.receiveJoy, queue_size = 1)
     
   def getParameters(self):

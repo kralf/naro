@@ -53,8 +53,9 @@ float modelPlatformArea = 0.1f;                   // [m^2]
 float modelPlatformVolume = 0.012f;               // [m^3]
 float modelPlatformDragCoefficient = 1.0f;
 float modelActuatorMaxFlowRate = 20e-6f;          // [m^3/s]
-int actuatorLimitsMinInputChannel = 3;
-int actuatorLimitsMaxInputChannel = 2;
+int actuatorLimitsMinInputChannel = 128;
+int actuatorLimitsMaxInputChannel = 256;
+bool actuatorInverted = true;
 double controllerFrequency = 5.0;
 float controllerToleranceDepth = 0.1f;             // [m]
 float controllerToleranceVelocity = 0.0f;          // [m/s]
@@ -144,7 +145,8 @@ inline float velocityToAcceleration(float velocity) {
 }
 
 inline float outputToSpeed(float output) {
-  return clamp(output/modelActuatorMaxFlowRate, -1.0f, 1.0f);
+  float sign = actuatorInverted ? -1.0f : 1.0f;
+  return clamp(sign*output/modelActuatorMaxFlowRate, -1.0f, 1.0f);
 }
 
 void getParameters(const ros::NodeHandle& node) {
@@ -187,6 +189,8 @@ void getParameters(const ros::NodeHandle& node) {
     actuatorLimitsMinInputChannel, actuatorLimitsMinInputChannel);
   node.param<int>("actuator/limits/maximum/input_channel",
     actuatorLimitsMaxInputChannel, actuatorLimitsMaxInputChannel);
+  node.param<bool>("actuator/inverted", actuatorInverted,
+    actuatorInverted);
 
   node.param<double>("controller/frequency", controllerFrequency,
     controllerFrequency);
@@ -313,7 +317,6 @@ void updateControl(const ros::TimerEvent& event) {
   
   GetDepth getDepth;
   GetLimits getLimits;
-  SetSpeed setSpeed;
 
   if (!getDepthClient.call(getDepth) ||
       (getDepth.response.filtered != getDepth.response.filtered))
@@ -355,11 +358,10 @@ void updateControl(const ros::TimerEvent& event) {
   
   /** PID velocity control with tolerances
     */ 
-  setSpeed.request.speed = outputToSpeed(
+  float output =
     controllerGainProportional*error+
     controllerGainIntegral*controller.integralError+
-    controllerGainDifferential*derivativeError);
-  setSpeed.request.start = true;
+    controllerGainDifferential*derivativeError;
 
   /** Check limits to saturate control output
     */ 
@@ -369,18 +371,27 @@ void updateControl(const ros::TimerEvent& event) {
   
   if (fabsf(error) > controllerToleranceVelocity) {
     if (minLimit) {
-      if (setSpeed.request.speed > 0.0f)
+      if (output > 0.0f)
         saturate = false;
     }
     else if (maxLimit) {
-      if (setSpeed.request.speed < 0.0f)
+      if (output < 0.0f)
         saturate = false;
     }
-    else
+    else {
       saturate = false;
+    }
   }
-    
-  if (saturate || setSpeedClient.call(setSpeed))
+  
+  if (!saturate) {
+    SetSpeed setSpeed;
+    setSpeed.request.speed = outputToSpeed(output);
+    setSpeed.request.start = true;
+
+    if (setSpeedClient.call(setSpeed))
+      diagnoseFrequency->tick();
+  }
+  else
     diagnoseFrequency->tick();
 }
 

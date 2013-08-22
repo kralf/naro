@@ -90,9 +90,9 @@ Controller controller;
 ros::Time lastTime;
 
 template <typename S, typename D> void copy(const S& srcColor, D& dstColor) {
-  dstColor[0] == srcColor[0];
-  dstColor[1] == srcColor[1];
-  dstColor[2] == srcColor[2];
+  dstColor[0] = srcColor[0];
+  dstColor[1] = srcColor[1];
+  dstColor[2] = srcColor[2];
 }
 
 template <typename S, typename D> bool equals(const S& firstColor, const D&
@@ -112,7 +112,7 @@ inline bool parameterToColor(const ros::NodeHandle& node, const
       color[0] = static_cast<double>(value[0]);
       color[1] = static_cast<double>(value[1]);
       color[2] = static_cast<double>(value[2]);
-    }
+   }
     else {
       ROS_WARN("Invalid array size for color parameter %s: %d", key.c_str(),
         (unsigned int)value.size());
@@ -214,7 +214,7 @@ void updateDiagnostics(const ros::TimerEvent& event) {
 void tryConnect(const ros::TimerEvent& event = ros::TimerEvent()) {
   if (!fadeToColorClient) {
     fadeToColorClient = ros::NodeHandle("~").serviceClient<FadeToColor>(
-      "/"+blinkmServerName+"/fade_to_color", true);
+      "/"+blinkmServerName+"/fade_to_color");//, true);
     fadeToDefaultColor();
   }
 }
@@ -225,7 +225,7 @@ void updateControl(const ros::TimerEvent& event) {
   
   float dt = controller.command.period;
   if (!lastTime.isZero())
-    dt = (ros::Time::now()-lastTime).toSec();
+    dt = (event.current_expected-lastTime).toSec();
   
   if ((dt >= 0.5f*controller.command.period) && controller.high) {
     FadeToColor fadeToColor;
@@ -247,7 +247,7 @@ void updateControl(const ros::TimerEvent& event) {
 
     if (fadeToColorClient.call(fadeToColor)) {
       controller.high = true;
-      lastTime = ros::Time::now();
+      lastTime = event.current_expected;
       
       diagnoseFrequency->tick();
     }
@@ -283,8 +283,8 @@ int main(int argc, char **argv) {
 
   ros::Timer diagnosticsTimer = node.createTimer(
     ros::Duration(1.0), updateDiagnostics);
-  ros::Timer connectionTimer = node.createTimer(
-    ros::Duration(connectionRetry), tryConnect);
+  //ros::Timer connectionTimer = node.createTimer(
+    //ros::Duration(connectionRetry), tryConnect);
   ros::Timer controllerTimer = node.createTimer(
     ros::Duration(1.0/controllerFrequency), updateControl);
 
