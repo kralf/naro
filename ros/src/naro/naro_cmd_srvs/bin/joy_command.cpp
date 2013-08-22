@@ -39,6 +39,9 @@ using namespace sensor_msgs;
 
 std::string finServerName = "fin_controller";
 double connectionRetry = 0.1;
+std::string subscriberTopic = "joy";
+int subscriberQueueSize = 1;
+double subscriberFrequency = 1.0;
 
 boost::shared_ptr<diagnostic_updater::Updater> updater;
 boost::shared_ptr<diagnostic_updater::FrequencyStatus> diagnoseFrequency;
@@ -50,10 +53,19 @@ ros::ServiceClient disableClient;
 ros::ServiceServer getConfigurationService;
 ros::ServiceServer setConfigurationService;
 
+ros::Subscriber subscriber;
+
 void getParameters(const ros::NodeHandle& node) {
   node.param<std::string>("server/fin/name", finServerName, finServerName);
   node.param<double>("server/connection/retry", connectionRetry,
     connectionRetry);
+  
+  node.param<std::string>("subscriber/topic", subscriberTopic,
+    subscriberTopic);
+  node.param<int>("subscriber/queue_size", subscriberQueueSize,
+    subscriberQueueSize);
+  node.param<double>("subscriber/frequency", subscriberFrequency,
+    subscriberFrequency);
 }
 
 bool getConfiguration(GetConfiguration::Request& request,
@@ -64,6 +76,12 @@ bool getConfiguration(GetConfiguration::Request& request,
 bool setConfiguration(SetConfiguration::Request& request,
     SetConfiguration::Response& response) {
   return true;
+}
+
+void receiveJoy(const Joy::ConstPtr& message) {
+  ROS_INFO("Received joy");
+  
+  diagnoseFrequency->tick();
 }
 
 void diagnoseConnections(diagnostic_updater::DiagnosticStatusWrapper &status) {
@@ -79,16 +97,16 @@ void updateDiagnostics(const ros::TimerEvent& event) {
   updater->update();
 }
 
-void subscribe() {
-}
-
 void tryConnect(const ros::TimerEvent& event = ros::TimerEvent()) {
   if (!setCommandsClient)
     setCommandsClient = ros::NodeHandle("~").serviceClient<SetCommands>(
       "/"+finServerName+"/set_commands", true);
   if (!enableClient)
-    setCommandsClient = ros::NodeHandle("~").serviceClient<SetCommands>(
-      "/"+finServerName+"/set_commands", true);
+    enableClient = ros::NodeHandle("~").serviceClient<Enable>(
+      "/"+finServerName+"/enable", true);
+  if (!disableClient)
+    disableClient = ros::NodeHandle("~").serviceClient<Disable>(
+      "/"+finServerName+"/disable", true);
 }
 
 int main(int argc, char **argv) {
@@ -99,11 +117,11 @@ int main(int argc, char **argv) {
   updater->setHardwareID("none");
 
   updater->add("Connections", diagnoseConnections);
-//   diagnoseFrequency.reset(new diagnostic_updater::FrequencyStatus(
-//     diagnostic_updater::FrequencyStatusParam(&controllerFrequency,
-//     &controllerFrequency)));
-//   updater->add("Frequency", &*diagnoseFrequency,
-//     &diagnostic_updater::FrequencyStatus::run);
+  diagnoseFrequency.reset(new diagnostic_updater::FrequencyStatus(
+    diagnostic_updater::FrequencyStatusParam(&subscriberFrequency,
+    &subscriberFrequency)));
+  updater->add("Frequency", &*diagnoseFrequency,
+    &diagnostic_updater::FrequencyStatus::run);
   updater->force_update();
 
   getParameters(node);
@@ -118,7 +136,9 @@ int main(int argc, char **argv) {
   ros::Timer connectionTimer = node.createTimer(
     ros::Duration(connectionRetry), tryConnect);
 
-  subscribe();
+  subscriber = ros::NodeHandle("~").subscribe("/"+subscriberTopic,
+    subscriberQueueSize, receiveJoy);
+  
   tryConnect();
 
   ros::spin();

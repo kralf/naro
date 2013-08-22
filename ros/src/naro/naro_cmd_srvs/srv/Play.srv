@@ -1,0 +1,4 @@
+string name
+float32 delay # in [s]
+float32 duration # in [s]
+---

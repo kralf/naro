@@ -1,0 +1,8 @@
+subscriber:
+  topic: joy
+  queue_size: 1
+publisher:
+  topic: joy
+  queue_size: 1
+library:
+  path: /tmp

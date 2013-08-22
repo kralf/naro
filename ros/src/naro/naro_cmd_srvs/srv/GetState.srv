@@ -1,0 +1,8 @@
+---
+byte STOPPED = 0
+byte RECORDING = 1
+byte PLAYING = 2
+
+byte state # values as given above
+string name
+float32 duration

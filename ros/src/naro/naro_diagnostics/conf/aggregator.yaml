@@ -33,22 +33,30 @@ analyzers:
             type: GenericAnalyzer
             path: USB Servo Controller
             find_and_remove_prefix: 'usc_server:'
-      controllers:
-        type: AnalyzerGroup
-        path: Controllers
-        analyzers:
-          dive_controller:
-            type: GenericAnalyzer
-            path: Dive Controller
-            find_and_remove_prefix: 'dive_controller:'
-          fin_controller:
-            type: GenericAnalyzer
-            path: Fin Controller
-            find_and_remove_prefix: 'fin_controller:'
-          led_controller:
-            type: GenericAnalyzer
-            path: LED Controller
-            find_and_remove_prefix: 'led_controller:'
+  controllers:
+    type: AnalyzerGroup
+    path: Controllers
+    analyzers:
+      dive_controller:
+        type: GenericAnalyzer
+        path: Dive Controller
+        find_and_remove_prefix: 'dive_controller:'
+      fin_controller:
+        type: GenericAnalyzer
+        path: Fin Controller
+        find_and_remove_prefix: 'fin_controller:'
+      led_controller:
+        type: GenericAnalyzer
+        path: LED Controller
+        find_and_remove_prefix: 'led_controller:'
+  command:
+    type: AnalyzerGroup
+    path: Command
+    analyzers:
+      joy_command:
+        type: GenericAnalyzer
+        path: Joystick Command
+        find_and_remove_prefix: 'joy_command:'
   system:
     type: AnalyzerGroup
     path: System

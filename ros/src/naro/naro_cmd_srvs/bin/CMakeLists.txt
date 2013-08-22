@@ -1,1 +1,2 @@
 remake_ros_package_add_executable(joy_command)
+remake_ros_package_add_executable(joy_recorder)

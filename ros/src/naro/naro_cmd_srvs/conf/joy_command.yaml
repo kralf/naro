@@ -3,3 +3,7 @@ server:
     name: fin_controller
   connection:
     retry: 0.1
+subscriber:
+  topic: joy
+  queue_size: 1
+  frequency: 1.0
