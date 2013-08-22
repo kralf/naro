@@ -1,0 +1,5 @@
+server:
+  fin:
+    name: fin_controller
+  connection:
+    retry: 0.1

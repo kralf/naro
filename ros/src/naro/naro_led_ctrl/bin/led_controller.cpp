@@ -220,10 +220,8 @@ void tryConnect(const ros::TimerEvent& event = ros::TimerEvent()) {
 }
 
 void updateControl(const ros::TimerEvent& event) {
-  if (!controller.enabled) {
-    diagnoseFrequency->tick();
+  if (!controller.enabled)
     return;
-  }
   
   float dt = controller.command.period;
   if (!lastTime.isZero())

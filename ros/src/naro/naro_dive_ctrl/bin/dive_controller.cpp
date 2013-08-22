@@ -33,11 +33,11 @@
 #include "naro_dive_ctrl/GetCommand.h"
 #include "naro_dive_ctrl/GetActual.h"
 #include "naro_dive_ctrl/GetError.h"
+#include "naro_dive_ctrl/SetGains.h"
+#include "naro_dive_ctrl/SetCommand.h"
 #include "naro_dive_ctrl/Enable.h"
 #include "naro_dive_ctrl/Disable.h"
 #include "naro_dive_ctrl/Emerge.h"
-#include "naro_dive_ctrl/SetGains.h"
-#include "naro_dive_ctrl/SetCommand.h"
 
 using namespace naro_dive_ctrl;
 using namespace naro_smc_srvs;
@@ -57,7 +57,7 @@ int actuatorLimitsMinInputChannel = 3;
 int actuatorLimitsMaxInputChannel = 2;
 double controllerFrequency = 5.0;
 float controllerToleranceDepth = 0.1f;             // [m]
-float controllerToleranceVelocity = 0.0f;          // [m/s^2]
+float controllerToleranceVelocity = 0.0f;          // [m/s]
 float controllerGainProportional = 1e-2f;
 float controllerGainIntegral = 1e-1f;
 float controllerGainDifferential = 0.0f;
@@ -74,11 +74,11 @@ ros::ServiceServer getGainsService;
 ros::ServiceServer getCommandService;
 ros::ServiceServer getActualService;
 ros::ServiceServer getErrorService;
+ros::ServiceServer setGainsService;
+ros::ServiceServer setCommandService;
 ros::ServiceServer enableService;
 ros::ServiceServer disableService;
 ros::ServiceServer emergeService;
-ros::ServiceServer setGainsService;
-ros::ServiceServer setCommandService;
 
 class Controller {
 public:
@@ -247,6 +247,20 @@ bool getError(GetError::Request& request, GetError::Response& response) {
   return true;
 }
 
+bool setGains(SetGains::Request& request, SetGains::Response& response) {
+  controllerGainProportional = request.proportional;
+  controllerGainDifferential = request.differential;
+  controllerGainIntegral = request.integral;
+}
+
+bool setCommand(SetCommand::Request& request, SetCommand::Response&
+    response) {
+  controller.command.depth = request.depth;
+  controller.command.velocity = request.velocity;
+  
+  return true;
+}
+
 bool enable(Enable::Request& request, Enable::Response& response) {
   controller.enabled = true;
   return true;
@@ -280,20 +294,6 @@ bool emerge(Emerge::Request& request, Emerge::Response& response) {
   return true;
 }
 
-bool setGains(SetGains::Request& request, SetGains::Response& response) {
-  controllerGainProportional = request.proportional;
-  controllerGainDifferential = request.differential;
-  controllerGainIntegral = request.integral;
-}
-
-bool setCommand(SetCommand::Request& request, SetCommand::Response&
-    response) {
-  controller.command.depth = request.depth;
-  controller.command.velocity = request.velocity;
-  
-  return true;
-}
-
 void diagnoseConnections(diagnostic_updater::DiagnosticStatusWrapper &status) {
   if (!getLimitsClient || !setSpeedClient || !getDepthClient)
     status.summaryf(diagnostic_msgs::DiagnosticStatus::ERROR,
@@ -308,10 +308,8 @@ void updateDiagnostics(const ros::TimerEvent& event) {
 }
 
 void updateControl(const ros::TimerEvent& event) {
-  if (!controller.enabled) {
-    diagnoseFrequency->tick();
+  if (!controller.enabled)
     return;
-  }
   
   GetDepth getDepth;
   GetLimits getLimits;
@@ -420,9 +418,11 @@ int main(int argc, char **argv) {
   getCommandService = node.advertiseService("get_command", getCommand);
   getActualService = node.advertiseService("get_actual", getActual);
   getErrorService = node.advertiseService("get_error", getError);
-  emergeService = node.advertiseService("emerge", emerge);
   setGainsService = node.advertiseService("set_gains", setGains);
   setCommandService = node.advertiseService("set_command", setCommand);
+  enableService = node.advertiseService("enable", enable);
+  disableService = node.advertiseService("disable", disable);
+  emergeService = node.advertiseService("emerge", emerge);
 
   ros::Timer diagnosticsTimer = node.createTimer(
     ros::Duration(1.0), updateDiagnostics);

@@ -55,8 +55,8 @@ void update(const ros::TimerEvent& event) {
   GetError getError;
   if (getErrorClient.call(getError))
     printf("\rErr: D %8.2f m  V %8.2f m/s\n",
-      getActual.response.depth,
-      getActual.response.velocity);
+      getError.response.depth,
+      getError.response.velocity);
   else 
     printf("\rErr: n/a\n");
   

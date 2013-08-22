@@ -596,10 +596,8 @@ void updateControl(const ros::TimerEvent& event) {
   for (int i = 0; i < controllers.size(); ++i)
     numEnabled += controllers[i].enabled;
 
-  if (!numEnabled) {
-    diagnoseFrequency->tick();
+  if (!numEnabled)
     return;
-  }
   
   SetProfiles setProfiles;
   setProfiles.request.channels.resize(numEnabled);

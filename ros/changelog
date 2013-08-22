@@ -1,14 +1,21 @@
+naro-ros (0.1-29) lucid; urgency=low
+
+  * More bug fixes
+  * Added stub for naro_cmd_srvs package
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 22 Aug 2013 08:56:00 +0100
+
 naro-ros (0.1-28) lucid; urgency=low
 
   * Some bug fixes in blinkm_server and led_controller
 
- -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 19:12:00 +0100
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 21 Aug 2013 19:12:00 +0100
 
 naro-ros (0.1-27) lucid; urgency=low
 
   * Implemented led_controller in naro_led_ctrl
 
- -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 16:13:00 +0100
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 21 Aug 2013 16:13:00 +0100
 
 naro-ros (0.1-26) lucid; urgency=low
 
@@ -16,14 +23,14 @@ naro-ros (0.1-26) lucid; urgency=low
     naro_fin_ctrl
   * Adapted joy_control.py in naro_test to send Enable request on startup
 
- -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 12:48:00 +0100
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 21 Aug 2013 12:48:00 +0100
 
 naro-ros (0.1-25) lucid; urgency=low
 
   * Added GetActual service request to naro_dive_ctrl
   * Added dive_monitor to naro_test
 
- -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 09:37:00 +0100
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 21 Aug 2013 09:37:00 +0100
 
 naro-ros (0.1-24) lucid; urgency=low
 
@@ -31,7 +38,7 @@ naro-ros (0.1-24) lucid; urgency=low
   * Revised dive controller, untested
   * Renamed depth_monitor to sensor_monitor in naro_test
 
- -- Ralf Kaestner <ralf.kaestner@gmail.com>  Thu, 21 Aug 2013 09:14:00 +0100
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 21 Aug 2013 09:14:00 +0100
 
 naro-ros (0.1-23) lucid; urgency=low
 
