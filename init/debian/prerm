@@ -69,9 +69,9 @@ case "$1" in
 
     if [ -x /etc/init.d/naro-joy-control ]; then
       if [ -x /usr/sbin/invoke-rc.d ]; then
-        invoke-rc.d naro-naro-joy-control stop
+        invoke-rc.d naro-joy-control stop
       else
-        /etc/init.d/naro-naro-joy-control stop
+        /etc/init.d/naro-joy-control stop
       fi
     fi
   ;;

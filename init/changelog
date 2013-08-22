@@ -1,3 +1,9 @@
+naro-init (0.1-10) lucid; urgency=low
+
+  * Fixed error in pre-removal script
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 21 Aug 2013 17:34:00 +0100
+
 naro-init (0.1-9) lucid; urgency=low
 
   * Removed dependency on naro-ros (which is now named
