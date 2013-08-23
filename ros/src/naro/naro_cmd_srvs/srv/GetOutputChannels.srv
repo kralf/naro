@@ -1,0 +1,7 @@
+byte fin
+byte actuator # values as given in Actuator.msg
+---
+OutputChannel frequency
+OutputChannel amplitude
+OutputChannel phase
+OutputChannel offset

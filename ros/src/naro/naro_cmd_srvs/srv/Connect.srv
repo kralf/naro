@@ -6,3 +6,4 @@ byte transfer_function # values as given in Coefficient.msg
 bool invert_arguments
 bool invert_values
 ---
+byte coefficient
