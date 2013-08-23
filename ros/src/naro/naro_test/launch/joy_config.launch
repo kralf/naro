@@ -1,0 +1,10 @@
+<launch>
+  <arg name="conf" default="fish_standard"/>
+  <node name="joy_node" pkg="joy" type="joy_node">
+    <param name="dev" value="/dev/naro/joystick"/>
+  </node>
+  <node name="joy_config" pkg="naro_test" type="joy_config.py" output="screen">
+    <rosparam command="load" file="$(find naro_test)/etc/joy_config.yaml"/>
+    <rosparam command="load" file="$(find naro_test)/etc/joy_config/"$(arg conf).yaml"/>
+  </node>
+</launch>

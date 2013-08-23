@@ -101,6 +101,7 @@ public:
         enum Type {
           identity,
           ramp,
+          slope,
           step,
           absolute,
           square,
@@ -121,6 +122,8 @@ public:
           float y = 0.0f;
           if (type == ramp)
             y = (x > 0.0f) ? x : 0.0f;
+          else if (type == slope)
+            y = (x > 0.0f) ? 1.0f-x : 1.0f;
           else if (type == step)
             y = (x > 0.0f) ? 1.0f : 0.0f;
           else if (type == absolute)

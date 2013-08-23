@@ -1,0 +1,3 @@
+servers:
+  cmd:
+    name: joy_command

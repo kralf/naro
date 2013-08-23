@@ -1,1 +1,1 @@
-remake_add_configurations(*.yaml)
+remake_add_configurations(*.yaml RECURSE)

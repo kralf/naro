@@ -1,0 +1,43 @@
+fins:
+  ventral_left:
+    pitch:
+      servo: 1
+      amplitude:
+        constant: 25.0
+        coefficients:
+          ventral_left_flap:
+            input_channel: 1
+          ventral_left_gain:
+            input_channel: 3
+  ventral_right:
+    pitch:
+      servo: 3
+      amplitude:
+        constant: 25.0
+        coefficients:
+          ventral_left_flap:
+            input_channel: 1
+            invert_arguments: true
+  tail:
+    flap:
+      servo: 6
+      amplitude:
+        constant: 20.0
+        coefficients:
+          tail_flap:
+            input_channel: 1
+      offset:
+        constant: 30.0
+        coefficients:
+          tail_flap:
+            input_channel: 3
+  dorsal:
+    pitch:
+      servo: 5
+      offset:
+        constant: 20.0
+        coefficients:
+          dorsal_pitch:
+            input_channel: 3
+            invert_arguments: true
+ 
