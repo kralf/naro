@@ -1,3 +1,9 @@
+naro-ros (0.1-32) lucid; urgency=low
+
+  * Started implementation of joy_command in naro_cmd_srvs
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Fri, 23 Aug 2013 13:40:00 +0100
+
 naro-ros (0.1-31) lucid; urgency=low
 
   * Implemented joy_recorder in naro_cmd_srvs

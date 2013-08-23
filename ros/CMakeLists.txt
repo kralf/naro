@@ -16,8 +16,8 @@ remake_project(
   CONFIGURATION_DESTINATION /etc/naro
 )
 
-remake_ros_pack_deb()
-
+# remake_ros_pack_deb()
+# 
 # remake_var_name(GIT_REVISION_VAR ${REMAKE_PROJECT_FILENAME} GIT_REVISION)
 # 
 # if(ROS_DISTRIBUTION STRLESS "groovy")

@@ -1,0 +1,4 @@
+byte fin
+byte id # values as given in Actuator.msg
+Actuator actuator
+---

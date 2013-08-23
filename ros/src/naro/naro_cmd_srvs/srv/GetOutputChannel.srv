@@ -1,0 +1,5 @@
+byte fin
+byte actuator # values as given in Actuator.msg
+byte id # values as given in OutputChannel.msg
+---
+OutputChannel output_channel
