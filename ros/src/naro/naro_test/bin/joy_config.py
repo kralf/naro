@@ -34,7 +34,12 @@ class JoyConfig(object):
 
     self.fins = {}
     self.actuators = ["pitch", "flap"]
-    self.outputChannels = ["frequency", "amplitude", "offset", "phase"]
+    self.outputChannels = {
+      "frequency": 1.0,
+      "amplitude": math.pi/180.0,
+      "offset": math.pi/180.0,
+      "phase": math.pi/180.0
+    }
     self.transferFunctions = {
       "identity": Coefficient.IDENTITY,
       "ramp": Coefficient.RAMP,
@@ -73,11 +78,12 @@ class JoyConfig(object):
           rospy.get_param(actuatorNamespace+"/servo", -1))
           
         for outputChannel in self.outputChannels:
+          outputChannelScale = self.outputChannels[outputChannel]
           outputChannelNamespace = actuatorNamespace+"/"+outputChannel
           outputChannel = getattr(actuator, outputChannel)
           
           constant = rospy.get_param(outputChannelNamespace+"/constant", 0.0)
-          setattr(outputChannel, "constant", constant*math.pi/180.0)
+          setattr(outputChannel, "constant", constant*outputChannelScale)
 
           coefficients = {}
           coefficientsNamespace = outputChannelNamespace+"/coefficients"

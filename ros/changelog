@@ -1,3 +1,11 @@
+naro-ros (0.1-35) lucid; urgency=low
+
+  * Finished implementation of joy_config.py
+  * Added joy_config configuration files for turtle, standard and advanced
+    fish and sea mammal
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Sun, 25 Aug 2013 13:35:00 +0100
+
 naro-ros (0.1-34) lucid; urgency=low
 
   * Started implementation of joy_config.py in naro_test

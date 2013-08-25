@@ -26,6 +26,8 @@ fins:
           ventral_left_gain:
             input_channel: 3
             transfer_function: slope
+      offset:
+        constant: 5.0
   ventral_right:
     pitch:
       servo: 2
@@ -57,27 +59,38 @@ fins:
             input_channel: 3
             transfer_function: slope
             invert_arguments: true
-  dorsal:
-    flap:
-      servo: 5
       offset:
-        constant: 20.0
-        coefficients:
-          dorsal_pitch:
-            input_channel: 3
-  tail:
+        constant: 5.0
+  tail_start:
     pitch:
-      servo: 6
+      servo: 4
       frequency:
-        constant: 2.0
+        constant: 1.0
       amplitude:
         constant: 20.0
         coefficients:
-          tail_pitch:
+          tail_start_pitch:
             input_channel: 1
       offset:
-        constant: 30.0
+        constant: 15.0
         coefficients:
-          tail_pitch:
+          tail_start_pitch:
             input_channel: 3
+  tail_end:
+    pitch:
+      servo: 6
+      frequency:
+        constant: 1.0
+      amplitude:
+        constant: 20.0
+        coefficients:
+          tail_end_pitch:
+            input_channel: 1
+      offset:
+        constant: 15.0
+        coefficients:
+          tail_end_pitch:
+            input_channel: 3
+      phase:
+        constant: -90.0
  

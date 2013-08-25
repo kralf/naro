@@ -1,5 +1,5 @@
 <launch>
   <node name="joy_recorder" pkg="naro_cmd_srvs" type="joy_recorder" respawn="true">
-    <rosparam recorder="load" file="$(find naro_cmd_srvs)/etc/joy_recorder.yaml"/>
+    <rosparam command="load" file="$(find naro_cmd_srvs)/etc/joy_recorder.yaml"/>
   </node>
 </launch>

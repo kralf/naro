@@ -289,7 +289,8 @@ bool emerge(Emerge::Request& request, Emerge::Response& response) {
   if (!(getLimits.response.limits & actuatorLimitsMinInputChannel)) {
     SetSpeed setSpeed;
   
-    setSpeed.request.speed = -1.0f;
+    float sign = actuatorInverted ? 1.0f : -1.0f;
+    setSpeed.request.speed = sign*1.0f;
     setSpeed.request.start = true;
     
     return setSpeedClient.call(setSpeed);

@@ -13,7 +13,7 @@ fins:
             input_channel: 3
             transfer_function: slope
       phase:
-        constant: 90.0
+        constant: -90.0
     flap:
       servo: 1
       frequency:
@@ -42,7 +42,7 @@ fins:
             transfer_function: slope
             invert_arguments: true
       phase:
-        constant: 90.0
+        constant: -90.0
     flap:
       servo: 3
       frequency:
@@ -57,27 +57,43 @@ fins:
             input_channel: 3
             transfer_function: slope
             invert_arguments: true
-  dorsal:
-    flap:
-      servo: 5
-      offset:
-        constant: 20.0
-        coefficients:
-          dorsal_pitch:
-            input_channel: 3
-  tail:
+  tail_start:
     pitch:
-      servo: 6
+      servo: 4
       frequency:
-        constant: 2.0
+        constant: 1.0
       amplitude:
         constant: 20.0
         coefficients:
-          tail_pitch:
+          tail_start_pitch:
             input_channel: 1
       offset:
-        constant: 30.0
+        constant: 15.0
         coefficients:
-          tail_pitch:
+          tail_start_pitch:
+            input_channel: 2
+  tail_end:
+    pitch:
+      servo: 6
+      frequency:
+        constant: 1.0
+      amplitude:
+        constant: 20.0
+        coefficients:
+          tail_end_pitch:
+            input_channel: 1
+      phase:
+        constant -90.0
+      offset:
+        constant: 15.0
+        coefficients:
+          tail_end_pitch:
+            input_channel: 2
+    flap:
+      servo: 7
+      offset:
+        constant: 20.0
+        coefficients:
+          tail_end_flap:
             input_channel: 3
  

@@ -1,0 +1,145 @@
+fins:
+  ventral_front_left:
+    pitch:
+      servo: 0
+      frequency:
+        constant: 1.5
+      amplitude:
+        constant: 40.0
+        coefficients:
+          ventral_front_left_flap:
+            input_channel: 1
+          ventral_front_left_gain:
+            input_channel: 3
+            transfer_function: slope
+      phase:
+        constant: 90.0
+    flap:
+      servo: 1
+      frequency:
+        constant: 1.5
+      amplitude:
+        constant: 35.0
+        coefficients:
+          ventral_front_left_flap:
+            input_channel: 1
+          ventral_front_left_gain:
+            input_channel: 3
+            transfer_function: slope
+      offset:
+        constant: 25.0
+        coefficients:
+          ventral_front_left_flap:
+            input_channel: 0
+            invert_arguments: true
+  ventral_front_right:
+    pitch:
+      servo: 2
+      frequency:
+        constant: 1.5
+      amplitude:
+        constant: 40.0
+        coefficients:
+          ventral_front_left_flap:
+            input_channel: 1
+            invert_arguments: true
+          ventral_front_left_gain:
+            input_channel: 3
+            transfer_function: slope
+            invert_arguments: true
+      phase:
+        constant: 90.0
+    flap:
+      servo: 3
+      frequency:
+        constant: 1.5
+      amplitude:
+        constant: 35.0
+        coefficients:
+          ventral_front_left_flap:
+            input_channel: 1
+            invert_arguments: true
+          ventral_front_left_gain:
+            input_channel: 3
+            transfer_function: slope
+            invert_arguments: true
+      offset:
+        constant: 25.0
+        coefficients:
+          ventral_front_right_flap:
+            input_channel: 0
+            invert_arguments: true
+  ventral_rear_left:
+    pitch:
+      servo: 4
+      frequency:
+        constant: 1.5
+      amplitude:
+        constant: 40.0
+        coefficients:
+          ventral_rear_left_flap:
+            input_channel: 1
+          ventral_front_left_gain:
+            input_channel: 3
+            transfer_function: slope
+      phase:
+        constant: 180.0
+    flap:
+      servo: 5
+      frequency:
+        constant: 1.5
+      amplitude:
+        constant: 35.0
+        coefficients:
+          ventral_rear_left_flap:
+            input_channel: 1
+          ventral_rear_left_gain:
+            input_channel: 3
+            transfer_function: slope
+      offset:
+        constant: 25.0
+        coefficients:
+          ventral_rear_right_flap:
+            input_channel: 4
+      phase:
+        constant: 90.0
+  ventral_rear_right:
+    pitch:
+      servo: 6
+      frequency:
+        constant: 1.5
+      amplitude:
+        constant: 40.0
+        coefficients:
+          ventral_rear_right_flap:
+            input_channel: 1
+            invert_arguments: true
+          ventral_rear_right_gain:
+            input_channel: 3
+            transfer_function: slope
+            invert_arguments: true
+      phase:
+        constant: 180.0
+    flap:
+      servo: 7
+      frequency:
+        constant: 1.5
+      amplitude:
+        constant: 35.0
+        coefficients:
+          ventral_rear_right_flap:
+            input_channel: 1
+            invert_arguments: true
+          ventral_rear_right_gain:
+            input_channel: 3
+            transfer_function: slope
+            invert_arguments: true
+      offset:
+        constant: 25.0
+        coefficients:
+          ventral_rear_right_flap:
+            input_channel: 4
+            invert_arguments: true
+      phase:
+        constant: 90.0
+ 

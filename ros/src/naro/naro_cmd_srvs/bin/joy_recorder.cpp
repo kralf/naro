@@ -102,7 +102,6 @@ float stop(const ros::TimerEvent& event = ros::TimerEvent()) {
   else if (state == playing) {
     ROS_INFO("Finished playing from %s.", bag.getFileName().c_str());    
 
-    publisher.shutdown();
     bagPlayTimer.stop();
     bagStopTimer.stop();
     bag.close();
@@ -185,9 +184,6 @@ bool play(Play::Request& request, Play::Response& response) {
     return false;
   }
 
-  publisher = ros::NodeHandle("~").advertise<Joy>("/"+publisherTopic,
-    publisherQueueSize);
-  
   std::vector<std::string> topics;
   topics.push_back("/"+subscriberTopic);
   bagView.reset(new rosbag::View(bag, rosbag::TopicQuery(topics)));  
@@ -242,6 +238,9 @@ int main(int argc, char **argv) {
   ros::NodeHandle node("~");
 
   getParameters(node);
+
+  publisher = ros::NodeHandle("~").advertise<Joy>("/"+publisherTopic,
+    publisherQueueSize);
 
   getStateService = node.advertiseService("get_state", getState);
   recordService = node.advertiseService("record", record);
