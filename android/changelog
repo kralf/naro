@@ -1,3 +1,9 @@
+naro-android (0.1-2) lucid; urgency=low
+
+  * Created intial structure of Android application project
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Tue, 27 Aug 2013 17:08:00 +0100
+
 naro-android (0.1-1) lucid; urgency=low
 
   * Initial commit with project structure and licensing information
