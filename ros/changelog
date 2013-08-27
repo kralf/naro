@@ -1,3 +1,9 @@
+naro-ros (0.1-36) lucid; urgency=low
+
+  * Renamed joy_command.yaml to joy_config.yaml in naro_test
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Tue, 27 Aug 2013 17:06:00 +0100
+
 naro-ros (0.1-35) lucid; urgency=low
 
   * Finished implementation of joy_config.py
