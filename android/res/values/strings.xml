@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Naro Nanins</string>
     <string name="menu_settings">Settings</string>
+    <string name="action_connect">Connect</string>
 </resources>
