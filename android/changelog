@@ -1,3 +1,9 @@
+naro-android (0.1-6) lucid; urgency=low
+
+  * Renamed resources
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 28 Aug 2013 15:43:00 +0100
+
 naro-android (0.1-5) lucid; urgency=low
 
   * Added run target

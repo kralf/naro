@@ -9,6 +9,7 @@
         <include name="*.jar"/>
         <exclude name="android-support*.jar"/>
       </fileset>
+      <pathelement location="${toString:project.library.folder.path}/bin/classes.jar"/>
     </path>
   </target>
 
@@ -22,7 +23,7 @@
       <arg value="-a"/>
       <arg value="android.intent.action.MAIN"/>
       <arg value="-n"/>
-      <arg value="${manifest.manifest.package}/.${manifest.manifest.application.activity.android:name}"/>
+      <arg value="${manifest.manifest.package}/${manifest.manifest.package}.MainActivity"/>
     </exec>
   </target>
 </project>
