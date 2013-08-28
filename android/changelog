@@ -1,3 +1,9 @@
+naro-android (0.1-5) lucid; urgency=low
+
+  * Added run target
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 28 Aug 2013 11:52:00 +0100
+
 naro-android (0.1-4) lucid; urgency=low
 
   * Android application builds
