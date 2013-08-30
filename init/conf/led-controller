@@ -1,0 +1,6 @@
+# This configuration file contains the default parameters of the Naro Nanins
+# LED controller startup script. Make sure to restart the corresponding
+# service for changed parameters to take effect.
+
+# Set RUN=yes to start the LED controller at boot time.
+RUN=yes

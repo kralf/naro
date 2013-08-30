@@ -32,6 +32,9 @@ SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
 # Load the ROS environment
 . $SETUP
 
+export ROS_IP=`hostname -I | head -n 1`
+export ROS_NAMESPACE=`hostname`
+
 # Read defaults if they are present
 [ -r /etc/naro/default/smc-server ] && . /etc/naro/default/smc-server
 

@@ -1,12 +1,12 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          naro-blinkm-server
+# Provides:          naro-joy-command
 # Required-Start:    $network
 # Required-Stop:     $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Naro Nanins smart LED server startup script.
-# Description:       This script starts and stops the smart LED server for
+# Short-Description: Naro Nanins joystick command startup script.
+# Description:       This script starts and stops the joystick command for
 #                    the Naro Nanins ROS bindings and should be placed in
 #                    /etc/init.d.
 ### END INIT INFO
@@ -18,8 +18,8 @@ GROUP=naro
 HOME=/home/naro
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="Naro Nanins smart LED server"
-SCRIPTNAME=/etc/init.d/naro-blinkm-server
+DESC="Naro Nanins joystick command"
+SCRIPTNAME=/etc/init.d/naro-joy-command
 
 # Read configuration variable file if it is present
 [ -r /etc/naro/ros.conf ] && . /etc/naro/ros.conf
@@ -36,15 +36,15 @@ export ROS_IP=`hostname -I | head -n 1`
 export ROS_NAMESPACE=`hostname`
 
 # Read defaults if they are present
-[ -r /etc/naro/default/blinkm-server ] && . /etc/naro/default/blinkm-server
+[ -r /etc/naro/default/joy-command ] && . /etc/naro/default/joy-command
 
 # Exit if daemon shall not run at boot time
 [ "$RUN" = "yes" ] || exit 0
 
-NAME=blinkm_server
+NAME=joy_command
 PIDFILE=$HOME/.ros/$NAME.pid
 DAEMON=/opt/ros/$ROS_DISTRIBUTION/bin/roslaunch
-DAEMON_ARGS="--pid=$PIDFILE --wait naro_blinkm_srvs blinkm_server.launch"
+DAEMON_ARGS="--pid=$PIDFILE --wait naro_cmd_srvs joy_command.launch"
 
 # Exit if daemon is not installed
 [ -x "$DAEMON" ] || exit 0

@@ -1,3 +1,10 @@
+naro-init (0.1-11) lucid; urgency=low
+
+  * Added startup scripts for LED controller and Joystick command
+  * Added ROS_IP and ROS_NAMESPACE exports
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Fri, 30 Aug 2013 12:42:00 +0100
+
 naro-init (0.1-10) lucid; urgency=low
 
   * Fixed error in pre-removal script

@@ -51,6 +51,22 @@ case "$1" in
       fi
     fi
 
+    if [ -x /etc/init.d/naro-led-controller ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-led-controller stop
+      else
+        /etc/init.d/naro-led-controller stop
+      fi
+    fi
+
+    if [ -x /etc/init.d/naro-joy-command ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-joy-command stop
+      else
+        /etc/init.d/naro-joy-command stop
+      fi
+    fi
+
     if [ -x /etc/init.d/naro-system-monitors ]; then
       if [ -x /usr/sbin/invoke-rc.d ]; then
         invoke-rc.d naro-system-monitors stop
