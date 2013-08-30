@@ -1,3 +1,10 @@
+naro-init (0.1-12) lucid; urgency=low
+
+  * Fixed build system configuration to include new scripts and configuration
+    files
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Fri, 30 Aug 2013 12:45:00 +0100
+
 naro-init (0.1-11) lucid; urgency=low
 
   * Added startup scripts for LED controller and Joystick command
