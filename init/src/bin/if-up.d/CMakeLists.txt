@@ -1,1 +1,1 @@
-remake_add_scripts(roscore INSTALL network/if-up.d)
+remake_add_scripts(INSTALL network/if-up.d)

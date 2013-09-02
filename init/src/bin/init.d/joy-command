@@ -24,6 +24,11 @@ SCRIPTNAME=/etc/init.d/naro-joy-command
 # Read configuration variable file if it is present
 [ -r /etc/naro/ros.conf ] && . /etc/naro/ros.conf
 
+if [ -n "$ROS_IP" ]; then 
+  export ROS_IP=$ROS_IP
+  export ROS_MASTER_URI=http://$ROS_IP:11311
+fi
+
 SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
 
 # Exit if the ROS distribution is not installed
@@ -31,9 +36,6 @@ SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
 
 # Load the ROS environment
 . $SETUP
-
-export ROS_IP=`hostname -I | head -n 1`
-export ROS_NAMESPACE=`hostname`
 
 # Read defaults if they are present
 [ -r /etc/naro/default/joy-command ] && . /etc/naro/default/joy-command

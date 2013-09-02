@@ -1,3 +1,12 @@
+naro-init (0.1-13) lucid; urgency=low
+
+  * Changed startup scripts to set ROS_IP and ROS_MASTER_HOST from
+    naro-ros config file (reliable in cases where hostname resolution
+    fails)
+  * Added startup script for dive controller
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Mon, 02 Sep 2013 13:35:00 +0100
+
 naro-init (0.1-12) lucid; urgency=low
 
   * Fixed build system configuration to include new scripts and configuration

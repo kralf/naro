@@ -1,14 +1,14 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          naro-usc-server
+# Provides:          naro-dive-controller
 # Required-Start:    $network
 # Required-Stop:     $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Naro Nanins USC server startup script.
-# Description:       This script starts and stops the USB servo controller
-#                    server for the Naro Nanins ROS bindings and should be
-#                    placed in /etc/init.d.
+# Short-Description: Naro Nanins dive controller startup script.
+# Description:       This script starts and stops the dive controller for
+#                    the Naro Nanins ROS bindings and should be placed in
+#                    /etc/init.d.
 ### END INIT INFO
 
 # Author: Ralf Kaestner <ralf.kaestner@gmail.com>
@@ -18,8 +18,8 @@ GROUP=naro
 HOME=/home/naro
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="Naro Nanins USC server"
-SCRIPTNAME=/etc/init.d/naro-usc-server
+DESC="Naro Nanins dive controller"
+SCRIPTNAME=/etc/init.d/naro-dive-controller
 
 # Read configuration variable file if it is present
 [ -r /etc/naro/ros.conf ] && . /etc/naro/ros.conf
@@ -38,15 +38,15 @@ SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
 . $SETUP
 
 # Read defaults if they are present
-[ -r /etc/naro/default/usc-server ] && . /etc/naro/default/usc-server
+[ -r /etc/naro/default/dive-controller ] && . /etc/naro/default/dive-controller
 
 # Exit if daemon shall not run at boot time
 [ "$RUN" = "yes" ] || exit 0
 
-NAME=usc_server
+NAME=dive_controller
 PIDFILE=$HOME/.ros/$NAME.pid
 DAEMON=/opt/ros/$ROS_DISTRIBUTION/bin/roslaunch
-DAEMON_ARGS="--pid=$PIDFILE --wait naro_usc_srvs usc_server.launch"
+DAEMON_ARGS="--pid=$PIDFILE --wait naro_dive_ctrl dive_controller.launch"
 
 # Exit if daemon is not installed
 [ -x "$DAEMON" ] || exit 0

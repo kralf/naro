@@ -62,6 +62,15 @@ if [ -x /etc/init.d/naro-fin-controller ]; then
   fi
 fi
 
+if [ -x /etc/init.d/naro-dive-controller ]; then
+  update-rc.d naro-dive-controller start 95 2 3 4 5 . stop 5 0 1 6 . > /dev/null
+  if [ -x /usr/sbin/invoke-rc.d ]; then
+    invoke-rc.d naro-dive-controller restart
+  else
+    /etc/init.d/naro-dive-controller restart
+  fi
+fi
+
 if [ -x /etc/init.d/naro-led-controller ]; then
   update-rc.d naro-led-controller start 95 2 3 4 5 . stop 5 0 1 6 . > /dev/null
   if [ -x /usr/sbin/invoke-rc.d ]; then

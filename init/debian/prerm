@@ -51,6 +51,14 @@ case "$1" in
       fi
     fi
 
+    if [ -x /etc/init.d/naro-dive-controller ]; then
+      if [ -x /usr/sbin/invoke-rc.d ]; then
+        invoke-rc.d naro-dive-controller stop
+      else
+        /etc/init.d/naro-dive-controller stop
+      fi
+    fi
+
     if [ -x /etc/init.d/naro-led-controller ]; then
       if [ -x /usr/sbin/invoke-rc.d ]; then
         invoke-rc.d naro-led-controller stop
