@@ -1,34 +1,38 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:columnCount="1"
+    android:orientation="vertical"
     tools:context=".MainActivity" >
 
-    <EditText
-        android:id="@+id/messageEdit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="37dp"
-        android:layout_marginTop="26dp"
-        android:ems="10"
-        android:hint="Send"
-        android:text="Hello world!" >
+    <RelativeLayout
+        android:id="@+id/layout_left_joystick"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_column="0"
+        android:layout_gravity="left|bottom"
+        android:layout_row="0" >
+    </RelativeLayout>
 
-        <requestFocus />
-    </EditText>
+    <RelativeLayout
+        android:id="@+id/layout_right_joystick"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_column="0"
+        android:layout_gravity="right|bottom"
+        android:layout_row="0"
+        android:orientation="vertical" >
+    </RelativeLayout>
 
-    <Button
-        android:id="@+id/sendButton"
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/messageEdit"
-        android:layout_alignBottom="@+id/messageEdit"
-        android:layout_marginLeft="25dp"
-        android:layout_toRightOf="@+id/messageEdit"
-        android:onClick="onSendButtonClick"
-        android:text="Send" />
+    <Gallery
+        android:id="@+id/gallery"
+        android:layout_width="460dp"
+        android:layout_height="320dp"
+        android:layout_column="0"
+        android:layout_gravity="center|top"
+        android:layout_row="0"
+        android:paddingTop="20dp"
+        android:spacing="50dp" />
 
-</RelativeLayout>
+</GridLayout>

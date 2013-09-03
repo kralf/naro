@@ -1,0 +1,26 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <EditTextPreference 
+    android:key="pref_key_joy_topic"
+    android:summary="@string/pref_summary_joy_topic"
+    android:title="@string/pref_title_joy_topic"
+    android:dialogTitle="@string/pref_dialog_title_joy_topic"
+    android:defaultValue="joy_command/joy"/>
+  <EditTextPreference 
+    android:key="pref_key_get_voltage_server"
+    android:summary="@string/pref_summary_get_voltage_server"
+    android:title="@string/pref_title_get_voltage_server"
+    android:dialogTitle="@string/pref_dialog_title_get_voltage_server"
+    android:defaultValue="smc_server/get_voltage"/>
+  <EditTextPreference 
+    android:key="pref_key_battery_min_voltage"
+    android:summary="@string/pref_summary_battery_min_voltage"
+    android:title="@string/pref_title_battery_min_voltage"
+    android:dialogTitle="@string/pref_dialog_title_battery_min_voltage"
+    android:defaultValue="7.2"/>
+  <EditTextPreference 
+    android:key="pref_key_battery_max_voltage"
+    android:summary="@string/pref_summary_battery_max_voltage"
+    android:title="@string/pref_title_battery_max_voltage"
+    android:dialogTitle="@string/pref_dialog_title_battery_max_voltage"
+    android:defaultValue="8.4"/>
+</PreferenceScreen>

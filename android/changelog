@@ -1,3 +1,16 @@
+naro-android (0.1-8) lucid; urgency=low
+
+  * Added action bar items for connecting, displaying the battery
+    state, and opening the preferences
+  * Added preliminary main menu
+  * Added gallery for displaying Naro images
+  * Added virtual joysticks for generating joy messages
+  * Added some basic preferences
+  * Implemented SMC service client for GetVoltage requests
+  * Implemented publisher for sending joy messages
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Tue, 03 Sep 2013 14:04:00 +0100
+
 naro-android (0.1-7) lucid; urgency=low
 
   * First integration testing with ros-android
