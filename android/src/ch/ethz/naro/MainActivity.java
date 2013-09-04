@@ -51,6 +51,7 @@ import org.ros.node.ConnectedNode;
 import org.ros.namespace.GraphName;
 
 import org.ros.android.MasterChooserDialogFragment;
+import org.ros.android.MasterChooserDialogFragmentListener;
 import org.ros.android.NodeMainExecutorService;
 import org.ros.android.NodeMainExecutorServiceListener;
 import org.ros.android.NodeMainExecutorServiceConnection;
@@ -64,7 +65,7 @@ import ch.ethz.naro.SmcClient;
 
 public class MainActivity
   extends Activity
-  implements MasterChooserDialogFragment.Listener,
+  implements MasterChooserDialogFragmentListener,
     NodeMainExecutorServiceListener, NodeMain {
 
   private static final String PREFS_KEY_NAMESPACE = "pref_key_namespace";

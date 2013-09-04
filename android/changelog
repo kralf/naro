@@ -1,3 +1,10 @@
+naro-android (0.1-9) lucid; urgency=low
+
+  * Changes due to externalization of MasterChooserDialogFragmentListener
+    in ros-android
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 04 Sep 2013 07:51:00 +0100
+
 naro-android (0.1-8) lucid; urgency=low
 
   * Added action bar items for connecting, displaying the battery
