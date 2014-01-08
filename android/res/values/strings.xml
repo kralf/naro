@@ -6,6 +6,7 @@
     
     <string name="left_joystick_title">Forward/Reverse</string>
     <string name="right_joystick_title">Left/Right</string>
+    <string name="slider_title">Dive/Emerge</string>
     
     <string name="menu_preferences">Preferences</string>
     <string name="menu_exit">Exit</string>
@@ -43,4 +44,8 @@
     <string name="pref_title_battery_max_voltage">Maximum Battery Voltage</string>
     <string name="pref_summary_battery_max_voltage">Maximum battery voltage</string>
     <string name="pref_dialog_title_battery_max_voltage">Enter the maximum battery voltage</string>
+    
+    <string name="pref_title_set_speed_server">Dive Speed Command Server</string>
+    <string name="pref_summary_set_speed_server">Server for commanding the dive cylinder pump speed</string>
+    <string name="pref_dialog_title_set_speed_server">Enter the server for commanding the dive speed</string>
 </resources>

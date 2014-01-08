@@ -42,51 +42,44 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 
-public class VirtualJoystick
-  implements OnCheckedChangeListener {
+public class VirtualSlider {
   
   public interface Listener {
-    public void onMove(VirtualJoystick joystick);
+    public void onMove(VirtualSlider slider);
   }
   
+  private ImageView bar;
   private ImageView stick;
   private Bitmap pic;
   private Bitmap picRes;
   private RelativeLayout layout;
   private RelativeLayout.LayoutParams params;
-//   private Switch lockX;
-//   private Switch lockY;
   
   private int bitWidth;
   private int bitHeight;
   private int startPosX;
-  private int startPosY;
-  private int radius;
+  private int width;
+  private int height;
   
   private boolean dragging = false;
   private boolean draggingPos = true;
   
-  private boolean moveX = true;
-  private boolean moveY = true;
-  
   private int posX;
-  private int posY;
   
   private String name;
   
   private List listeners = new ArrayList();
 
-  public VirtualJoystick(RelativeLayout layout, int midPointX, int midPointY,
-      int radius, String name) {   
-    bitWidth = (int)Math.round((float)radius*0.6666);
+  public VirtualSlider(RelativeLayout layout, int width, int height,
+      String name) {   
+    bitWidth = (int)Math.round((float)height*0.8);
     bitHeight = bitWidth;
     
-    this.startPosX = midPointX;
-    this.startPosY = midPointY;
-    this.radius = radius;
+    this.startPosX = width/2;
+    this.width = width;
+    this.height = height;
   
-    this.posX = this.startPosX-bitWidth/2;
-    this.posY = this.startPosY-bitHeight/2;
+    this.posX = startPosX-bitWidth/2;
     
     this.name = name;
     
@@ -101,12 +94,12 @@ public class VirtualJoystick
     stick.setImageBitmap(picRes);
     params = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
       LayoutParams.WRAP_CONTENT);
-    params.setMargins(this.posX, this.posY, 0, 0);
+    params.setMargins(posX, height/2-bitHeight/2, 0, 0);
     stick.setLayoutParams(params);  
     
     int textHeight = 20;
-    int wScreen = startPosX+radius;
-    int hScreen= startPosY+radius+textHeight*3/2+4;
+    int wScreen = width;
+    int hScreen= height+textHeight*3/2+4;
     Bitmap pallet = Bitmap.createBitmap(wScreen, hScreen,
       Bitmap.Config.ARGB_8888);
     Canvas canvas = new Canvas(pallet);
@@ -114,40 +107,19 @@ public class VirtualJoystick
     paint.setStyle(Paint.Style.STROKE);
     paint.setFlags(Paint.ANTI_ALIAS_FLAG);
     paint.setStrokeWidth(2.0f);
-    canvas.drawCircle(startPosX, startPosY, radius-1, paint);
-    canvas.drawLine(startPosX, startPosY+radius, startPosX,
-      startPosY-radius, paint);
-    canvas.drawLine(startPosX+radius, startPosY, startPosX-radius,
-      startPosY, paint);
+    canvas.drawLine(bitWidth/2, height/2, width-bitWidth/2, height/2, paint);
     
     Paint text = new Paint();
     text.setTextSize(textHeight);
     text.setStyle(Paint.Style.FILL);
     text.setFlags(Paint.ANTI_ALIAS_FLAG);
     text.setTextAlign(Paint.Align.CENTER);
-    canvas.drawText(name, startPosX, startPosY+radius+textHeight+4, text);
+    canvas.drawText(name, startPosX, height+textHeight+4, text);
     
-    ImageView circle = new ImageView(layout.getContext());
-    circle.setImageBitmap(pallet);
+    bar = new ImageView(layout.getContext());
+    bar.setImageBitmap(pallet);
     
-//     lockY = new Switch(layout.getContext());
-//     lockY.setX(startPosX-95);
-//     lockY.setY(startPosY-radius-70);
-//     lockY.setOnCheckedChangeListener(this);
-//     lockY.setId(2);
-//     lockY.setChecked(true);
-
-//     lockX = new Switch(layout.getContext());
-//     lockX.setX(startPosX+radius+15-53);
-//     lockX.setY(startPosY-25);
-//     lockX.setRotation(90);
-//     lockX.setOnCheckedChangeListener(this);
-//     lockX.setId(1);
-//     lockX.setChecked(true);
-    
-//     layout.addView(lockX);
-//     layout.addView(lockY);
-    layout.addView(circle);
+    layout.addView(bar);
     layout.addView(stick);
     
     layout.setOnTouchListener(myListener);
@@ -168,18 +140,6 @@ public class VirtualJoystick
       ((Listener)it.next()).onMove(this);
   }
   
-  @Override
-  public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//     int id = buttonView.getId();
-    
-//     if (id == 1) {
-//       lockAxis('x', isChecked);
-//     }
-//     if (id == 2) {
-//       this.lockAxis('y', isChecked);
-//     }
-  }
-  
   OnTouchListener myListener = new OnTouchListener(){
     @Override
     public boolean onTouch(View v, MotionEvent event){
@@ -187,36 +147,18 @@ public class VirtualJoystick
         return true;
     }};
   
-  public void lockAxis(char axis, boolean bol) {
-    if (axis == 'x')
-      this.moveX = !bol;
-    if (axis == 'y')
-      this.moveY = !bol;
-  }
-  
   public float getDx() {
-    return ((float)-(this.startPosX-this.posX-bitWidth/2))/radius;
-  }
-  
-  public float getDy() {
-    return (float)(this.startPosY-this.posY-bitHeight/2)/radius;
+    return ((float)-(this.startPosX-this.posX-bitWidth/2))/width;
   }
   
   private void updatePos(MotionEvent event) {
-    double tabX = event.getX();
-    double tabY = event.getY();
-    
-    int tabXint = (int)Math.round(event.getX());
-    int tabYint = (int)Math.round(event.getY());
-    
+    double tabX = event.getX()-bar.getLeft();   
+    int tabXint = (int)Math.round(event.getX()-bar.getLeft());
     int posX = tabXint-bitWidth/2;
-    int posY = tabYint-bitHeight/2;
-      
     int disX = tabXint-startPosX;
-    int disY = tabYint-startPosY;
     
     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-      if(disX*disX+disY*disY < bitWidth*bitWidth) {
+      if(Math.abs(disX) < Math.abs(bitWidth)) {
         dragging = true;
       }
     }
@@ -225,7 +167,7 @@ public class VirtualJoystick
       draggingPos = true;
     }
       
-    if(disX*disX+disY*disY > radius*radius) {
+    if(Math.abs(disX) > width/2-bitWidth/2) {
       draggingPos = false;
     }
     else {
@@ -234,36 +176,23 @@ public class VirtualJoystick
     
     if(dragging) {
       if(!draggingPos) {
-        double dX = tabX-startPosX;
-        double dY = tabY-startPosY;
+        double dx = tabX-startPosX;
         
-        double num = Math.sqrt(1+Math.pow(dY/dX, 2));
-        int dx = (int)Math.round(radius/num);
-        int dy = (int)Math.round(Math.sqrt(radius*radius-dx*dx));
+        if (dx > width/2-bitWidth/2)
+          dx = width/2-bitWidth/2;
+        else if (dx < -(width/2-bitWidth/2))
+          dx = -(width/2-bitWidth/2);
         
-        if (dX < 0)
-          dx = -dx;
-        if (dY < 0)
-          dy = -dy;
-        
-        posX = startPosX+dx-bitWidth/2;
-        posY = startPosY+dy-bitHeight/2;
+        posX = (int)Math.round(startPosX+dx-bitWidth/2);
       }
 
-      if (!moveX) 
-        posX = startPosX-bitWidth/2;
-      if (!moveY) 
-        posY = startPosY-bitWidth/2;
-      
       this.posX = posX;
-      this.posY = posY;
-      params.setMargins(posX, posY, 0, 0);
+      params.setMargins(posX, height/2-bitHeight/2, 0, 0);
       stick.setLayoutParams(params);
     } 
     else {
       this.posX = startPosX-bitWidth/2;
-      this.posY = startPosY-bitHeight/2;
-      params.setMargins(this.posX, this.posY, 0, 0);
+      params.setMargins(this.posX, height/2-bitHeight/2, 0, 0);
       stick.setLayoutParams(params);
     }
     
@@ -271,10 +200,7 @@ public class VirtualJoystick
   }
   
   public float getX() {
-    return -(float)(posX-startPosX+bitWidth/2)/(float)radius;
-  }
-
-  public float getY() {
-    return -(float)(posY-startPosY+bitWidth/2)/(float)radius;
+    return (float)(posX-startPosX+bitWidth/2)/
+      (float)(width/2-bitWidth/2);
   }
 }

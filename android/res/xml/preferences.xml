@@ -23,4 +23,10 @@
     android:title="@string/pref_title_battery_max_voltage"
     android:dialogTitle="@string/pref_dialog_title_battery_max_voltage"
     android:defaultValue="8.4"/>
+  <EditTextPreference 
+    android:key="pref_key_set_speed_server"
+    android:summary="@string/pref_summary_set_speed_server"
+    android:title="@string/pref_title_set_speed_server"
+    android:dialogTitle="@string/pref_dialog_title_set_speed_server"
+    android:defaultValue="smc_server/set_speed"/>
 </PreferenceScreen>

@@ -60,8 +60,9 @@ import java.lang.Float;
 
 import ch.ethz.naro.GalleryAdapter;
 import ch.ethz.naro.VirtualJoystick;
+import ch.ethz.naro.VirtualSlider;
 import ch.ethz.naro.JoyPublisher;
-import ch.ethz.naro.SmcClient;
+import ch.ethz.naro.GetVoltageClient;
 
 public class MainActivity
   extends Activity
@@ -76,6 +77,8 @@ public class MainActivity
     "pref_key_battery_min_voltage";
   private static final String PREFS_KEY_MAX_BATTERY_VOLTAGE =
     "pref_key_battery_max_voltage";
+  private static final String PREFS_KEY_SET_SPEED_SERVER =
+    "pref_key_set_speed_server";
     
   private NodeMainExecutorService service;
   private NodeMainExecutorServiceConnection serviceConnection;  
@@ -86,9 +89,11 @@ public class MainActivity
   
   private VirtualJoystick joyLeft;
   private VirtualJoystick joyRight;
+  private VirtualSlider slider;
   
   private JoyPublisher joyPublisher;
-  private SmcClient smcClient;
+  private GetVoltageClient getVoltageClient;
+  private SetSpeedClient setSpeedClient;
 
   private Handler connectHandler;
   private Handler disconnectHandler;
@@ -113,8 +118,10 @@ public class MainActivity
       PreferenceManager.getDefaultSharedPreferences(this);
     joyPublisher = new JoyPublisher(getString(R.string.node_name),
       preferences.getString(PREFS_KEY_JOY_TOPIC, "joy"));
-    smcClient = new SmcClient(getString(R.string.node_name),
+    getVoltageClient = new GetVoltageClient(getString(R.string.node_name),
       preferences.getString(PREFS_KEY_GET_VOLTAGE_SERVER, "get_voltage"));
+    setSpeedClient = new SetSpeedClient(getString(R.string.node_name),
+      preferences.getString(PREFS_KEY_SET_SPEED_SERVER, "set_speed"));
       
     RelativeLayout layoutLeftJoystick = (RelativeLayout)findViewById(
       R.id.layout_left_joystick);
@@ -131,6 +138,12 @@ public class MainActivity
     joyPublisher.setAxes(joyRight, 3, 2);
     joyRight.lockAxis('y', true);
     joyRight.addListener(joyPublisher);
+    
+    RelativeLayout layoutSlider = (RelativeLayout)findViewById(
+      R.id.layout_slider);
+    slider = new VirtualSlider(layoutSlider, 500, 80,
+      getString(R.string.slider_title));
+    slider.addListener(setSpeedClient);
   }
 
   @Override
@@ -220,7 +233,7 @@ public class MainActivity
         }
       }
     };
-    smcClient.setGetVoltageHandler(getVoltageHandler);
+    getVoltageClient.setGetVoltageHandler(getVoltageHandler);
         
     return true;
   }
@@ -291,12 +304,14 @@ public class MainActivity
 
     service.connect(this);
     service.connect(joyPublisher);
-    service.connect(smcClient);
+    service.connect(getVoltageClient);
+    service.connect(setSpeedClient);
   }
 
   public void onDisconnectClick() {
     service.disconnect(joyPublisher);
-    service.disconnect(smcClient);
+    service.disconnect(getVoltageClient);
+    service.disconnect(setSpeedClient);
     service.disconnect(this);
   }
   

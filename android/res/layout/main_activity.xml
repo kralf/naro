@@ -1,38 +1,39 @@
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:columnCount="1"
-    android:orientation="vertical"
     tools:context=".MainActivity" >
 
     <RelativeLayout
         android:id="@+id/layout_left_joystick"
         android:layout_width="250dp"
         android:layout_height="250dp"
-        android:layout_column="0"
-        android:layout_gravity="left|bottom"
-        android:layout_row="0" >
+        android:layout_gravity="left|bottom" >
     </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/layout_right_joystick"
         android:layout_width="250dp"
         android:layout_height="250dp"
-        android:layout_column="0"
         android:layout_gravity="right|bottom"
-        android:layout_row="0"
         android:orientation="vertical" >
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/layout_slider"
+        android:layout_width="460dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center|bottom"
+        android:gravity="center" >
+
     </RelativeLayout>
 
     <Gallery
         android:id="@+id/gallery"
         android:layout_width="460dp"
         android:layout_height="320dp"
-        android:layout_column="0"
         android:layout_gravity="center|top"
-        android:layout_row="0"
         android:paddingTop="20dp"
         android:spacing="50dp" />
 
-</GridLayout>
+</FrameLayout>

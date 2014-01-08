@@ -42,9 +42,7 @@ import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import ch.ethz.naro.VirtualJoystick;
-
-public class SmcClient
+public class GetVoltageClient
   extends AbstractNodeMain
   implements ServiceResponseListener<naro_smc_srvs.GetVoltageResponse> {
   
@@ -61,23 +59,14 @@ public class SmcClient
   private Timer timer;
   private TimerTask timerTask;
 
-  private float[] axes;
-  private Hashtable<VirtualJoystick, ArrayList<Integer> > joystickAxes;
-  
-  private float x = 0;
-  private float y = 0;
-  
-  public SmcClient(String graphNamespace, String getVoltageServer) {
+  public GetVoltageClient(String graphNamespace, String getVoltageServer) {
     this.graphNamespace = graphNamespace;
     this.getVoltageServer = getVoltageServer;
-
-    joystickAxes = new Hashtable<VirtualJoystick, ArrayList<Integer> >();
-    axes = new float[8];
   }
   
   @Override
   public GraphName getDefaultNodeName() {
-    return GraphName.of(graphNamespace+"/smc_client");
+    return GraphName.of(graphNamespace+"/get_voltage_client");
   }
   
   @Override
@@ -92,7 +81,7 @@ public class SmcClient
     catch (ServiceNotFoundException exception) {
       getVoltageClient = null;
     }
-    
+
     timerTask = new TimerTask() {
       @Override
       public void run() {
@@ -100,7 +89,7 @@ public class SmcClient
           naro_smc_srvs.GetVoltageRequest request =
             getVoltageClient.newMessage();
 
-          getVoltageClient.call(request, SmcClient.this);
+          getVoltageClient.call(request, GetVoltageClient.this);
         }
       }
     };
