@@ -43,9 +43,6 @@ public class GalleryAdapter
   @Override
   public int getCount() {
     if (images != null)
-      Log.i("NARO", String.format("%d", ((DrawableContainer.DrawableContainerState)
-          images.getConstantState()).getChildCount()));
-    if (images != null)
       return ((DrawableContainer.DrawableContainerState)
         images.getConstantState()).getChildCount();
     else

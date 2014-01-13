@@ -25,106 +25,115 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import android.annotation.SuppressLint;
-import android.app.ActionBar.LayoutParams;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.Switch;
 
-public class VirtualSlider {
+public class VirtualSlider
+  extends View {
   
   public interface Listener {
     public void onMove(VirtualSlider slider);
   }
   
-  private ImageView bar;
-  private ImageView stick;
-  private Bitmap pic;
-  private Bitmap picRes;
-  private RelativeLayout layout;
-  private RelativeLayout.LayoutParams params;
-  
-  private int bitWidth;
-  private int bitHeight;
-  private int startPosX;
-  private int width;
-  private int height;
+  protected float position = 0.0f;
+  protected Drawable thumb = null;
+  protected float lineWidth = 5.0f;
+  protected int lineColor = Color.BLACK;
+  protected float lineAlpha = 0.3f;
+  protected List listeners = new ArrayList();
   
   private boolean dragging = false;
-  private boolean draggingPos = true;
   
-  private int posX;
+  public VirtualSlider(Context context) {
+    super(context);
+  }
   
-  private String name;
-  
-  private List listeners = new ArrayList();
+  public VirtualSlider(Context context, AttributeSet attrs) {
+    super(context, attrs);
 
-  public VirtualSlider(RelativeLayout layout, int width, int height,
-      String name) {   
-    bitWidth = (int)Math.round((float)height*0.8);
-    bitHeight = bitWidth;
-    
-    this.startPosX = width/2;
-    this.width = width;
-    this.height = height;
-  
-    this.posX = startPosX-bitWidth/2;
-    
-    this.name = name;
-    
-    Context context = layout.getContext();
-    
-    this.layout = layout;
-    stick = new ImageView(layout.getContext());
-    
-    pic = BitmapFactory.decodeResource(layout.getResources(),
-      R.drawable.joystick);
-    picRes = Bitmap.createScaledBitmap(pic, bitWidth, bitHeight, false);
-    stick.setImageBitmap(picRes);
-    params = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-      LayoutParams.WRAP_CONTENT);
-    params.setMargins(posX, height/2-bitHeight/2, 0, 0);
-    stick.setLayoutParams(params);  
-    
-    int textHeight = 20;
-    int wScreen = width;
-    int hScreen= height+textHeight*3/2+4;
-    Bitmap pallet = Bitmap.createBitmap(wScreen, hScreen,
-      Bitmap.Config.ARGB_8888);
-    Canvas canvas = new Canvas(pallet);
-    Paint paint = new Paint(); 
-    paint.setStyle(Paint.Style.STROKE);
-    paint.setFlags(Paint.ANTI_ALIAS_FLAG);
-    paint.setStrokeWidth(2.0f);
-    canvas.drawLine(bitWidth/2, height/2, width-bitWidth/2, height/2, paint);
-    
-    Paint text = new Paint();
-    text.setTextSize(textHeight);
-    text.setStyle(Paint.Style.FILL);
-    text.setFlags(Paint.ANTI_ALIAS_FLAG);
-    text.setTextAlign(Paint.Align.CENTER);
-    canvas.drawText(name, startPosX, height+textHeight+4, text);
-    
-    bar = new ImageView(layout.getContext());
-    bar.setImageBitmap(pallet);
-    
-    layout.addView(bar);
-    layout.addView(stick);
-    
-    layout.setOnTouchListener(myListener);
+    TypedArray attrArray = context.getTheme().obtainStyledAttributes(
+      attrs, R.styleable.VirtualSlider, 0, 0);
+
+    try {
+      thumb = attrArray.getDrawable(R.styleable.VirtualSlider_thumb);
+      lineWidth = attrArray.getFloat(R.styleable.VirtualSlider_lineWidth,
+        lineWidth);
+      lineColor = attrArray.getColor(R.styleable.VirtualSlider_lineColor,
+        lineColor);
+      lineAlpha = attrArray.getFloat(R.styleable.VirtualSlider_lineAlpha,
+        lineAlpha);
+    } finally {
+      attrArray.recycle();
+    }
   }
     
+  public float getPosition() {
+    return position;
+  }
+  
+  public void setPosition(float position) {
+    if (position > 1.0f)
+      position = 1.0f;
+    else if (position < -1.0f)
+      position = -1.0f;
+      
+    if (position != this.position) {
+      this.position = position;
+
+      invalidate();
+      notifyListeners();
+    }
+  }
+  
+  public void setThumb(Drawable thumb) {
+    this.thumb = thumb;
+    invalidate();
+  }
+  
+  public Drawable getThumb() {
+    return thumb;
+  }
+  
+  public void setLineWidth(float lineWidth) {
+    this.lineWidth = lineWidth;
+    invalidate();
+  }
+  
+  public float getLineWidth() {
+    return lineWidth;
+  }
+  
+  public void setLineColor(int lineColor) {
+    this.lineColor = lineColor;
+    invalidate();
+  }
+  
+  public float getLineColor() {
+    return lineColor;
+  }
+  
+  public void setLineAlpha(float lineAlpha) {
+    this.lineAlpha = lineAlpha;
+    invalidate();
+  }
+  
+  public float getLineAlpha() {
+    return lineAlpha;
+  }
+  
+  public float getThumbRadius() {
+    return 0.5f*getHeight();
+  }
+  
   public void addListener(Listener listener) {
     listeners.add(listener);
   }
@@ -133,74 +142,62 @@ public class VirtualSlider {
     listeners.remove(listener);
   }
   
-  private void firePosition() {
+  @Override
+  protected void onDraw(Canvas canvas) {
+    super.onDraw(canvas);
+    
+    float width = getWidth();
+    float height = getHeight();
+    float thumbRadius = getThumbRadius();
+
+    Paint paint = new Paint();
+    paint.setColor(lineColor);
+    paint.setAlpha((int)(lineAlpha*255.0f));
+    paint.setStyle(Paint.Style.STROKE);
+    paint.setFlags(Paint.ANTI_ALIAS_FLAG);
+    paint.setStrokeWidth(lineWidth);
+    paint.setStrokeCap(Paint.Cap.ROUND);
+    canvas.drawLine(thumbRadius, thumbRadius, width-thumbRadius,
+      thumbRadius, paint);
+      
+    if (thumb != null) {
+      float positionX = position*(0.5f*width-thumbRadius);
+      thumb.setBounds((int)(0.5f*width+positionX-thumbRadius), 0,
+        (int)(0.5f*width+positionX+thumbRadius), (int)(2.0f*thumbRadius));
+      thumb.draw(canvas);
+    }
+  }
+  
+  @Override
+  public boolean onTouchEvent(MotionEvent event) {
+    float width = getWidth();
+    float thumbRadius = getThumbRadius();    
+    float touchX = event.getX()-0.5f*width;
+    
+    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+      if(Math.abs(touchX) < Math.abs(thumbRadius))
+        dragging = true;
+    }
+    else if (event.getAction() == MotionEvent.ACTION_UP)
+      dragging = false;
+      
+    if(dragging)
+      setPosition(touchX/(0.5f*width-thumbRadius));
+    else
+      setPosition(0.0f);
+      
+    return true;
+  }
+  
+  @Override
+  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+  }
+  
+  private void notifyListeners() {
     Iterator it = listeners.iterator();
     
     while (it.hasNext())
       ((Listener)it.next()).onMove(this);
-  }
-  
-  OnTouchListener myListener = new OnTouchListener(){
-    @Override
-    public boolean onTouch(View v, MotionEvent event){
-      updatePos(event);
-        return true;
-    }};
-  
-  public float getDx() {
-    return ((float)-(this.startPosX-this.posX-bitWidth/2))/width;
-  }
-  
-  private void updatePos(MotionEvent event) {
-    double tabX = event.getX()-bar.getLeft();   
-    int tabXint = (int)Math.round(event.getX()-bar.getLeft());
-    int posX = tabXint-bitWidth/2;
-    int disX = tabXint-startPosX;
-    
-    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-      if(Math.abs(disX) < Math.abs(bitWidth)) {
-        dragging = true;
-      }
-    }
-    else if (event.getAction() == MotionEvent.ACTION_UP) {
-      dragging = false;
-      draggingPos = true;
-    }
-      
-    if(Math.abs(disX) > width/2-bitWidth/2) {
-      draggingPos = false;
-    }
-    else {
-      draggingPos = true;
-    }
-    
-    if(dragging) {
-      if(!draggingPos) {
-        double dx = tabX-startPosX;
-        
-        if (dx > width/2-bitWidth/2)
-          dx = width/2-bitWidth/2;
-        else if (dx < -(width/2-bitWidth/2))
-          dx = -(width/2-bitWidth/2);
-        
-        posX = (int)Math.round(startPosX+dx-bitWidth/2);
-      }
-
-      this.posX = posX;
-      params.setMargins(posX, height/2-bitHeight/2, 0, 0);
-      stick.setLayoutParams(params);
-    } 
-    else {
-      this.posX = startPosX-bitWidth/2;
-      params.setMargins(this.posX, height/2-bitHeight/2, 0, 0);
-      stick.setLayoutParams(params);
-    }
-    
-    firePosition();
-  }
-  
-  public float getX() {
-    return (float)(posX-startPosX+bitWidth/2)/
-      (float)(width/2-bitWidth/2);
   }
 }

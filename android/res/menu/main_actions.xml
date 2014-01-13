@@ -10,10 +10,15 @@
     android:title="@string/action_battery"
     android:showAsAction="ifRoom"
     android:orderInCategory="2"/>
+  <item android:id="@+id/action_cylinder"
+    android:icon="@drawable/ic_action_cylinder"
+    android:title="@string/action_cylinder"
+    android:showAsAction="ifRoom"
+    android:orderInCategory="3"/>
   <item android:id="@+id/action_preferences"
     android:icon="@drawable/ic_action_preferences"
     android:title="@string/action_preferences"
     android:showAsAction="ifRoom"
     android:onClick="onPreferencesClick"
-    android:orderInCategory="3"/>
+    android:orderInCategory="4"/>
 </menu>

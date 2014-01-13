@@ -14,4 +14,11 @@
     <extra android:name="category"
       android:value="platform"/>
   </header>
+  <header 
+    android:fragment="ch.ethz.naro.PreferenceFragment"
+    android:title="@string/pref_title_controls"
+    android:summary="@string/pref_summary_controls">
+    <extra android:name="category"
+      android:value="controls"/>
+  </header>
 </preference-headers>

@@ -1,3 +1,13 @@
+naro-android (0.1-11) lucid; urgency=low
+
+  * Revised VirtualJoystick implementation (now cleanly derives from View
+    and has attributes)
+  * Added dive cylinder limits action
+  * Added VirtualSlider and SetSpeedClient implementation
+  * Changed default value for ROS node name programmatically
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Mon, 14 Jan 2014 09:57:00 +0100
+
 naro-android (0.1-10) lucid; urgency=low
 
   * Renamed SmcClient class to GetVoltageClient

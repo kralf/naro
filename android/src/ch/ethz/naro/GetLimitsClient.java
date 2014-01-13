@@ -42,34 +42,45 @@ import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import ch.ethz.naro.VirtualSlider;
-
-public class SetSpeedClient
+public class GetLimitsClient
   extends AbstractNodeMain
-  implements ServiceResponseListener<naro_smc_srvs.SetSpeedResponse>,
-    VirtualSlider.Listener {
+  implements ServiceResponseListener<naro_smc_srvs.GetLimitsResponse> {
+  
+  public class Limits {
+    public boolean analog1 = false;
+    public boolean analog2 = false;
+  
+    public Limits(short limits) {
+      fromShort(limits);
+    };
+    
+    public void fromShort(short limits) {
+      analog1 = ((limits & naro_smc_srvs.GetLimitsResponse.ANALOG1) != 0);
+      analog2 = ((limits & naro_smc_srvs.GetLimitsResponse.ANALOG2) != 0);
+    };
+  };
   
   private String graphNamespace;
-  private String setSpeedServer;
+  private String getLimitsServer;
   
   private ConnectedNode node;
-  private ServiceClient<naro_smc_srvs.SetSpeedRequest,
-    naro_smc_srvs.SetSpeedResponse> setSpeedClient;
-  private Handler getVoltageHandler;
+  private ServiceClient<naro_smc_srvs.GetLimitsRequest,
+    naro_smc_srvs.GetLimitsResponse> getLimitsClient;
+  private Handler getLimitsHandler;
   
-  private float speed = 0.0f;
+  private Limits limits = null;
   
   private Timer timer;
   private TimerTask timerTask;
 
-  public SetSpeedClient(String graphNamespace, String setSpeedServer) {
+  public GetLimitsClient(String graphNamespace, String getLimitsServer) {
     this.graphNamespace = graphNamespace;
-    this.setSpeedServer = setSpeedServer;
+    this.getLimitsServer = getLimitsServer;
   }
   
   @Override
   public GraphName getDefaultNodeName() {
-    return GraphName.of(graphNamespace+"/set_speed_client");
+    return GraphName.of(graphNamespace+"/get_limits_client");
   }
   
   @Override
@@ -78,49 +89,60 @@ public class SetSpeedClient
     
     try {
       NameResolver resolver = node.getResolver();
-      setSpeedClient = node.newServiceClient(resolver.resolve(
-        setSpeedServer), naro_smc_srvs.SetSpeed._TYPE);
+      getLimitsClient = node.newServiceClient(resolver.resolve(
+        getLimitsServer), naro_smc_srvs.GetLimits._TYPE);
     }
     catch (ServiceNotFoundException exception) {
-      setSpeedClient = null;
+      getLimitsClient = null;
     }
 
     timerTask = new TimerTask() {
       @Override
       public void run() {
-        if (setSpeedClient != null) {
-          naro_smc_srvs.SetSpeedRequest request =
-            setSpeedClient.newMessage();
-          request.setSpeed(speed);
-          request.setStart(true);
+        if (getLimitsClient != null) {
+          naro_smc_srvs.GetLimitsRequest request =
+            getLimitsClient.newMessage();
 
-          setSpeedClient.call(request, SetSpeedClient.this);
+          getLimitsClient.call(request, GetLimitsClient.this);
         }
       }
     };
 
     timer = new Timer();
-    timer.schedule(timerTask, 0, 100);
+    timer.schedule(timerTask, 0, 250);
   }
 
   @Override
   public void onShutdownComplete(Node node) {
-    speed = 0.0f;
+    limits = null;
   
-    setSpeedClient = null;
+    getLimitsClient = null;
     this.node = null;
   }
 
   @Override
-  public void onSuccess(naro_smc_srvs.SetSpeedResponse response) {
+  public void onSuccess(naro_smc_srvs.GetLimitsResponse response) {
+    if (limits == null)
+      limits = new Limits(response.getLimits());
+    else
+      limits.fromShort(response.getLimits());
+    
+    if (getLimitsHandler != null) {
+      Message message = getLimitsHandler.obtainMessage();
+      message.obj = limits;
+      getLimitsHandler.sendMessage(message);
+    }
   }
 
   @Override
   public void onFailure(RemoteException exception) {
   }
   
-  @Override
-  public void onMove(VirtualSlider slider) {
-    speed = slider.getPosition();
+  public Limits getLimits() {
+    return limits;
+  }
+
+  public void setGetLimitsHandler(Handler handler) {
+    getLimitsHandler = handler;
   }
 }

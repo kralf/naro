@@ -1,51 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Naro Nanins</string>
-    <string name="pref_name">Naro Nanins Preferences</string>
-    <string name="node_name">naro_app</string>
-    
-    <string name="left_joystick_title">Forward/Reverse</string>
-    <string name="right_joystick_title">Left/Right</string>
-    <string name="slider_title">Dive/Emerge</string>
-    
-    <string name="menu_preferences">Preferences</string>
-    <string name="menu_exit">Exit</string>
-    <string name="menu_connect">Connect</string>
-    
-    <string name="action_connect">Connect</string>
-    <string name="action_battery">Battery</string>
-    <string name="action_preferences">Preferences</string>
-    
-    <string name="alert_disconnect_title">Disconnect from %s?</string>
-    <string name="alert_disconnect_message">All publishers, subscribers, and service connections will be terminated!</string>
-    
-    <string name="service_title">Naro Nanins</string>
-    <string name="service_start_ticker">Naro Nanins node service has started.</string>
-    <string name="service_connect_text">Naro Nanins connected to %s.</string>
-    <string name="service_disconnect_textr">Naro Nanins disconnected.</string>
-    
-    <string name="pref_title_connection">Connection Preferences</string>
-    <string name="pref_summary_connection">ROS communication settings</string>
-    <string name="pref_title_platform">Platform Preferences</string>
-    <string name="pref_summary_platform">Naro Nanins platform settings</string>
+  <string name="app_name">Naro Nanins</string>
+  <string name="pref_name">Naro Nanins Preferences</string>
+  
+  <string name="left_joystick_text">Forward/Reverse</string>
+  <string name="right_joystick_text">Left/Right</string>
+  <string name="slider_text">Dive/Emerge</string>
+  
+  <string name="menu_preferences">Preferences</string>
+  <string name="menu_exit">Exit</string>
+  <string name="menu_connect">Connect</string>
+  
+  <string name="action_connect">Connect</string>
+  <string name="action_battery">Battery Level</string>
+  <string name="action_cylinder">Dive Cylinder Fill Level</string>
+  <string name="action_preferences">Preferences</string>
+  
+  <string name="alert_disconnect_title">Disconnect from %s?</string>
+  <string name="alert_disconnect_message">All publishers, subscribers, and service connections will be terminated!</string>
+  
+  <string name="service_title">Naro Nanins</string>
+  <string name="service_start_ticker">Naro Nanins node service has started.</string>
+  <string name="service_connect_text">Naro Nanins connected to %s.</string>
+  <string name="service_disconnect_textr">Naro Nanins disconnected.</string>
+  
+  <string name="pref_title_connection">Connection Preferences</string>
+  <string name="pref_summary_connection">ROS communication settings</string>
+  
+  <string name="pref_title_platform">Platform Preferences</string>
+  <string name="pref_summary_platform">Naro Nanins platform settings</string>
+  <string name="pref_title_platform_joystick">Joystick command interface</string>
+  <string name="pref_title_platform_battery">Battery monitoring interface</string>
+  <string name="pref_title_platform_cylinder">Dive cylinder command interface</string>
+  
+  <string name="pref_title_controls">Controls Preferences</string>
+  <string name="pref_summary_controls">Naro Nanins app controls settings</string>
+  <string name="pref_title_controls_joystick_left">Left joystick control</string>
+  <string name="pref_title_controls_joystick_right">Right joystick control</string>
 
-    <string name="pref_title_joy_topic">Joystick Topic</string>
-    <string name="pref_summary_joy_topic">Topic for publishing joystick messages</string>
-    <string name="pref_dialog_title_joy_topic">Enter the topic for publishing joystick messages</string>
+  <string name="pref_title_joy_topic">Joystick Topic</string>
+  <string name="pref_summary_joy_topic">Topic for publishing joystick messages</string>
+  <string name="pref_dialog_title_joy_topic">Enter the topic for publishing joystick messages</string>
 
-    <string name="pref_title_get_voltage_server">Voltage Request Server</string>
-    <string name="pref_summary_get_voltage_server">Server for requesting the battery voltage</string>
-    <string name="pref_dialog_title_get_voltage_server">Enter the server for requesting the battery voltage</string>
+  <string name="pref_title_get_voltage_server">Battery Voltage Request Server</string>
+  <string name="pref_summary_get_voltage_server">Server for requesting the battery voltage</string>
+  <string name="pref_dialog_title_get_voltage_server">Enter the server for requesting the battery voltage</string>
 
-    <string name="pref_title_battery_min_voltage">Minimum Battery Voltage</string>
-    <string name="pref_summary_battery_min_voltage">Minimum battery voltage</string>
-    <string name="pref_dialog_title_battery_min_voltage">Enter the minimum battery voltage</string>
+  <string name="pref_title_battery_min_voltage">Minimum Battery Voltage</string>
+  <string name="pref_summary_battery_min_voltage">Minimum battery voltage in [V]</string>
+  <string name="pref_dialog_title_battery_min_voltage">Enter the minimum battery voltage</string>
 
-    <string name="pref_title_battery_max_voltage">Maximum Battery Voltage</string>
-    <string name="pref_summary_battery_max_voltage">Maximum battery voltage</string>
-    <string name="pref_dialog_title_battery_max_voltage">Enter the maximum battery voltage</string>
-    
-    <string name="pref_title_set_speed_server">Dive Speed Command Server</string>
-    <string name="pref_summary_set_speed_server">Server for commanding the dive cylinder pump speed</string>
-    <string name="pref_dialog_title_set_speed_server">Enter the server for commanding the dive speed</string>
+  <string name="pref_title_battery_max_voltage">Maximum Battery Voltage</string>
+  <string name="pref_summary_battery_max_voltage">Maximum battery voltage in [V]</string>
+  <string name="pref_dialog_title_battery_max_voltage">Enter the maximum battery voltage</string>
+  
+  <string name="pref_title_set_speed_server">Diving Speed Command Server</string>
+  <string name="pref_summary_set_speed_server">Server for commanding the dive cylinder pump speed</string>
+  <string name="pref_dialog_title_set_speed_server">Enter the server for commanding the dive cylinder pump speed</string>
+  
+  <string name="pref_title_get_limits_server">Dive Cylinder Limits Request Server</string>
+  <string name="pref_summary_get_limits_server">Server for requesting the dive cylinder limit switches</string>
+  <string name="pref_dialog_title_get_limits_server">Enter the server for requesting the dive cylinder limit switches</string>
+  
+  <string name="pref_title_limits_invert">Invert Dive Cylinder Limits</string>
+  <string name="pref_summary_limits_invert">Invert limit switches indicating an empty/full dive cylinder</string>
+
+  <string name="pref_title_joystick_left_channel_x">Horizontal Axis Channel</string>
+  <string name="pref_summary_joystick_left_channel_x">Channel of left joystick horizontal axis</string>
+  <string name="pref_title_joystick_left_lock_x">Horizontal Axis Lock</string>
+  <string name="pref_summary_joystick_left_lock_x">Lock horizontal axis of left joystick</string>
+  <string name="pref_title_joystick_left_channel_y">Vertical Axis Channel</string>
+  <string name="pref_summary_joystick_left_channel_y">Channel of left joystick vertical axis</string>
+  <string name="pref_title_joystick_left_lock_y">Vertical Axis Lock</string>
+  <string name="pref_summary_joystick_left_lock_y">Lock vertical axis of left joystick</string>
+  
+  <string name="pref_title_joystick_right_channel_x">Horizontal Axis Channel</string>
+  <string name="pref_summary_joystick_right_channel_x">Channel of right joystick horizontal axis</string>
+  <string name="pref_title_joystick_right_lock_x">Horizontal Axis Lock</string>
+  <string name="pref_summary_joystick_right_lock_x">Lock horizontal axis of right joystick</string>
+  <string name="pref_title_joystick_right_channel_y">Vertical Axis Channel</string>
+  <string name="pref_summary_joystick_right_channel_y">Channel of right joystick vertical axis</string>
+  <string name="pref_title_joystick_right_lock_y">Vertical Axis Lock</string>
+  <string name="pref_summary_joystick_right_lock_y">Lock vertical axis of right joystick</string>
 </resources>

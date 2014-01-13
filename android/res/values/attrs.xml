@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <attr name="thumb" format="integer"/>
+  <attr name="thumbRadius" format="dimension"/>
+  <attr name="lockX" format="boolean"/>
+  <attr name="lockY" format="boolean"/>
+  <attr name="lineWidth" format="float"/>
+  <attr name="lineColor" format="color"/>
+  <attr name="lineAlpha" format="float"/>
+  
+  <declare-styleable name="VirtualJoystick">
+    <attr name="thumb"/>
+    <attr name="thumbRadius"/>
+    <attr name="lockX"/>
+    <attr name="lockY"/>
+    <attr name="lineWidth"/>
+    <attr name="lineColor"/>
+    <attr name="lineAlpha"/>
+  </declare-styleable>
+  
+  <declare-styleable name="VirtualSlider">
+    <attr name="thumb"/>
+    <attr name="lineWidth"/>
+    <attr name="lineColor"/>
+    <attr name="lineAlpha"/>
+  </declare-styleable>
+</resources>

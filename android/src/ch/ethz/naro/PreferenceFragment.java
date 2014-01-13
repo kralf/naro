@@ -24,17 +24,17 @@ import android.os.Bundle;
 
 public class PreferenceFragment
   extends android.preference.PreferenceFragment {
-    
+  
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     String category = getArguments().getString("category");
-    if ("connection".equals(category)) {
-      addPreferencesFromResource(R.xml.ros_preferences);
-    }
-    else if ("platform".equals(category)) {
-      addPreferencesFromResource(R.xml.preferences);
-    }
+    if ("connection".equals(category))
+      addPreferencesFromResource(R.xml.preferences_ros);
+    else if ("platform".equals(category))
+      addPreferencesFromResource(R.xml.preferences_platform);
+    else if ("controls".equals(category))
+      addPreferencesFromResource(R.xml.preferences_controls);
   }
 }

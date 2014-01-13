@@ -25,10 +25,8 @@ import com.google.common.base.Preconditions;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.AlertDialog;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuInflater;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.Intent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -38,12 +36,15 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MenuInflater;
 import android.widget.RelativeLayout;
 import android.widget.Gallery;
 import android.widget.ImageView;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import org.ros.node.NodeMain;
 import org.ros.node.Node;
@@ -63,12 +64,15 @@ import ch.ethz.naro.VirtualJoystick;
 import ch.ethz.naro.VirtualSlider;
 import ch.ethz.naro.JoyPublisher;
 import ch.ethz.naro.GetVoltageClient;
+import ch.ethz.naro.SetSpeedClient;
+import ch.ethz.naro.GetLimitsClient;
 
 public class MainActivity
   extends Activity
   implements MasterChooserDialogFragmentListener,
     NodeMainExecutorServiceListener, NodeMain {
 
+  private static final String PREFS_KEY_NODE_NAME = "pref_key_node_name";
   private static final String PREFS_KEY_NAMESPACE = "pref_key_namespace";
   private static final String PREFS_KEY_JOY_TOPIC = "pref_key_joy_topic";
   private static final String PREFS_KEY_GET_VOLTAGE_SERVER =
@@ -79,6 +83,26 @@ public class MainActivity
     "pref_key_battery_max_voltage";
   private static final String PREFS_KEY_SET_SPEED_SERVER =
     "pref_key_set_speed_server";
+  private static final String PREFS_KEY_GET_LIMITS_SERVER =
+    "pref_key_get_limits_server";
+  private static final String PREFS_KEY_INVERT_LIMITS =
+    "pref_key_limits_invert";
+  private static final String PREFS_KEY_JOYSTICK_LEFT_CHANNEL_X =
+    "pref_key_joystick_left_channel_x";
+  private static final String PREFS_KEY_JOYSTICK_LEFT_LOCK_X =
+    "pref_key_joystick_left_lock_x";
+  private static final String PREFS_KEY_JOYSTICK_LEFT_CHANNEL_Y =
+    "pref_key_joystick_left_channel_y";
+  private static final String PREFS_KEY_JOYSTICK_LEFT_LOCK_Y =
+    "pref_key_joystick_left_lock_y";
+  private static final String PREFS_KEY_JOYSTICK_RIGHT_CHANNEL_X =
+    "pref_key_joystick_right_channel_x";
+  private static final String PREFS_KEY_JOYSTICK_RIGHT_LOCK_X =
+    "pref_key_joystick_right_lock_x";
+  private static final String PREFS_KEY_JOYSTICK_RIGHT_CHANNEL_Y =
+    "pref_key_joystick_right_channel_y";
+  private static final String PREFS_KEY_JOYSTICK_RIGHT_LOCK_Y =
+    "pref_key_joystick_right_lock_y";
     
   private NodeMainExecutorService service;
   private NodeMainExecutorServiceConnection serviceConnection;  
@@ -86,18 +110,23 @@ public class MainActivity
 
   MenuItem connectAction;
   MenuItem batteryAction;
+  MenuItem cylinderAction;
   
-  private VirtualJoystick joyLeft;
-  private VirtualJoystick joyRight;
+  private VirtualJoystick joystickLeft;
+  private VirtualJoystick joystickRight;
   private VirtualSlider slider;
   
   private JoyPublisher joyPublisher;
   private GetVoltageClient getVoltageClient;
   private SetSpeedClient setSpeedClient;
+  private GetLimitsClient getLimitsClient;
 
+  private OnSharedPreferenceChangeListener preferenceChangeListener;
+  
   private Handler connectHandler;
   private Handler disconnectHandler;
   private Handler getVoltageHandler;
+  private Handler getLimitsHandler;
   
   public MainActivity() {
     service = new NodeMainExecutorService();
@@ -114,36 +143,27 @@ public class MainActivity
     adapter.setImagesResource(R.drawable.img_gallery);
     gallery.setAdapter(adapter);
     
+    PreferenceManager.setDefaultValues(this,
+      R.xml.preferences_connection, false);
     SharedPreferences preferences = 
       PreferenceManager.getDefaultSharedPreferences(this);
-    joyPublisher = new JoyPublisher(getString(R.string.node_name),
+    joyPublisher = new JoyPublisher(getDefaultNodeName().toString(),
       preferences.getString(PREFS_KEY_JOY_TOPIC, "joy"));
-    getVoltageClient = new GetVoltageClient(getString(R.string.node_name),
+    getVoltageClient = new GetVoltageClient(getDefaultNodeName().toString(),
       preferences.getString(PREFS_KEY_GET_VOLTAGE_SERVER, "get_voltage"));
-    setSpeedClient = new SetSpeedClient(getString(R.string.node_name),
+    setSpeedClient = new SetSpeedClient(getDefaultNodeName().toString(),
       preferences.getString(PREFS_KEY_SET_SPEED_SERVER, "set_speed"));
+    getLimitsClient = new GetLimitsClient(getDefaultNodeName().toString(),
+      preferences.getString(PREFS_KEY_GET_LIMITS_SERVER, "get_limits"));
       
-    RelativeLayout layoutLeftJoystick = (RelativeLayout)findViewById(
-      R.id.layout_left_joystick);
-    joyLeft = new VirtualJoystick(layoutLeftJoystick, 165, 165, 125,
-      getString(R.string.left_joystick_title));
-    joyPublisher.setAxes(joyLeft, 0, 1);
-    joyLeft.lockAxis('x', true);
-    joyLeft.addListener(joyPublisher);
-    
-    RelativeLayout layoutRightJoystick = (RelativeLayout)findViewById(
-      R.id.layout_right_joystick);
-    joyRight = new VirtualJoystick(layoutRightJoystick, 165, 165, 125,
-      getString(R.string.right_joystick_title));
-    joyPublisher.setAxes(joyRight, 3, 2);
-    joyRight.lockAxis('y', true);
-    joyRight.addListener(joyPublisher);
-    
-    RelativeLayout layoutSlider = (RelativeLayout)findViewById(
-      R.id.layout_slider);
-    slider = new VirtualSlider(layoutSlider, 500, 80,
-      getString(R.string.slider_title));
+    joystickLeft = (VirtualJoystick)findViewById(R.id.joystick_left);
+    joystickLeft.addListener(joyPublisher);
+    joystickRight = (VirtualJoystick)findViewById(R.id.joystick_right);
+    joystickRight.addListener(joyPublisher);    
+    slider = (VirtualSlider)findViewById(R.id.slider);
     slider.addListener(setSpeedClient);
+    
+    applyPreferences(preferences);
   }
 
   @Override
@@ -180,7 +200,21 @@ public class MainActivity
     connectAction.getIcon().setAlpha(96);
     batteryAction = menu.findItem(R.id.action_battery);
     batteryAction.getIcon().setAlpha(96);
+    cylinderAction = menu.findItem(R.id.action_cylinder);
+    cylinderAction.getIcon().setAlpha(96);
     
+    preferenceChangeListener = new OnSharedPreferenceChangeListener() {
+      @Override
+      public void onSharedPreferenceChanged(SharedPreferences preferences,
+          String key) {
+        applyPreferences(preferences);
+      }
+    };
+    SharedPreferences preferences = 
+      PreferenceManager.getDefaultSharedPreferences(this);
+    preferences.registerOnSharedPreferenceChangeListener(
+      preferenceChangeListener);
+
     connectHandler = new Handler() {
       public void handleMessage(Message message) {
         Drawable connectIcon = connectAction.getIcon();
@@ -198,6 +232,10 @@ public class MainActivity
         Drawable batteryIcon = batteryAction.getIcon();
         batteryIcon.setLevel(0);
         batteryIcon.setAlpha(96);
+        
+        Drawable cylinderIcon = cylinderAction.getIcon();
+        cylinderIcon.setLevel(0);
+        cylinderIcon.setAlpha(96);
       }
     };
 
@@ -235,12 +273,52 @@ public class MainActivity
     };
     getVoltageClient.setGetVoltageHandler(getVoltageHandler);
         
+    getLimitsHandler = new Handler() {
+      public void handleMessage(Message message) {
+        GetLimitsClient.Limits limits = (GetLimitsClient.Limits)message.obj;
+        Drawable cylinderIcon = cylinderAction.getIcon();
+        
+        if (limits != null) {
+          SharedPreferences preferences = 
+            PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+            
+          boolean invertLimits = preferences.getBoolean(
+            PREFS_KEY_INVERT_LIMITS, false);
+            
+          boolean empty = limits.analog1;
+          boolean full = limits.analog2;
+          if (invertLimits) {
+            boolean swap = empty;
+            empty = full;
+            full = swap;
+          }
+          
+          int level = 2;
+          if (empty)
+            level = 1;
+          else if (full)
+            level = 3;
+            
+          ((LevelListDrawable)cylinderIcon).setLevel(level);
+          cylinderIcon.setAlpha(255);
+        }
+        else {
+          ((LevelListDrawable)cylinderIcon).setLevel(0);
+          cylinderIcon.setAlpha(96);
+        }
+      }
+    };
+    getLimitsClient.setGetLimitsHandler(getLimitsHandler);    
+    
     return true;
   }
 
   @Override
   public GraphName getDefaultNodeName() {
-    return GraphName.of(getString(R.string.node_name));
+    SharedPreferences preferences = 
+      PreferenceManager.getDefaultSharedPreferences(this);      
+    return GraphName.of(preferences.getString(PREFS_KEY_NODE_NAME,
+      "naro_app"));
   }
 
   @Override
@@ -306,12 +384,14 @@ public class MainActivity
     service.connect(joyPublisher);
     service.connect(getVoltageClient);
     service.connect(setSpeedClient);
+    service.connect(getLimitsClient);
   }
 
   public void onDisconnectClick() {
     service.disconnect(joyPublisher);
     service.disconnect(getVoltageClient);
     service.disconnect(setSpeedClient);
+    service.disconnect(getLimitsClient);
     service.disconnect(this);
   }
   
@@ -332,5 +412,27 @@ public class MainActivity
   public boolean onExitClick(MenuItem item) {
     finish();
     return true;
+  }
+  
+  protected void applyPreferences(SharedPreferences preferences) {
+    int leftChannelX = Integer.parseInt(preferences.getString(
+      PREFS_KEY_JOYSTICK_LEFT_CHANNEL_X, "0"));
+    int leftChannelY = Integer.parseInt(preferences.getString(
+      PREFS_KEY_JOYSTICK_LEFT_CHANNEL_Y, "1"));
+    VirtualJoystick.Lock leftLock = new VirtualJoystick.Lock(
+      preferences.getBoolean(PREFS_KEY_JOYSTICK_LEFT_LOCK_X, false),
+      preferences.getBoolean(PREFS_KEY_JOYSTICK_LEFT_LOCK_Y, false));
+    joystickLeft.setLock(leftLock);
+    joyPublisher.setAxes(joystickLeft, leftChannelX, leftChannelY);
+      
+    int rightChannelX = Integer.parseInt(preferences.getString(
+      PREFS_KEY_JOYSTICK_RIGHT_CHANNEL_X, "3"));
+    int rightChannelY = Integer.parseInt(preferences.getString(
+      PREFS_KEY_JOYSTICK_RIGHT_CHANNEL_Y, "2"));
+    VirtualJoystick.Lock rightLock = new VirtualJoystick.Lock(
+      preferences.getBoolean(PREFS_KEY_JOYSTICK_RIGHT_LOCK_X, false),
+      preferences.getBoolean(PREFS_KEY_JOYSTICK_RIGHT_LOCK_Y, false));
+    joystickRight.setLock(rightLock);
+    joyPublisher.setAxes(joystickRight, rightChannelX, rightChannelY);
   }
 }

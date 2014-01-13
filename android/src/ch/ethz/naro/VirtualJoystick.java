@@ -22,137 +22,261 @@
 package ch.ethz.naro;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
-import android.annotation.SuppressLint;
-import android.app.ActionBar.LayoutParams;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.Switch;
 
 public class VirtualJoystick
-  implements OnCheckedChangeListener {
+  extends View {
+  
+  public enum Axis {
+    X,
+    Y;
+  };
+  
+  public static class Position {
+    protected float x;
+    protected float y;
+    
+    public Position() {
+      this(0.0f, 0.0f);
+    }
+    
+    public Position(float x, float y)  {
+      setX(x);
+      setY(y);
+    }
+    
+    public Position(Position src) {
+      x = src.x;
+      y = src.y;
+    }
+    
+    void setX(float x) {
+      this.x = x;
+    }
+    
+    float getX() {
+      return x;
+    }
+
+    void setY(float y) {
+      this.y = y;
+    }
+    
+    float getY() {
+      return y;
+    }
+  };
+  
+  public static class Lock {
+    protected boolean x;
+    protected boolean y;
+    
+    public Lock() {
+      this(false, false);
+    }
+    
+    public Lock(boolean x, boolean y)  {
+      setX(x);
+      setY(y);
+    }
+    
+    public Lock(Lock src) {
+      x = src.x;
+      y = src.y;
+    }
+    
+    void setX(boolean x) {
+      this.x = x;
+    }
+    
+    boolean getX() {
+      return x;
+    }
+
+    void setY(boolean y) {
+      this.y = y;
+    }
+    
+    boolean getY() {
+      return y;
+    }
+  };
   
   public interface Listener {
     public void onMove(VirtualJoystick joystick);
   }
   
-  private ImageView stick;
-  private Bitmap pic;
-  private Bitmap picRes;
-  private RelativeLayout layout;
-  private RelativeLayout.LayoutParams params;
-//   private Switch lockX;
-//   private Switch lockY;
-  
-  private int bitWidth;
-  private int bitHeight;
-  private int startPosX;
-  private int startPosY;
-  private int radius;
+  protected Position position = new Position();
+  protected Lock lock = new Lock();
+  protected Drawable thumb = null;
+  protected int thumbRadius = 50;
+  protected float lineWidth = 5.0f;
+  protected int lineColor = Color.BLACK;
+  protected float lineAlpha = 0.3f;
+  protected List listeners = new ArrayList();
   
   private boolean dragging = false;
-  private boolean draggingPos = true;
   
-  private boolean moveX = true;
-  private boolean moveY = true;
+  public VirtualJoystick(Context context) {
+    super(context);
+  }
   
-  private int posX;
-  private int posY;
-  
-  private String name;
-  
-  private List listeners = new ArrayList();
+  public VirtualJoystick(Context context, AttributeSet attrs) {
+    super(context, attrs);
 
-  public VirtualJoystick(RelativeLayout layout, int midPointX, int midPointY,
-      int radius, String name) {   
-    bitWidth = (int)Math.round((float)radius*0.6666);
-    bitHeight = bitWidth;
-    
-    this.startPosX = midPointX;
-    this.startPosY = midPointY;
-    this.radius = radius;
-  
-    this.posX = this.startPosX-bitWidth/2;
-    this.posY = this.startPosY-bitHeight/2;
-    
-    this.name = name;
-    
-    Context context = layout.getContext();
-    
-    this.layout = layout;
-    stick = new ImageView(layout.getContext());
-    
-    pic = BitmapFactory.decodeResource(layout.getResources(),
-      R.drawable.joystick);
-    picRes = Bitmap.createScaledBitmap(pic, bitWidth, bitHeight, false);
-    stick.setImageBitmap(picRes);
-    params = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-      LayoutParams.WRAP_CONTENT);
-    params.setMargins(this.posX, this.posY, 0, 0);
-    stick.setLayoutParams(params);  
-    
-    int textHeight = 20;
-    int wScreen = startPosX+radius;
-    int hScreen= startPosY+radius+textHeight*3/2+4;
-    Bitmap pallet = Bitmap.createBitmap(wScreen, hScreen,
-      Bitmap.Config.ARGB_8888);
-    Canvas canvas = new Canvas(pallet);
-    Paint paint = new Paint(); 
-    paint.setStyle(Paint.Style.STROKE);
-    paint.setFlags(Paint.ANTI_ALIAS_FLAG);
-    paint.setStrokeWidth(2.0f);
-    canvas.drawCircle(startPosX, startPosY, radius-1, paint);
-    canvas.drawLine(startPosX, startPosY+radius, startPosX,
-      startPosY-radius, paint);
-    canvas.drawLine(startPosX+radius, startPosY, startPosX-radius,
-      startPosY, paint);
-    
-    Paint text = new Paint();
-    text.setTextSize(textHeight);
-    text.setStyle(Paint.Style.FILL);
-    text.setFlags(Paint.ANTI_ALIAS_FLAG);
-    text.setTextAlign(Paint.Align.CENTER);
-    canvas.drawText(name, startPosX, startPosY+radius+textHeight+4, text);
-    
-    ImageView circle = new ImageView(layout.getContext());
-    circle.setImageBitmap(pallet);
-    
-//     lockY = new Switch(layout.getContext());
-//     lockY.setX(startPosX-95);
-//     lockY.setY(startPosY-radius-70);
-//     lockY.setOnCheckedChangeListener(this);
-//     lockY.setId(2);
-//     lockY.setChecked(true);
+    TypedArray attrArray = context.getTheme().obtainStyledAttributes(
+      attrs, R.styleable.VirtualJoystick, 0, 0);
 
-//     lockX = new Switch(layout.getContext());
-//     lockX.setX(startPosX+radius+15-53);
-//     lockX.setY(startPosY-25);
-//     lockX.setRotation(90);
-//     lockX.setOnCheckedChangeListener(this);
-//     lockX.setId(1);
-//     lockX.setChecked(true);
-    
-//     layout.addView(lockX);
-//     layout.addView(lockY);
-    layout.addView(circle);
-    layout.addView(stick);
-    
-    layout.setOnTouchListener(myListener);
+    try {
+      thumb = attrArray.getDrawable(R.styleable.VirtualJoystick_thumb);
+      thumbRadius = attrArray.getDimensionPixelSize(
+        R.styleable.VirtualJoystick_thumbRadius, thumbRadius);
+      lock.setX(attrArray.getBoolean(R.styleable.VirtualJoystick_lockX,
+        lock.getX()));
+      lock.setY(attrArray.getBoolean(R.styleable.VirtualJoystick_lockY,
+        lock.getY()));
+      lineWidth = attrArray.getFloat(R.styleable.VirtualJoystick_lineWidth,
+        lineWidth);
+      lineColor = attrArray.getColor(R.styleable.VirtualJoystick_lineColor,
+        lineColor);
+      lineAlpha = attrArray.getFloat(R.styleable.VirtualJoystick_lineAlpha,
+        lineAlpha);
+    } finally {
+      attrArray.recycle();
+    }
   }
     
+  public void setPosition(Position position) {
+    float x = position.getX();
+    float y = position.getY();
+  
+    if (lock.getX())
+      x = 0.0f;
+    if (lock.getY())
+      y = 0.0f;
+  
+    if (x > 1.0f)
+      x = 1.0f;
+    else if (x < -1.0f)
+      x = -1.0f;
+  
+    if (y > 1.0f)
+      y = 1.0f;
+    else if (y < -1.0f)
+      y = -1.0f;
+      
+    float norm = (float)Math.sqrt(x*x+y*y);
+    if (norm > 1.0f) {
+      x /= norm;
+      y /= norm;
+    }
+  
+    if ((this.position.getX() != x) || (this.position.getY() != y)) {
+      this.position.setX(x);
+      this.position.setY(y);
+
+      invalidate();
+      notifyListeners();
+    }
+  }
+  
+  public void setPosition(float x, float y) {
+    setPosition(new Position(x, y));
+  }
+  
+  public Position getPosition() {
+    return position;
+  }
+  
+  public float getPosition(Axis axis) {
+    if (axis == Axis.Y)
+      return position.getY();
+    else
+      return position.getX();
+  }
+  
+  public void setLock(Lock lock) {
+    if (this.lock != lock) {
+      this.lock = lock;
+      setPosition(position);
+    }
+  }
+  
+  public Lock getLock() {
+    return lock;
+  }
+  
+  public boolean getLock(Axis axis) {
+    if (axis == Axis.Y)
+      return lock.getY();
+    else
+      return lock.getX();
+  }
+  
+  public void setThumb(Drawable thumb) {
+    this.thumb = thumb;
+    invalidate();
+  }
+  
+  public Drawable getThumb() {
+    return thumb;
+  }
+  
+  public void setThumbRadius(int thumbRadius) {
+    this.thumbRadius = thumbRadius;
+    invalidate();
+  }
+  
+  public int getThumbRadius() {
+    return thumbRadius;
+  }
+  
+  public void setLineWidth(float lineWidth) {
+    this.lineWidth = lineWidth;
+    invalidate();
+  }
+  
+  public float getLineWidth() {
+    return lineWidth;
+  }
+  
+  public void setLineColor(int lineColor) {
+    this.lineColor = lineColor;
+    invalidate();
+  }
+  
+  public float getLineColor() {
+    return lineColor;
+  }
+  
+  public void setLineAlpha(float lineAlpha) {
+    this.lineAlpha = lineAlpha;
+    invalidate();
+  }
+  
+  public float getLineAlpha() {
+    return lineAlpha;
+  }
+  
+  public float getRadius() {
+    return 0.5f*Math.min(getWidth(), getHeight())-thumbRadius;
+  }
+  
   public void addListener(Listener listener) {
     listeners.add(listener);
   }
@@ -161,120 +285,100 @@ public class VirtualJoystick
     listeners.remove(listener);
   }
   
-  private void firePosition() {
+  public void lock(Axis axis) {
+    if (axis == Axis.Y)
+      setLock(new Lock(lock.getX(), true));
+    else
+      setLock(new Lock(true, lock.getY()));
+  }
+  
+  public void unlock(Axis axis) {
+    if (axis == Axis.Y)
+      setLock(new Lock(lock.getX(), false));
+    else
+      setLock(new Lock(false, lock.getY()));
+  }
+  
+  @Override
+  protected void onDraw(Canvas canvas) {
+    super.onDraw(canvas);
+    
+    float width = getWidth();
+    float height = getHeight();
+    float radius = getRadius();
+    float thumbRadius = getThumbRadius();
+
+    Paint paint = new Paint();
+    Path path = new Path();
+    paint.setColor(lineColor);
+    paint.setAlpha((int)(lineAlpha*255.0f));
+    paint.setStyle(Paint.Style.STROKE);
+    paint.setFlags(Paint.ANTI_ALIAS_FLAG);
+    paint.setStrokeWidth(lineWidth);
+    paint.setStrokeCap(Paint.Cap.ROUND);
+    path.addCircle(0.5f*width, 0.5f*height, radius, Path.Direction.CW);
+    path.moveTo(0.5f*width-radius, 0.5f*height);
+    path.lineTo(0.5f*width+radius, 0.5f*height);
+    path.moveTo(0.5f*width, 0.5f*height-radius);
+    path.lineTo(0.5f*width, 0.5f*height+radius);
+    canvas.drawPath(path, paint);
+      
+    if (thumb != null) {
+      thumb.setBounds(
+        (int)(0.5f*width+position.getX()*radius-thumbRadius),
+        (int)(0.5f*height+position.getY()*radius-thumbRadius),
+        (int)(0.5f*width+position.getX()*radius+thumbRadius),
+        (int)(0.5f*height+position.getY()*radius+thumbRadius));
+      thumb.draw(canvas);
+    }
+  }
+  
+  @Override
+  public boolean onTouchEvent(MotionEvent event) {
+    float width = getWidth();
+    float height = getHeight();
+    float radius = getRadius();
+    float thumbRadius = getThumbRadius();
+    float touchX = event.getX()-0.5f*width;
+    float touchY = event.getY()-0.5f*height;
+    float touchRadius = (float)Math.sqrt(touchX*touchX+touchY*touchY);
+    
+    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+      if(touchRadius < thumbRadius)
+        dragging = true;
+    }
+    else if (event.getAction() == MotionEvent.ACTION_UP)
+      dragging = false;
+      
+    if(dragging)
+      setPosition(touchX/radius, touchY/radius);      
+    else
+      setPosition(0.0f, 0.0f);
+        
+    return true;
+  }
+  
+  @Override
+  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {    
+    int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+    int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+    int width = MeasureSpec.getSize(widthMeasureSpec);
+    int height = MeasureSpec.getSize(heightMeasureSpec);
+
+    if ((widthMode != MeasureSpec.EXACTLY) && 
+        (heightMode != MeasureSpec.UNSPECIFIED))
+      width = height;
+    else if ((heightMode != MeasureSpec.EXACTLY) && 
+        (widthMode != MeasureSpec.UNSPECIFIED))
+      height = width;
+    
+    setMeasuredDimension(width, height);
+  }
+  
+  private void notifyListeners() {
     Iterator it = listeners.iterator();
     
     while (it.hasNext())
       ((Listener)it.next()).onMove(this);
-  }
-  
-  @Override
-  public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//     int id = buttonView.getId();
-    
-//     if (id == 1) {
-//       lockAxis('x', isChecked);
-//     }
-//     if (id == 2) {
-//       this.lockAxis('y', isChecked);
-//     }
-  }
-  
-  OnTouchListener myListener = new OnTouchListener(){
-    @Override
-    public boolean onTouch(View v, MotionEvent event){
-      updatePos(event);
-        return true;
-    }};
-  
-  public void lockAxis(char axis, boolean bol) {
-    if (axis == 'x')
-      this.moveX = !bol;
-    if (axis == 'y')
-      this.moveY = !bol;
-  }
-  
-  public float getDx() {
-    return ((float)-(this.startPosX-this.posX-bitWidth/2))/radius;
-  }
-  
-  public float getDy() {
-    return (float)(this.startPosY-this.posY-bitHeight/2)/radius;
-  }
-  
-  private void updatePos(MotionEvent event) {
-    double tabX = event.getX();
-    double tabY = event.getY();
-    
-    int tabXint = (int)Math.round(event.getX());
-    int tabYint = (int)Math.round(event.getY());
-    
-    int posX = tabXint-bitWidth/2;
-    int posY = tabYint-bitHeight/2;
-      
-    int disX = tabXint-startPosX;
-    int disY = tabYint-startPosY;
-    
-    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-      if(disX*disX+disY*disY < bitWidth*bitWidth) {
-        dragging = true;
-      }
-    }
-    else if (event.getAction() == MotionEvent.ACTION_UP) {
-      dragging = false;
-      draggingPos = true;
-    }
-      
-    if(disX*disX+disY*disY > radius*radius) {
-      draggingPos = false;
-    }
-    else {
-      draggingPos = true;
-    }
-    
-    if(dragging) {
-      if(!draggingPos) {
-        double dX = tabX-startPosX;
-        double dY = tabY-startPosY;
-        
-        double num = Math.sqrt(1+Math.pow(dY/dX, 2));
-        int dx = (int)Math.round(radius/num);
-        int dy = (int)Math.round(Math.sqrt(radius*radius-dx*dx));
-        
-        if (dX < 0)
-          dx = -dx;
-        if (dY < 0)
-          dy = -dy;
-        
-        posX = startPosX+dx-bitWidth/2;
-        posY = startPosY+dy-bitHeight/2;
-      }
-
-      if (!moveX) 
-        posX = startPosX-bitWidth/2;
-      if (!moveY) 
-        posY = startPosY-bitWidth/2;
-      
-      this.posX = posX;
-      this.posY = posY;
-      params.setMargins(posX, posY, 0, 0);
-      stick.setLayoutParams(params);
-    } 
-    else {
-      this.posX = startPosX-bitWidth/2;
-      this.posY = startPosY-bitHeight/2;
-      params.setMargins(this.posX, this.posY, 0, 0);
-      stick.setLayoutParams(params);
-    }
-    
-    firePosition();
-  }
-  
-  public float getX() {
-    return -(float)(posX-startPosX+bitWidth/2)/(float)radius;
-  }
-
-  public float getY() {
-    return -(float)(posY-startPosY+bitWidth/2)/(float)radius;
   }
 }

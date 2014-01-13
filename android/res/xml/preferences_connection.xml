@@ -1,0 +1,11 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <EditTextPreference 
+    android:key="pref_key_node_name"
+    android:defaultValue="naro_app"/>
+  <EditTextPreference 
+    android:key="pref_key_ros_master_uri"
+    android:defaultValue="http://192.168.1.10:11311"/>
+  <EditTextPreference 
+    android:key="pref_key_namespace"
+    android:defaultValue=""/>
+</PreferenceScreen>

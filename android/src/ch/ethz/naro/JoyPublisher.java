@@ -113,8 +113,8 @@ public class JoyPublisher
       joystickAxes = this.joystickAxes.get(joystick);
     }
   
-    axes[joystickAxes.get(0)] = joystick.getX();
-    axes[joystickAxes.get(1)] = joystick.getY();
+    axes[joystickAxes.get(0)] = joystick.getPosition().getX();
+    axes[joystickAxes.get(1)] = joystick.getPosition().getY();
   }
   
   public void setAxes(VirtualJoystick joystick, int x, int y) {
