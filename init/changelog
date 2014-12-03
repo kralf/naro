@@ -1,3 +1,10 @@
+naro-init (0.1-16) lucid; urgency=low
+
+  * Fixed bug in roscore init script which would cause roscore to start
+    if ROSM_MASTER was set
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 03 Dec 2014 10:34:00 +0100
+
 naro-init (0.1-15) lucid; urgency=low
 
   * Removed code artifact from blinkm init script
