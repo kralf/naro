@@ -2,3 +2,6 @@
 # Use the specified ROS distribution, with files commonly installed under
 # /opt/ros/$ROS_DISTRIBUTION
 ROS_DISTRIBUTION=${ROS_DISTRIBUTION}
+ROS_MASTER=
+ROS_NAMESPACE=
+

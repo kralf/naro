@@ -1,0 +1,5 @@
+<launch>
+  <node name="xmas_movie" pkg="naro_sandbox" type="xmas_movie.py" output="screen">
+    <rosparam command="load" file="$(find naro_sandbox)/etc/xmas_movie.yaml"/>
+  </node>
+</launch>
