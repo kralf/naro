@@ -1,5 +1,7 @@
 <launch>
-  <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator">
-    <rosparam command="load" file="$(find naro_diagnostics)/etc/aggregator.yaml"/>
-  </node>
+  <group ns="$(optenv ROS_NAMESPACE)">
+    <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator">
+      <rosparam command="load" file="$(find naro_diagnostics)/etc/aggregator.yaml"/>
+    </node>
+  </group>
 </launch>

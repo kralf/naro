@@ -1,5 +1,7 @@
 <launch>
-  <node name="dive_monitor" pkg="naro_test" type="dive_monitor" output="screen">
-    <rosparam command="load" file="$(find naro_test)/etc/dive_monitor.yaml"/>
-  </node>
+  <group ns="$(optenv ROS_NAMESPACE)">
+    <node name="dive_monitor" pkg="naro_test" type="dive_monitor" output="screen">
+      <rosparam command="load" file="$(find naro_test)/etc/dive_monitor.yaml"/>
+    </node>
+  </group>
 </launch>

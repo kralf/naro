@@ -1,5 +1,7 @@
 <launch>
-  <node name="depth_sensor" pkg="naro_sensor_srvs" type="depth_sensor" respawn="true">
-    <rosparam command="load" file="$(find naro_sensor_srvs)/etc/depth_sensor.yaml"/>
-  </node>
+  <group ns="$(optenv ROS_NAMESPACE)">
+    <node name="depth_sensor" pkg="naro_sensor_srvs" type="depth_sensor" respawn="true">
+      <rosparam command="load" file="$(find naro_sensor_srvs)/etc/depth_sensor.yaml"/>
+    </node>
+  </group>
 </launch>

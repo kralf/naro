@@ -1,5 +1,7 @@
 <launch>
-  <node name="usc_monitor" pkg="naro_test" type="usc_monitor" output="screen">
-    <rosparam command="load" file="$(find naro_test)/etc/usc_monitor.yaml"/>
-  </node>
+  <group ns="$(optenv ROS_NAMESPACE)">
+    <node name="usc_monitor" pkg="naro_test" type="usc_monitor" output="screen">
+      <rosparam command="load" file="$(find naro_test)/etc/usc_monitor.yaml"/>
+    </node>
+  </group>
 </launch>

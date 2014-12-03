@@ -50,6 +50,8 @@ class MusicControl(object):
 
     self.start()
 
+    self.timer = rospy.Timer(rospy.Rate(10), self.update)
+
   def getParameters(self):
     self.smcServerName = rospy.get_param("servers/smc/name",
       self.smcServerName)
@@ -60,30 +62,8 @@ class MusicControl(object):
     self.finServerName = rospy.get_param("servers/fin/name",
       self.finServerName)
 
-  def getLimits(self):
-    rospy.wait_for_service(self.smcServerName+"/get_limits")
-    try:
-      request = rospy.ServiceProxy(self.smcServerName+"/get_limits", GetLimits)
-      return request().limits
-    except rospy.ServiceException, exception:
-      print "GetLimits request failed: %s" % exception
-      return 0
-
   def start(self):
-    rospy.wait_for_service(self.smcServerName+"/start")
-    try:
-      request = rospy.ServiceProxy(self.smcServerName+"/start", Start)
-      request()
-    except rospy.ServiceException, exception:
-      print "Start request failed: %s" % exception
-
-  def setSpeed(self, speed):
-    rospy.wait_for_service(self.smcServerName+"/set_speed")
-    try:
-      request = rospy.ServiceProxy(self.smcServerName+"/set_speed", SetSpeed)
-      request(speed)
-    except rospy.ServiceException, exception:
-      print "SetSpeed request failed: %s" % exception
+    pass
 
   def setColor(self, color):
     rospy.wait_for_service(self.blinkmServerName+"/set_color")
@@ -94,53 +74,7 @@ class MusicControl(object):
     except rospy.ServiceException, exception:
       print "SetColor request failed: %s" % exception
 
-  def getHomes(self, servos):
-    rospy.wait_for_service(self.finServerName+"/get_homes")
-    try:
-      request = rospy.ServiceProxy(self.finServerName+"/get_homes", GetHomes)
-      return request(servos).home
-    except rospy.ServiceException, exception:
-      print "GetHomes request failed: %s" % exception
-
-  def setHomes(self, servos, home):
-    rospy.wait_for_service(self.finServerName+"/set_homes")
-    try:
-      request = rospy.ServiceProxy(self.finServerName+"/set_homes", SetHomes)
-      request(servos, home)
-    except rospy.ServiceException, exception:
-      print "SetHomes request failed: %s" % exception
-
-  def setCommands(self, servos, frequency, amplitude, phase, offset):
-    rospy.wait_for_service(self.finServerName+"/set_commands")
-    try:
-      request = rospy.ServiceProxy(self.finServerName+"/set_commands",
-        SetCommands)
-      request(servos, frequency, amplitude, phase, offset)
-    except rospy.ServiceException, exception:
-      print "SetCommands request failed: %s" % exception
-
   def receiveJoy(self, joy):
-    limits = self.getLimits()
-
-    if (joy.axes[2] < 1.0):
-      speed = (1.0-joy.axes[2])*0.5
-    elif (joy.axes[5] < 1.0):
-      speed = -(1.0-joy.axes[5])*0.5
-    else:
-      speed = 0.0
-    
-    if limits & GetLimitsResponse.ANALOG1:
-      if speed < 0.0:
-        self.start()
-        self.setSpeed(speed)
-    elif limits & GetLimitsResponse.ANALOG2:
-      if speed > 0.0:
-        self.start()
-        self.setSpeed(speed)
-    else:
-      self.start()
-      self.setSpeed(speed)
-
     try:
       button = joy.buttons.index(1)
     except ValueError:
@@ -164,6 +98,9 @@ class MusicControl(object):
         self.actuateTurtleStandard(joy)
       else:
         self.actuateFishStandard(joy)
+
+  def update(self, event):
+    pass
 
 if __name__ == "__main__":
   if len(sys.argv) > 1:

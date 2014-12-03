@@ -1,6 +1,8 @@
 <launch>
-  <node name="smc_server" pkg="naro_smc_srvs" type="smc_server" respawn="true">
-    <rosparam command="load" file="$(find naro_smc_srvs)/etc/smc_server.yaml"/>
-    <param name="configuration/file" value="$(find naro_smc_srvs)/etc/smc.xml"/>
-  </node>
+  <group ns="$(optenv ROS_NAMESPACE)">
+    <node name="smc_server" pkg="naro_smc_srvs" type="smc_server" respawn="true">
+      <rosparam command="load" file="$(find naro_smc_srvs)/etc/smc_server.yaml"/>
+      <param name="configuration/file" value="$(find naro_smc_srvs)/etc/smc.xml"/>
+    </node>
+  </group>
 </launch>
