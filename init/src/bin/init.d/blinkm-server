@@ -56,11 +56,7 @@ SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
 NAME=blinkm_server
 PIDFILE=$HOME/.ros/$NAME.pid
 DAEMON=/opt/ros/$ROS_DISTRIBUTION/bin/roslaunch
-DAEMON_ARGS="--pid=$PIDFILE --wait"
-if [ -n "$ROS_NAMESPACE" ]; then
-  DAEMON_ARGS="$DAEMON_ARGS --ns="
-fi
-DAEMON_ARGS="$DAEMON_ARGS naro_blinkm_srvs blinkm_server.launch"
+DAEMON_ARGS="--pid=$PIDFILE --wait naro_blinkm_srvs blinkm_server.launch"
 
 # Exit if daemon is not installed
 [ -x "$DAEMON" ] || exit 0

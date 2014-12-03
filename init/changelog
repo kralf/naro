@@ -1,3 +1,15 @@
+naro-init (0.1-15) lucid; urgency=low
+
+  * Removed code artifact from blinkm init script
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 03 Dec 2014 10:22:00 +0100
+
+naro-init (0.1-14) lucid; urgency=low
+
+  * Added ROS_MASTER and ROS_NAMESPACE handling to init scripts
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Wed, 03 Dec 2014 09:54:31 +0100
+
 naro-init (0.1-13) lucid; urgency=low
 
   * Changed startup scripts to set ROS_IP and ROS_MASTER_HOST from
