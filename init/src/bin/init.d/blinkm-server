@@ -26,7 +26,17 @@ SCRIPTNAME=/etc/init.d/naro-blinkm-server
 
 if [ -n "$ROS_IP" ]; then 
   export ROS_IP=$ROS_IP
-  export ROS_MASTER_URI=http://$ROS_IP:11311
+  if [ -z "$ROS_MASTER" ]; then
+    export ROS_MASTER_URI=http://$ROS_IP:11311
+  fi
+fi
+
+if [ -n "$ROS_MASTER" ]; then
+  export ROS_MASTER_URI=http://$ROS_MASTER:11311
+fi
+
+if [ -n "$ROS_NAMESPACE" ]; then
+  export ROS_NAMESPACE=$ROS_NAMESPACE
 fi
 
 SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
@@ -46,7 +56,11 @@ SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
 NAME=blinkm_server
 PIDFILE=$HOME/.ros/$NAME.pid
 DAEMON=/opt/ros/$ROS_DISTRIBUTION/bin/roslaunch
-DAEMON_ARGS="--pid=$PIDFILE --wait naro_blinkm_srvs blinkm_server.launch"
+DAEMON_ARGS="--pid=$PIDFILE --wait"
+if [ -n "$ROS_NAMESPACE" ]; then
+  DAEMON_ARGS="$DAEMON_ARGS --ns="
+fi
+DAEMON_ARGS="$DAEMON_ARGS naro_blinkm_srvs blinkm_server.launch"
 
 # Exit if daemon is not installed
 [ -x "$DAEMON" ] || exit 0

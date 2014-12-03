@@ -34,6 +34,9 @@ SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
 # Exit if the ROS distribution is not installed
 [ -e "$SETUP" ] || exit 0
 
+# Exit if the ROS master is running elsewhere
+[ -n "$ROS_MASTER" ] || exit 0
+
 # Load the ROS environment
 . $SETUP
 

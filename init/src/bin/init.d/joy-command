@@ -26,7 +26,17 @@ SCRIPTNAME=/etc/init.d/naro-joy-command
 
 if [ -n "$ROS_IP" ]; then 
   export ROS_IP=$ROS_IP
-  export ROS_MASTER_URI=http://$ROS_IP:11311
+  if [ -z "$ROS_MASTER" ]; then
+    export ROS_MASTER_URI=http://$ROS_IP:11311
+  fi
+fi
+
+if [ -n "$ROS_MASTER" ]; then
+  export ROS_MASTER_URI=http://$ROS_MASTER:11311
+fi
+
+if [ -n "$ROS_NAMESPACE" ]; then
+  export ROS_NAMESPACE=$ROS_NAMESPACE
 fi
 
 SETUP=/opt/ros/$ROS_DISTRIBUTION/setup.sh
