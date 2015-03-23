@@ -1,0 +1,6 @@
+<launch>
+  <node name="smc_server" pkg="naro_smc_srvs" type="smc_server" respawn="true">
+    <rosparam command="load" file="$(find naro_smc_srvs)/config/smc_server.yaml"/>
+    <param name="configuration/file" value="$(find naro_smc_srvs)/config/smc.xml"/>
+  </node>
+</launch>

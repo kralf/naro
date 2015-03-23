@@ -1,3 +1,9 @@
+naro-ros (0.1-38) lucid; urgency=low
+
+  * Catkinization of ROS packages
+
+ -- Ralf Kaestner <ralf.kaestner@gmail.com>  Mon, 23 Mar 2015 07:17:00 +0100
+
 naro-ros (0.1-37) lucid; urgency=low
 
   * Small syntax fix in joy_config.launch

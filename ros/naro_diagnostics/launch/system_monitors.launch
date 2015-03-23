@@ -1,0 +1,11 @@
+<launch>
+  <node pkg="naro_diagnostics" type="cpu_monitor.py" name="cpu_monitor">
+    <rosparam command="load" file="$(find naro_diagnostics)/config/cpu_monitor.yaml"/>
+  </node>
+  <node pkg="naro_diagnostics" type="mem_monitor.py" name="mem_monitor">
+    <rosparam command="load" file="$(find naro_diagnostics)/config/mem_monitor.yaml"/>
+  </node>
+  <node pkg="naro_diagnostics" type="hdd_monitor.py" name="hdd_monitor">
+    <rosparam command="load" file="$(find naro_diagnostics)/config/hdd_monitor.yaml"/>
+  </node>
+</launch>

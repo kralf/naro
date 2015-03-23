@@ -1,5 +1,0 @@
-<launch>
-  <node name="smc_monitor" pkg="naro_test" type="smc_monitor" output="screen">
-    <rosparam command="load" file="$(find naro_test)/etc/smc_monitor.yaml"/>
-  </node>
-</launch>

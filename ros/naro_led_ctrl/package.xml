@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>naro_led_ctrl</name>
+  <version>0.1.0</version>
+  <description>
+    LED controller services for the Naro Nanins
+  </description>
+
+  <maintainer email="ralf.kaestner@gmail.com">Ralf Kaestner</maintainer>
+  <license>LGPL</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+  <build_depend>diagnostic_updater</build_depend>
+  <build_depend>naro_blinkm_srvs</build_depend>
+
+  <run_depend>message_runtime</run_depend>
+  <run_depend>diagnostic_updater</run_depend>
+  <run_depend>naro_blinkm_srvs</run_depend>
+</package>

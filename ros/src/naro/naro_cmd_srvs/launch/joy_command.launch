@@ -1,5 +1,0 @@
-<launch>
-  <node name="joy_command" pkg="naro_cmd_srvs" type="joy_command" respawn="true">
-    <rosparam command="load" file="$(find naro_cmd_srvs)/etc/joy_command.yaml"/>
-  </node>
-</launch>

@@ -1,1 +1,0 @@
-remake_ros_package_add_executable(dive_controller)

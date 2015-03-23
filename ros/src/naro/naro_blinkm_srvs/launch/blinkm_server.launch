@@ -1,5 +1,0 @@
-<launch>
-  <node name="blinkm_server" pkg="naro_blinkm_srvs" type="blinkm_server" respawn="true">
-    <rosparam command="load" file="$(find naro_blinkm_srvs)/etc/blinkm_server.yaml"/>
-  </node>
-</launch>

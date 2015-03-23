@@ -1,0 +1,5 @@
+<launch>
+  <node name="depth_sensor" pkg="naro_sensor_srvs" type="depth_sensor" respawn="true">
+    <rosparam command="load" file="$(find naro_sensor_srvs)/config/depth_sensor.yaml"/>
+  </node>
+</launch>

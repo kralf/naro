@@ -1,0 +1,6 @@
+<launch>
+  <node name="usc_server" pkg="naro_usc_srvs" type="usc_server" respawn="true">
+    <rosparam command="load" file="$(find naro_usc_srvs)/config/usc_server.yaml"/>
+    <param name="configuration/file" value="$(find naro_usc_srvs)/config/usc.xml"/>
+  </node>
+</launch>

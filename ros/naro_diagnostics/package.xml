@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>naro_diagnostics</name>
+  <version>0.1.0</version>
+  <description>
+    Diagnostics for the Naro Nanins
+  </description>
+
+  <maintainer email="ralf.kaestner@gmail.com">Ralf Kaestner</maintainer>
+  <license>LGPL</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>diagnostic_aggregator</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>diagnostic_aggregator</run_depend>
+</package>

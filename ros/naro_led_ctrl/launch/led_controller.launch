@@ -1,0 +1,5 @@
+<launch>
+  <node name="led_controller" pkg="naro_led_ctrl" type="led_controller" respawn="true">
+    <rosparam command="load" file="$(find naro_led_ctrl)/config/led_controller.yaml"/>
+  </node>
+</launch>

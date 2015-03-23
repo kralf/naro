@@ -1,5 +1,0 @@
-<launch>
-  <node name="fin_monitor" pkg="naro_test" type="fin_monitor" output="screen">
-    <rosparam command="load" file="$(find naro_test)/etc/fin_monitor.yaml"/>
-  </node>
-</launch>
