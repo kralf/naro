@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>naro_tf</name>
+  <version>0.1.0</version>
+  <description>
+  	Coordinate systems for the Naro Nanins
+  </description>
+
+  <maintainer email="jo.eichenberger@gmail.com">Jonas Eichenberger</maintainer>
+
+  <license>LGPL</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+
+</package>
