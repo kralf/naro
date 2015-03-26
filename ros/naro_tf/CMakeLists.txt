@@ -7,6 +7,7 @@ project(naro_tf)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -101,8 +102,9 @@ include_directories(
 #   src/${PROJECT_NAME}/naro_tf.cpp
 # )
 
-## Declare a cpp executable
-# add_executable(naro_tf_node src/naro_tf_node.cpp)
+# Declare a cpp executable
+add_executable(baseFrame_tf_broadcaster src/baseFrame_tf_broadcaster.cpp)
+add_executable(IMUFrame_tf_broadcaster src/IMUFrame_tf_broadcaster.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -112,6 +114,9 @@ include_directories(
 # target_link_libraries(naro_tf_node
 #   ${catkin_LIBRARIES}
 # )
+
+target_link_libraries(baseFrame_tf_broadcaster ${catkin_LIBRARIES})
+target_link_libraries(IMUFrame_tf_broadcaster ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -160,3 +165,4 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
