@@ -1,0 +1,12 @@
+  <launch>
+  	<!-- launch external IMU driver -->
+    <node pkg="myahrs_driver" type="myahrs_driver" name="myahrs_driver">
+    	<param name="port" value="/dev/ttyACM0" />
+    	<param name="baud_rate" value="115200" />
+  	</node>
+  	<!-- Launch tf -->
+  	<node pkg="naro_tf" type="baseFrame_tf_broadcaster" name="baseFrame_tf_broadcaster" />
+    <node pkg="naro_tf" type="IMUFrame_tf_broadcaster" name="IMUFrame_tf_broadcaster" />
+  	<!-- launch this node -->
+    <node pkg="naro_imu" type="naro_imu_node" name="naro_imu_node" output="screen"/>
+  </launch>
