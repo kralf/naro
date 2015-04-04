@@ -20,6 +20,15 @@ class NaroImu:
 				ros::Publisher publisher;
 				tf::TransformListener transformer;
 
+				tf::Vector3 oldPosition;
+				tf::Vector3 newPosition;
+				tf::Vector3 oldVelocity;
+				tf::Vector3 newVelocity;
+				double oldTime;
+				double newTime;
+				bool startIntegration;
+
+
 
 				void init();
 				void cleanup();
@@ -28,6 +37,10 @@ class NaroImu:
 
 				void transformQuaternion(const std::string& target_frame, const ros::Time& time,
 						const geometry_msgs::QuaternionStamped& msg_in, geometry_msgs::QuaternionStamped& msg_out);
+
+				void resetPosition();
+
+				void integrateIMUtoPosition(const sensor_msgs::Imu::ConstPtr& msg, geometry_msgs::Point& position);
 
 };
 };
