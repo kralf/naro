@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="rviz" type="rviz" name="rviz"
+		args="-d (find naro_rviz/config/naro_rviz.rviz) -f 'map'" />
+</launch>
