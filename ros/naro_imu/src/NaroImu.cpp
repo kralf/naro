@@ -17,10 +17,12 @@ NaroImu::~NaroImu() {}
 
 void NaroImu::init() {
 	NODEWRAP_INFO("Initialize <NaroImu>");
+
+	resetPose();
+	g = 9.81;
+
 	subscriber = subscribe("bla", "/imu/data", 100, &NaroImu::getImuData);
-	//publisher = advertise<geometry_msgs::QuaternionStamped>("bla", "/base/orientation", 10);
 	publisher = advertise<geometry_msgs::Pose>("bla", "/base/pose", 10);
-	resetPosition();
 }
 
 void NaroImu::cleanup() {
@@ -28,6 +30,8 @@ void NaroImu::cleanup() {
 }
 
 void NaroImu::getImuData(const sensor_msgs::Imu::ConstPtr& msg) {
+
+	geometry_msgs::Pose poseBase = geometry_msgs::Pose();
 	// convert sensor_msgs
 	// orientation
 	geometry_msgs::QuaternionStamped orientation_IMU = geometry_msgs::QuaternionStamped();
@@ -40,22 +44,24 @@ void NaroImu::getImuData(const sensor_msgs::Imu::ConstPtr& msg) {
 
 		// orientation
 		transformQuaternion("base_link", ros::Time(0), orientation_IMU, orientation_base);
+		poseBase.orientation = orientation_base.quaternion;
+	}
+	catch(tf::TransformException& ex) {
+			NODEWRAP_ERROR("Transform base: %s", ex.what());
+		}
+	try {
 		// position
 		geometry_msgs::Point point = geometry_msgs::Point();
-		integrateIMUtoPosition(msg, point);
-
-		geometry_msgs::Pose poseBase = geometry_msgs::Pose();
-
+		integrateImuToPosition(msg, point);
 		poseBase.position = point;
-		poseBase.orientation = orientation_base.quaternion;
-
-		//publisher.publish(orientation_base);
-		publisher.publish(poseBase);
 
 	}
 	catch(tf::TransformException& ex) {
-		NODEWRAP_ERROR("Received an exception: %s", ex.what());
+		NODEWRAP_ERROR("Transform map: %s", ex.what());
 	}
+
+	//publisher.publish(orientation_base);
+	publisher.publish(poseBase);
 
 }
 
@@ -66,7 +72,6 @@ void NaroImu::transformQuaternion(const std::string& target_frame, const ros::Ti
 		const geometry_msgs::QuaternionStamped& msg_in, geometry_msgs::QuaternionStamped& msg_out) {
 
 	 tf::assertQuaternionValid(msg_in.quaternion);
-
 	 tf::Stamped<tf::Quaternion> pin, pout;
 	 tf::quaternionStampedMsgToTF(msg_in, pin);
 	 tf::StampedTransform transform;
@@ -77,11 +82,17 @@ void NaroImu::transformQuaternion(const std::string& target_frame, const ros::Ti
 	 tf::quaternionStampedTFToMsg(pout, msg_out);
 }
 
-void NaroImu::integrateIMUtoPosition(const sensor_msgs::Imu::ConstPtr& msg, geometry_msgs::Point& position) {
+/**
+ * Compute position of base from integration of IMU
+ */
+void NaroImu::integrateImuToPosition(const sensor_msgs::Imu::ConstPtr& msg, geometry_msgs::Point& position) {
 	tf::Vector3 accel_IMU;
 	tf::vector3MsgToTF(msg->linear_acceleration, accel_IMU);
 
-	// TODO subtract gravity
+	//subtract gravity
+	tf::Vector3 gravity;
+	tf::vector3MsgToTF(getGravity("imu_link"), gravity);
+	accel_IMU = accel_IMU+gravity;
 
 	newTime = ros::Time::now().toNSec();
 	double dt = (newTime-oldTime)*pow(10,-9);
@@ -109,7 +120,37 @@ void NaroImu::integrateIMUtoPosition(const sensor_msgs::Imu::ConstPtr& msg, geom
 
 }
 
-void NaroImu::resetPosition() {
+/**
+ * get gravity vector in specific target_frame
+ */
+
+geometry_msgs::Vector3 NaroImu::getGravity(const std::string& target_frame) {
+	tf::Stamped<tf::Vector3> gin, gout;
+	geometry_msgs::Vector3Stamped gravityMap;
+	gravityMap.vector.z = -g;
+	tf::vector3StampedMsgToTF(gravityMap, gin);
+
+	tf::StampedTransform transform;
+	transformer.lookupTransform(target_frame, "map", ros::Time(0), transform);
+	gout.setData(transform*gin);
+
+	tf::Vector3 origin = tf::Vector3(0,0,0);
+	tf::Vector3 output = (transform * gin) - (transform * origin);
+	gout.setData( output);
+
+	gout.stamp_ = transform.stamp_;
+	gout.frame_id_ = target_frame;
+
+	geometry_msgs::Vector3 gravity;
+	tf::vector3TFToMsg(gout, gravity);
+	return gravity;
+}
+
+/**
+ * reset pose of imu
+ */
+
+void NaroImu::resetPose() {
 	oldTime = 0.0;
 	oldPosition.setValue(0.0,0.0,0.0);
 	oldVelocity.setValue(0.0,0.0,0.0);

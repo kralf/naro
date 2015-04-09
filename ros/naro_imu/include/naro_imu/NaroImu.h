@@ -27,6 +27,7 @@ class NaroImu:
 				double oldTime;
 				double newTime;
 				bool startIntegration;
+				double g;
 
 
 
@@ -38,9 +39,11 @@ class NaroImu:
 				void transformQuaternion(const std::string& target_frame, const ros::Time& time,
 						const geometry_msgs::QuaternionStamped& msg_in, geometry_msgs::QuaternionStamped& msg_out);
 
-				void resetPosition();
+				geometry_msgs::Vector3 getGravity(const std::string& target_frame);
 
-				void integrateIMUtoPosition(const sensor_msgs::Imu::ConstPtr& msg, geometry_msgs::Point& position);
+				void resetPose();
+
+				void integrateImuToPosition(const sensor_msgs::Imu::ConstPtr& msg, geometry_msgs::Point& position);
 
 };
 };
