@@ -1,6 +1,6 @@
   <launch>
   
     <node pkg="naro_tf" type="baseFrame_tf_broadcaster" name="baseFrame_tf_broadcaster" />
-    <node pkg="naro_tf" type="IMUFrame_tf_broadcaster" name="IMUFrame_tf_broadcaster" />
+    <include file="$(find naro_tf)/launch/naro_tf_static.launch" />
 
   </launch>
