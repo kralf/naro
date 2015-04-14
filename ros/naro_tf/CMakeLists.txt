@@ -104,10 +104,8 @@ include_directories(
 
 # Declare a cpp executable
 add_executable(baseFrame_tf_broadcaster src/baseFrame_tf_broadcaster.cpp)
-add_executable(IMUFrame_tf_broadcaster src/IMUFrame_tf_broadcaster.cpp)
 
 target_link_libraries(baseFrame_tf_broadcaster ${catkin_LIBRARIES})
-target_link_libraries(IMUFrame_tf_broadcaster ${catkin_LIBRARIES})
 
 #############
 ## Install ##
