@@ -1,5 +1,5 @@
 connection:
   retry: 0.1
 device:
-  address: /dev/naro/smc
+  address: /dev/naro/smc_rear
   timeout: 0.1

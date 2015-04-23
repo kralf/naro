@@ -1,0 +1,5 @@
+connection:
+  retry: 0.1
+device:
+  address: /dev/naro/smc_front
+  timeout: 0.1

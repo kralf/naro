@@ -50,7 +50,7 @@
     <InputNeutral Min="2015" Max="2080" />
   </Analog1>
   <Analog2>
-    <AlternateUse>LimitReverse</AlternateUse>
+    <AlternateUse>LimitForward</AlternateUse>
     <PinMode>PullUp</PinMode>
     <Invert>true</Invert>
     <ScalingDegree>0</ScalingDegree>
