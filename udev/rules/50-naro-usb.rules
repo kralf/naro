@@ -3,7 +3,11 @@
 
 # Pololu controller device permissions and symlinks
 SUBSYSTEM=="usb", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="008a", MODE="0664", GROUP="plugdev", SYMLINK+="naro/usc"
-SUBSYSTEM=="usb", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="00a1", MODE="0664", GROUP="plugdev", SYMLINK+="naro/smc"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="00a1", ATTRS{serial}=="51FF-7406-4980-4956-2045-1387", MODE="0664", GROUP="plugdev", SYMLINK+="naro/smc_rear"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1ffb", ATTRS{idProduct}=="00a1", ATTRS{serial}=="3200-7306-3147-3331-5424-1843", MODE="0664", GROUP="plugdev", SYMLINK+="naro/smc_front"
+
+# myAHRS+ IMU symlink
+
 
 # Logitech gamepad symlinks
 SUBSYSTEM=="input", KERNEL=="js[0-9]*", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c21f", SYMLINK+="naro/joystick"
