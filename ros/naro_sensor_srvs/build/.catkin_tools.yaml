@@ -1,0 +1,6 @@
+devel_space: /home/jonas/git/naro/ros/naro_sensor_srvs/devel
+install: false
+install_space: /home/jonas/git/naro/ros/naro_sensor_srvs/install
+profile: default
+source_space: /home/jonas/git/naro/ros/naro_sensor_srvs/src
+workspace: /home/jonas/git/naro/ros/naro_sensor_srvs

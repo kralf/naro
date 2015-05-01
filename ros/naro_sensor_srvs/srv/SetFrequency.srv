@@ -1,0 +1,3 @@
+int64 frequency # [Hz]
+---
+bool set
