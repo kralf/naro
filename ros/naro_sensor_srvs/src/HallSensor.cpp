@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 
-
 using namespace std;
 
 HallSensor::HallSensor() {};
@@ -20,7 +19,11 @@ HallSensor::HallSensor(string gpioId) {
 	counter = 0;
 	// Init GPIO
 	gpioName = gpioId;
-	gpio = GPIOClass(gpioName);
+	gpio = new GPIOClass(gpioName);
+}
+
+HallSensor::~HallSensor() {
+	delete gpio;
 }
 
 void HallSensor::startReadingSensor()  {
@@ -29,9 +32,14 @@ void HallSensor::startReadingSensor()  {
 }
 
 void HallSensor::work() {
+	string valueOld = "0";
+	string value;
 	while(running){
-		//cout << "IN Thread!!" << endl;
-		counter++;
+		gpio->getval_gpio(value);
+		if((valueOld == "0") && (value == "1")) {
+			counter++;
+		}
+		valueOld = value;
 		usleep(this->waitMicroSec);
 	}
 }

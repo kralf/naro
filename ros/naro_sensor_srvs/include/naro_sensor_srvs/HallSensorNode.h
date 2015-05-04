@@ -33,7 +33,7 @@ class HallSensorNode:
 			ros::ServiceServer resetCounterService;
 			ros::ServiceServer getFrequencyService;
 
-			HallSensor sensor;
+			HallSensor* sensor;
 
 			void init();
 			void cleanup();

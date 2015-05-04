@@ -3,9 +3,9 @@
 
 using namespace std;
 
-GPIOClass::GPIOClass():valuefd(-1),directionfd(-1),exportfd(-1),unexportfd(-1),gpionum("4")
+GPIOClass::GPIOClass():valuefd(-1),directionfd(-1),exportfd(-1),unexportfd(-1),gpionum("0")
 {
-        //GPIO4 is default
+
 	this->export_gpio();
 }
 

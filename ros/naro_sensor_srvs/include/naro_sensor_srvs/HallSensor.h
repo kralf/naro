@@ -14,6 +14,7 @@ class HallSensor {
 	public:
 		HallSensor();
 		HallSensor(string gpioId);
+		~HallSensor();
 		int getCount();
 		void resetCount();
 		void setFrequency(int freq);
@@ -26,7 +27,7 @@ class HallSensor {
 		int waitMicroSec;
 		bool running;
 		string gpioName;
-		GPIOClass gpio;
+		GPIOClass* gpio;
 		thread readingThread;
 
 		void work();
