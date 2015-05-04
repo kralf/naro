@@ -35,6 +35,9 @@ class HallSensorNode:
 
 			HallSensor* sensor;
 
+			string name;
+			
+
 			void init();
 			void cleanup();
 

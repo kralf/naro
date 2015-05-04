@@ -1,0 +1,8 @@
+<launch>
+  <node name="hallSensor_front" pkg="naro_sensor_srvs" type="hall_sensor" output="screen">
+    <rosparam command="load" file="$(find naro_sensor_srvs)/config/hallSensor_front.yaml"/>
+  </node>
+  <node name="hallSensor_rear" pkg="naro_sensor_srvs" type="hall_sensor" output="screen">
+    <rosparam command="load" file="$(find naro_sensor_srvs)/config/hallSensor_rear.yaml"/>
+  </node>
+</launch>

@@ -1,0 +1,5 @@
+gpio:
+    num: "200"
+sensor:
+    name: "hallSensor_rear"
+    frequency: 10

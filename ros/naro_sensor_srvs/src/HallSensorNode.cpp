@@ -19,27 +19,34 @@ HallSensorNode::~HallSensorNode(){
 }
 
 void HallSensorNode::init() {
-	NODEWRAP_INFO("Initialize <HallSensorNode>");
+	// get parameters
+	string gpioNum = getParam("gpio/num", gpioNum);
+	int freq = getParam("sensor/frequency", freq);
+	name = getParam("sensor/name", name);
+
+
+	NODEWRAP_INFO("Initialize: %s", name.c_str());
 
 	// setup services
-	getPositionService = advertiseService("getPosition", "/getPosition", &HallSensorNode::getPosition);
-	resetCounterService = advertiseService("resetCounter", "/resetCounter", &HallSensorNode::resetCounter);
-	setFrequencyService = advertiseService("setFrequency", "/setFrequency", &HallSensorNode::setFrequency);
-	getFrequencyService = advertiseService("getFrequency", "/getFrequency", &HallSensorNode::getFrequency);
+	getPositionService = advertiseService("getPosition", "getPosition", &HallSensorNode::getPosition);
+	resetCounterService = advertiseService("resetCounter", "resetCounter", &HallSensorNode::resetCounter);
+	setFrequencyService = advertiseService("setFrequency", "setFrequency", &HallSensorNode::setFrequency);
+	getFrequencyService = advertiseService("getFrequency", "getFrequency", &HallSensorNode::getFrequency);
 
 	// start reading sensor data
-	sensor = new HallSensor("199");
+	sensor = new HallSensor(gpioNum);
+	sensor->setFrequency(freq);
 	sensor->startReadingSensor();
 }
 
 void HallSensorNode::cleanup() {
-	NODEWRAP_INFO("Shutting down <HallSensorNode>");
+	NODEWRAP_INFO("Shutting down: %s", name.c_str());
 	sensor->join();
 }
 
 // return position of piston tank
 bool HallSensorNode::getPosition(GetPosition::Request& request, GetPosition::Response& response) {
-	NODEWRAP_INFO("getPosition service called");
+	NODEWRAP_DEBUG("getPosition service called");
 	response.position = sensor->getCount();
 
 	return true;
@@ -60,7 +67,7 @@ bool HallSensorNode::getFrequency(GetFrequency::Request& request, GetFrequency::
 // reset the counter
 bool HallSensorNode::resetCounter(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response){
 	sensor->resetCount();
-	ROS_INFO("Counter reset to 0");
+	NODEWRAP_DEBUG("Counter reset to 0");
 	return 1;
 }
 
