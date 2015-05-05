@@ -1,0 +1,4 @@
+simulation_lqr_sfun.obj
+c1_simulation_lqr.obj
+c2_simulation_lqr.obj
+simulation_lqr_sfun_registry.obj

@@ -8,7 +8,8 @@ time = tout;
 z_output = sim_z(:,1);
 z_input = sim_z(:,2);
 
-N = 800;
+N = min(length(time), length(z_output));
+N = 10000;
 time = time(1:N);
 z_output = z_output(1:N);
 z_input = z_input(1:N);
