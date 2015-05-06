@@ -2,11 +2,11 @@
 
 #include <stddef.h>
 #include "blas.h"
-#include "simulation_lqr_sfun.h"
-#include "c3_simulation_lqr.h"
+#include "simulation2_sfun.h"
+#include "c3_simulation2.h"
 #define CHARTINSTANCE_CHARTNUMBER      (chartInstance->chartNumber)
 #define CHARTINSTANCE_INSTANCENUMBER   (chartInstance->instanceNumber)
-#include "simulation_lqr_sfun_debug_macros.h"
+#include "simulation2_sfun_debug_macros.h"
 #define _SF_MEX_LISTEN_FOR_CTRL_C(S)   sf_mex_listen_for_ctrl_c(sfGlobalDebugInstanceStruct,S);
 
 /* Type Definitions */
@@ -22,88 +22,83 @@ static const char * c3_debug_family_names[6] = { "step", "nargin", "nargout",
   "uold", "u", "y" };
 
 /* Function Declarations */
-static void initialize_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void initialize_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance);
-static void initialize_params_c3_simulation_lqr
-  (SFc3_simulation_lqrInstanceStruct *chartInstance);
-static void enable_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void initialize_params_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance);
-static void disable_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
-  *chartInstance);
-static void c3_update_debugger_state_c3_simulation_lqr
-  (SFc3_simulation_lqrInstanceStruct *chartInstance);
-static const mxArray *get_sim_state_c3_simulation_lqr
-  (SFc3_simulation_lqrInstanceStruct *chartInstance);
-static void set_sim_state_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void enable_c3_simulation2(SFc3_simulation2InstanceStruct *chartInstance);
+static void disable_c3_simulation2(SFc3_simulation2InstanceStruct *chartInstance);
+static void c3_update_debugger_state_c3_simulation2
+  (SFc3_simulation2InstanceStruct *chartInstance);
+static const mxArray *get_sim_state_c3_simulation2
+  (SFc3_simulation2InstanceStruct *chartInstance);
+static void set_sim_state_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance, const mxArray *c3_st);
-static void finalize_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void finalize_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance);
-static void sf_gateway_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void sf_gateway_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance);
-static void mdl_start_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void mdl_start_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance);
-static void initSimStructsc3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void initSimStructsc3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance);
 static void init_script_number_translation(uint32_T c3_machineNumber, uint32_T
   c3_chartNumber, uint32_T c3_instanceNumber);
 static const mxArray *c3_sf_marshallOut(void *chartInstanceVoid, void *c3_inData);
-static real_T c3_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
-  *chartInstance, const mxArray *c3_b_y, const char_T *c3_identifier);
-static real_T c3_b_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
+static real_T c3_emlrt_marshallIn(SFc3_simulation2InstanceStruct *chartInstance,
+  const mxArray *c3_b_y, const char_T *c3_identifier);
+static real_T c3_b_emlrt_marshallIn(SFc3_simulation2InstanceStruct
   *chartInstance, const mxArray *c3_b_u, const emlrtMsgIdentifier *c3_parentId);
 static void c3_sf_marshallIn(void *chartInstanceVoid, const mxArray
   *c3_mxArrayInData, const char_T *c3_varName, void *c3_outData);
 static const mxArray *c3_b_sf_marshallOut(void *chartInstanceVoid, void
   *c3_inData);
-static int32_T c3_c_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
+static int32_T c3_c_emlrt_marshallIn(SFc3_simulation2InstanceStruct
   *chartInstance, const mxArray *c3_b_u, const emlrtMsgIdentifier *c3_parentId);
 static void c3_b_sf_marshallIn(void *chartInstanceVoid, const mxArray
   *c3_mxArrayInData, const char_T *c3_varName, void *c3_outData);
-static uint8_T c3_d_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
-  *chartInstance, const mxArray *c3_b_is_active_c3_simulation_lqr, const char_T *
-  c3_identifier);
-static uint8_T c3_e_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
+static uint8_T c3_d_emlrt_marshallIn(SFc3_simulation2InstanceStruct
+  *chartInstance, const mxArray *c3_b_is_active_c3_simulation2, const char_T
+  *c3_identifier);
+static uint8_T c3_e_emlrt_marshallIn(SFc3_simulation2InstanceStruct
   *chartInstance, const mxArray *c3_b_u, const emlrtMsgIdentifier *c3_parentId);
-static void init_dsm_address_info(SFc3_simulation_lqrInstanceStruct
-  *chartInstance);
-static void init_simulink_io_address(SFc3_simulation_lqrInstanceStruct
+static void init_dsm_address_info(SFc3_simulation2InstanceStruct *chartInstance);
+static void init_simulink_io_address(SFc3_simulation2InstanceStruct
   *chartInstance);
 
 /* Function Definitions */
-static void initialize_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void initialize_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance)
 {
   chartInstance->c3_sfEvent = CALL_EVENT;
   _sfTime_ = sf_get_time(chartInstance->S);
-  chartInstance->c3_is_active_c3_simulation_lqr = 0U;
+  chartInstance->c3_is_active_c3_simulation2 = 0U;
 }
 
-static void initialize_params_c3_simulation_lqr
-  (SFc3_simulation_lqrInstanceStruct *chartInstance)
+static void initialize_params_c3_simulation2(SFc3_simulation2InstanceStruct
+  *chartInstance)
 {
   (void)chartInstance;
 }
 
-static void enable_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
-  *chartInstance)
+static void enable_c3_simulation2(SFc3_simulation2InstanceStruct *chartInstance)
 {
   _sfTime_ = sf_get_time(chartInstance->S);
 }
 
-static void disable_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
-  *chartInstance)
+static void disable_c3_simulation2(SFc3_simulation2InstanceStruct *chartInstance)
 {
   _sfTime_ = sf_get_time(chartInstance->S);
 }
 
-static void c3_update_debugger_state_c3_simulation_lqr
-  (SFc3_simulation_lqrInstanceStruct *chartInstance)
+static void c3_update_debugger_state_c3_simulation2
+  (SFc3_simulation2InstanceStruct *chartInstance)
 {
   (void)chartInstance;
 }
 
-static const mxArray *get_sim_state_c3_simulation_lqr
-  (SFc3_simulation_lqrInstanceStruct *chartInstance)
+static const mxArray *get_sim_state_c3_simulation2
+  (SFc3_simulation2InstanceStruct *chartInstance)
 {
   const mxArray *c3_st;
   const mxArray *c3_b_y = NULL;
@@ -122,7 +117,7 @@ static const mxArray *get_sim_state_c3_simulation_lqr
   c3_c_y = NULL;
   sf_mex_assign(&c3_c_y, sf_mex_create("y", &c3_b_u, 0, 0U, 0U, 0U, 0), false);
   sf_mex_setcell(c3_b_y, 0, c3_c_y);
-  c3_b_hoistedGlobal = chartInstance->c3_is_active_c3_simulation_lqr;
+  c3_b_hoistedGlobal = chartInstance->c3_is_active_c3_simulation2;
   c3_c_u = c3_b_hoistedGlobal;
   c3_d_y = NULL;
   sf_mex_assign(&c3_d_y, sf_mex_create("y", &c3_c_u, 3, 0U, 0U, 0U, 0), false);
@@ -131,7 +126,7 @@ static const mxArray *get_sim_state_c3_simulation_lqr
   return c3_st;
 }
 
-static void set_sim_state_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void set_sim_state_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance, const mxArray *c3_st)
 {
   const mxArray *c3_b_u;
@@ -139,21 +134,21 @@ static void set_sim_state_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
   c3_b_u = sf_mex_dup(c3_st);
   *chartInstance->c3_y = c3_emlrt_marshallIn(chartInstance, sf_mex_dup
     (sf_mex_getcell(c3_b_u, 0)), "y");
-  chartInstance->c3_is_active_c3_simulation_lqr = c3_d_emlrt_marshallIn
+  chartInstance->c3_is_active_c3_simulation2 = c3_d_emlrt_marshallIn
     (chartInstance, sf_mex_dup(sf_mex_getcell(c3_b_u, 1)),
-     "is_active_c3_simulation_lqr");
+     "is_active_c3_simulation2");
   sf_mex_destroy(&c3_b_u);
-  c3_update_debugger_state_c3_simulation_lqr(chartInstance);
+  c3_update_debugger_state_c3_simulation2(chartInstance);
   sf_mex_destroy(&c3_st);
 }
 
-static void finalize_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void finalize_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance)
 {
   (void)chartInstance;
 }
 
-static void sf_gateway_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void sf_gateway_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance)
 {
   real_T c3_hoistedGlobal;
@@ -167,9 +162,9 @@ static void sf_gateway_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
   real_T c3_b_y;
   _SFD_SYMBOL_SCOPE_PUSH(0U, 0U);
   _sfTime_ = sf_get_time(chartInstance->S);
-  _SFD_CC_CALL(CHART_ENTER_SFUNCTION_TAG, 2U, chartInstance->c3_sfEvent);
+  _SFD_CC_CALL(CHART_ENTER_SFUNCTION_TAG, 1U, chartInstance->c3_sfEvent);
   chartInstance->c3_sfEvent = CALL_EVENT;
-  _SFD_CC_CALL(CHART_ENTER_DURING_FUNCTION_TAG, 2U, chartInstance->c3_sfEvent);
+  _SFD_CC_CALL(CHART_ENTER_DURING_FUNCTION_TAG, 1U, chartInstance->c3_sfEvent);
   c3_hoistedGlobal = *chartInstance->c3_uold;
   c3_b_hoistedGlobal = *chartInstance->c3_u;
   c3_b_uold = c3_hoistedGlobal;
@@ -209,22 +204,22 @@ static void sf_gateway_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
   _SFD_EML_CALL(0U, chartInstance->c3_sfEvent, -11);
   _SFD_SYMBOL_SCOPE_POP();
   *chartInstance->c3_y = c3_b_y;
-  _SFD_CC_CALL(EXIT_OUT_OF_FUNCTION_TAG, 2U, chartInstance->c3_sfEvent);
+  _SFD_CC_CALL(EXIT_OUT_OF_FUNCTION_TAG, 1U, chartInstance->c3_sfEvent);
   _SFD_SYMBOL_SCOPE_POP();
-  _SFD_CHECK_FOR_STATE_INCONSISTENCY(_simulation_lqrMachineNumber_,
+  _SFD_CHECK_FOR_STATE_INCONSISTENCY(_simulation2MachineNumber_,
     chartInstance->chartNumber, chartInstance->instanceNumber);
   _SFD_DATA_RANGE_CHECK(*chartInstance->c3_y, 0U);
   _SFD_DATA_RANGE_CHECK(*chartInstance->c3_uold, 1U);
   _SFD_DATA_RANGE_CHECK(*chartInstance->c3_u, 2U);
 }
 
-static void mdl_start_c3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void mdl_start_c3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance)
 {
   (void)chartInstance;
 }
 
-static void initSimStructsc3_simulation_lqr(SFc3_simulation_lqrInstanceStruct
+static void initSimStructsc3_simulation2(SFc3_simulation2InstanceStruct
   *chartInstance)
 {
   (void)chartInstance;
@@ -243,8 +238,8 @@ static const mxArray *c3_sf_marshallOut(void *chartInstanceVoid, void *c3_inData
   const mxArray *c3_mxArrayOutData = NULL;
   real_T c3_b_u;
   const mxArray *c3_b_y = NULL;
-  SFc3_simulation_lqrInstanceStruct *chartInstance;
-  chartInstance = (SFc3_simulation_lqrInstanceStruct *)chartInstanceVoid;
+  SFc3_simulation2InstanceStruct *chartInstance;
+  chartInstance = (SFc3_simulation2InstanceStruct *)chartInstanceVoid;
   c3_mxArrayOutData = NULL;
   c3_b_u = *(real_T *)c3_inData;
   c3_b_y = NULL;
@@ -253,8 +248,8 @@ static const mxArray *c3_sf_marshallOut(void *chartInstanceVoid, void *c3_inData
   return c3_mxArrayOutData;
 }
 
-static real_T c3_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
-  *chartInstance, const mxArray *c3_b_y, const char_T *c3_identifier)
+static real_T c3_emlrt_marshallIn(SFc3_simulation2InstanceStruct *chartInstance,
+  const mxArray *c3_b_y, const char_T *c3_identifier)
 {
   real_T c3_c_y;
   emlrtMsgIdentifier c3_thisId;
@@ -265,7 +260,7 @@ static real_T c3_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
   return c3_c_y;
 }
 
-static real_T c3_b_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
+static real_T c3_b_emlrt_marshallIn(SFc3_simulation2InstanceStruct
   *chartInstance, const mxArray *c3_b_u, const emlrtMsgIdentifier *c3_parentId)
 {
   real_T c3_b_y;
@@ -284,8 +279,8 @@ static void c3_sf_marshallIn(void *chartInstanceVoid, const mxArray
   const char_T *c3_identifier;
   emlrtMsgIdentifier c3_thisId;
   real_T c3_c_y;
-  SFc3_simulation_lqrInstanceStruct *chartInstance;
-  chartInstance = (SFc3_simulation_lqrInstanceStruct *)chartInstanceVoid;
+  SFc3_simulation2InstanceStruct *chartInstance;
+  chartInstance = (SFc3_simulation2InstanceStruct *)chartInstanceVoid;
   c3_b_y = sf_mex_dup(c3_mxArrayInData);
   c3_identifier = c3_varName;
   c3_thisId.fIdentifier = c3_identifier;
@@ -296,7 +291,7 @@ static void c3_sf_marshallIn(void *chartInstanceVoid, const mxArray
   sf_mex_destroy(&c3_mxArrayInData);
 }
 
-const mxArray *sf_c3_simulation_lqr_get_eml_resolved_functions_info(void)
+const mxArray *sf_c3_simulation2_get_eml_resolved_functions_info(void)
 {
   const mxArray *c3_nameCaptureInfo = NULL;
   c3_nameCaptureInfo = NULL;
@@ -311,8 +306,8 @@ static const mxArray *c3_b_sf_marshallOut(void *chartInstanceVoid, void
   const mxArray *c3_mxArrayOutData = NULL;
   int32_T c3_b_u;
   const mxArray *c3_b_y = NULL;
-  SFc3_simulation_lqrInstanceStruct *chartInstance;
-  chartInstance = (SFc3_simulation_lqrInstanceStruct *)chartInstanceVoid;
+  SFc3_simulation2InstanceStruct *chartInstance;
+  chartInstance = (SFc3_simulation2InstanceStruct *)chartInstanceVoid;
   c3_mxArrayOutData = NULL;
   c3_b_u = *(int32_T *)c3_inData;
   c3_b_y = NULL;
@@ -321,7 +316,7 @@ static const mxArray *c3_b_sf_marshallOut(void *chartInstanceVoid, void
   return c3_mxArrayOutData;
 }
 
-static int32_T c3_c_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
+static int32_T c3_c_emlrt_marshallIn(SFc3_simulation2InstanceStruct
   *chartInstance, const mxArray *c3_b_u, const emlrtMsgIdentifier *c3_parentId)
 {
   int32_T c3_b_y;
@@ -340,8 +335,8 @@ static void c3_b_sf_marshallIn(void *chartInstanceVoid, const mxArray
   const char_T *c3_identifier;
   emlrtMsgIdentifier c3_thisId;
   int32_T c3_b_y;
-  SFc3_simulation_lqrInstanceStruct *chartInstance;
-  chartInstance = (SFc3_simulation_lqrInstanceStruct *)chartInstanceVoid;
+  SFc3_simulation2InstanceStruct *chartInstance;
+  chartInstance = (SFc3_simulation2InstanceStruct *)chartInstanceVoid;
   c3_b_sfEvent = sf_mex_dup(c3_mxArrayInData);
   c3_identifier = c3_varName;
   c3_thisId.fIdentifier = c3_identifier;
@@ -353,21 +348,21 @@ static void c3_b_sf_marshallIn(void *chartInstanceVoid, const mxArray
   sf_mex_destroy(&c3_mxArrayInData);
 }
 
-static uint8_T c3_d_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
-  *chartInstance, const mxArray *c3_b_is_active_c3_simulation_lqr, const char_T *
-  c3_identifier)
+static uint8_T c3_d_emlrt_marshallIn(SFc3_simulation2InstanceStruct
+  *chartInstance, const mxArray *c3_b_is_active_c3_simulation2, const char_T
+  *c3_identifier)
 {
   uint8_T c3_b_y;
   emlrtMsgIdentifier c3_thisId;
   c3_thisId.fIdentifier = c3_identifier;
   c3_thisId.fParent = NULL;
   c3_b_y = c3_e_emlrt_marshallIn(chartInstance, sf_mex_dup
-    (c3_b_is_active_c3_simulation_lqr), &c3_thisId);
-  sf_mex_destroy(&c3_b_is_active_c3_simulation_lqr);
+    (c3_b_is_active_c3_simulation2), &c3_thisId);
+  sf_mex_destroy(&c3_b_is_active_c3_simulation2);
   return c3_b_y;
 }
 
-static uint8_T c3_e_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
+static uint8_T c3_e_emlrt_marshallIn(SFc3_simulation2InstanceStruct
   *chartInstance, const mxArray *c3_b_u, const emlrtMsgIdentifier *c3_parentId)
 {
   uint8_T c3_b_y;
@@ -379,13 +374,12 @@ static uint8_T c3_e_emlrt_marshallIn(SFc3_simulation_lqrInstanceStruct
   return c3_b_y;
 }
 
-static void init_dsm_address_info(SFc3_simulation_lqrInstanceStruct
-  *chartInstance)
+static void init_dsm_address_info(SFc3_simulation2InstanceStruct *chartInstance)
 {
   (void)chartInstance;
 }
 
-static void init_simulink_io_address(SFc3_simulation_lqrInstanceStruct
+static void init_simulink_io_address(SFc3_simulation2InstanceStruct
   *chartInstance)
 {
   chartInstance->c3_y = (real_T *)ssGetOutputPortSignal_wrapper(chartInstance->S,
@@ -417,7 +411,7 @@ extern void utFree(void*);
 
 #endif
 
-void sf_c3_simulation_lqr_get_check_sum(mxArray *plhs[])
+void sf_c3_simulation2_get_check_sum(mxArray *plhs[])
 {
   ((real_T *)mxGetPr((plhs[0])))[0] = (real_T)(208217877U);
   ((real_T *)mxGetPr((plhs[0])))[1] = (real_T)(3551819674U);
@@ -425,8 +419,8 @@ void sf_c3_simulation_lqr_get_check_sum(mxArray *plhs[])
   ((real_T *)mxGetPr((plhs[0])))[3] = (real_T)(4205500262U);
 }
 
-mxArray* sf_c3_simulation_lqr_get_post_codegen_info(void);
-mxArray *sf_c3_simulation_lqr_get_autoinheritance_info(void)
+mxArray* sf_c3_simulation2_get_post_codegen_info(void);
+mxArray *sf_c3_simulation2_get_autoinheritance_info(void)
 {
   const char *autoinheritanceFields[] = { "checksum", "inputs", "parameters",
     "outputs", "locals", "postCodegenInfo" };
@@ -521,20 +515,20 @@ mxArray *sf_c3_simulation_lqr_get_autoinheritance_info(void)
   }
 
   {
-    mxArray* mxPostCodegenInfo = sf_c3_simulation_lqr_get_post_codegen_info();
+    mxArray* mxPostCodegenInfo = sf_c3_simulation2_get_post_codegen_info();
     mxSetField(mxAutoinheritanceInfo,0,"postCodegenInfo",mxPostCodegenInfo);
   }
 
   return(mxAutoinheritanceInfo);
 }
 
-mxArray *sf_c3_simulation_lqr_third_party_uses_info(void)
+mxArray *sf_c3_simulation2_third_party_uses_info(void)
 {
   mxArray * mxcell3p = mxCreateCellMatrix(1,0);
   return(mxcell3p);
 }
 
-mxArray *sf_c3_simulation_lqr_jit_fallback_info(void)
+mxArray *sf_c3_simulation2_jit_fallback_info(void)
 {
   const char *infoFields[] = { "fallbackType", "fallbackReason",
     "incompatibleSymbol", };
@@ -549,13 +543,13 @@ mxArray *sf_c3_simulation_lqr_jit_fallback_info(void)
   return mxInfo;
 }
 
-mxArray *sf_c3_simulation_lqr_updateBuildInfo_args_info(void)
+mxArray *sf_c3_simulation2_updateBuildInfo_args_info(void)
 {
   mxArray *mxBIArgs = mxCreateCellMatrix(1,0);
   return mxBIArgs;
 }
 
-mxArray* sf_c3_simulation_lqr_get_post_codegen_info(void)
+mxArray* sf_c3_simulation2_get_post_codegen_info(void)
 {
   const char* fieldNames[] = { "exportedFunctionsUsedByThisChart",
     "exportedFunctionsChecksum" };
@@ -579,18 +573,18 @@ mxArray* sf_c3_simulation_lqr_get_post_codegen_info(void)
   return mxPostCodegenInfo;
 }
 
-static const mxArray *sf_get_sim_state_info_c3_simulation_lqr(void)
+static const mxArray *sf_get_sim_state_info_c3_simulation2(void)
 {
   const char *infoFields[] = { "chartChecksum", "varInfo" };
 
   mxArray *mxInfo = mxCreateStructMatrix(1, 1, 2, infoFields);
   const char *infoEncStr[] = {
-    "100 S1x2'type','srcId','name','auxInfo'{{M[1],M[5],T\"y\",},{M[8],M[0],T\"is_active_c3_simulation_lqr\",}}"
+    "100 S1x2'type','srcId','name','auxInfo'{{M[1],M[5],T\"y\",},{M[8],M[0],T\"is_active_c3_simulation2\",}}"
   };
 
   mxArray *mxVarInfo = sf_mex_decode_encoded_mx_struct_array(infoEncStr, 2, 10);
   mxArray *mxChecksum = mxCreateDoubleMatrix(1, 4, mxREAL);
-  sf_c3_simulation_lqr_get_check_sum(&mxChecksum);
+  sf_c3_simulation2_get_check_sum(&mxChecksum);
   mxSetField(mxInfo, 0, infoFields[0], mxChecksum);
   mxSetField(mxInfo, 0, infoFields[1], mxVarInfo);
   return mxInfo;
@@ -600,18 +594,17 @@ static void chart_debug_initialization(SimStruct *S, unsigned int
   fullDebuggerInitialization)
 {
   if (!sim_mode_is_rtw_gen(S)) {
-    SFc3_simulation_lqrInstanceStruct *chartInstance;
+    SFc3_simulation2InstanceStruct *chartInstance;
     ChartRunTimeInfo * crtInfo = (ChartRunTimeInfo *)(ssGetUserData(S));
     ChartInfoStruct * chartInfo = (ChartInfoStruct *)(crtInfo->instanceInfo);
-    chartInstance = (SFc3_simulation_lqrInstanceStruct *)
-      chartInfo->chartInstance;
+    chartInstance = (SFc3_simulation2InstanceStruct *) chartInfo->chartInstance;
     if (ssIsFirstInitCond(S) && fullDebuggerInitialization==1) {
       /* do this only if simulation is starting */
       {
         unsigned int chartAlreadyPresent;
         chartAlreadyPresent = sf_debug_initialize_chart
           (sfGlobalDebugInstanceStruct,
-           _simulation_lqrMachineNumber_,
+           _simulation2MachineNumber_,
            3,
            1,
            1,
@@ -627,15 +620,15 @@ static void chart_debug_initialization(SimStruct *S, unsigned int
            (void *)S);
 
         /* Each instance must initialize its own list of scripts */
-        init_script_number_translation(_simulation_lqrMachineNumber_,
+        init_script_number_translation(_simulation2MachineNumber_,
           chartInstance->chartNumber,chartInstance->instanceNumber);
         if (chartAlreadyPresent==0) {
           /* this is the first instance */
           sf_debug_set_chart_disable_implicit_casting
-            (sfGlobalDebugInstanceStruct,_simulation_lqrMachineNumber_,
+            (sfGlobalDebugInstanceStruct,_simulation2MachineNumber_,
              chartInstance->chartNumber,1);
           sf_debug_set_chart_event_thresholds(sfGlobalDebugInstanceStruct,
-            _simulation_lqrMachineNumber_,
+            _simulation2MachineNumber_,
             chartInstance->chartNumber,
             0,
             0,
@@ -675,7 +668,7 @@ static void chart_debug_initialization(SimStruct *S, unsigned int
       }
     } else {
       sf_debug_reset_current_state_configuration(sfGlobalDebugInstanceStruct,
-        _simulation_lqrMachineNumber_,chartInstance->chartNumber,
+        _simulation2MachineNumber_,chartInstance->chartNumber,
         chartInstance->instanceNumber);
     }
   }
@@ -686,62 +679,58 @@ static const char* sf_get_instance_specialization(void)
   return "L3PQDZyGaoZ9FMr9gXJjVD";
 }
 
-static void sf_opaque_initialize_c3_simulation_lqr(void *chartInstanceVar)
+static void sf_opaque_initialize_c3_simulation2(void *chartInstanceVar)
 {
-  chart_debug_initialization(((SFc3_simulation_lqrInstanceStruct*)
-    chartInstanceVar)->S,0);
-  initialize_params_c3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*)
+  chart_debug_initialization(((SFc3_simulation2InstanceStruct*) chartInstanceVar)
+    ->S,0);
+  initialize_params_c3_simulation2((SFc3_simulation2InstanceStruct*)
     chartInstanceVar);
-  initialize_c3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*)
-    chartInstanceVar);
+  initialize_c3_simulation2((SFc3_simulation2InstanceStruct*) chartInstanceVar);
 }
 
-static void sf_opaque_enable_c3_simulation_lqr(void *chartInstanceVar)
+static void sf_opaque_enable_c3_simulation2(void *chartInstanceVar)
 {
-  enable_c3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*) chartInstanceVar);
+  enable_c3_simulation2((SFc3_simulation2InstanceStruct*) chartInstanceVar);
 }
 
-static void sf_opaque_disable_c3_simulation_lqr(void *chartInstanceVar)
+static void sf_opaque_disable_c3_simulation2(void *chartInstanceVar)
 {
-  disable_c3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*)
-    chartInstanceVar);
+  disable_c3_simulation2((SFc3_simulation2InstanceStruct*) chartInstanceVar);
 }
 
-static void sf_opaque_gateway_c3_simulation_lqr(void *chartInstanceVar)
+static void sf_opaque_gateway_c3_simulation2(void *chartInstanceVar)
 {
-  sf_gateway_c3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*)
-    chartInstanceVar);
+  sf_gateway_c3_simulation2((SFc3_simulation2InstanceStruct*) chartInstanceVar);
 }
 
-static const mxArray* sf_opaque_get_sim_state_c3_simulation_lqr(SimStruct* S)
+static const mxArray* sf_opaque_get_sim_state_c3_simulation2(SimStruct* S)
 {
   ChartRunTimeInfo * crtInfo = (ChartRunTimeInfo *)(ssGetUserData(S));
   ChartInfoStruct * chartInfo = (ChartInfoStruct *)(crtInfo->instanceInfo);
-  return get_sim_state_c3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*)
+  return get_sim_state_c3_simulation2((SFc3_simulation2InstanceStruct*)
     chartInfo->chartInstance);         /* raw sim ctx */
 }
 
-static void sf_opaque_set_sim_state_c3_simulation_lqr(SimStruct* S, const
-  mxArray *st)
+static void sf_opaque_set_sim_state_c3_simulation2(SimStruct* S, const mxArray
+  *st)
 {
   ChartRunTimeInfo * crtInfo = (ChartRunTimeInfo *)(ssGetUserData(S));
   ChartInfoStruct * chartInfo = (ChartInfoStruct *)(crtInfo->instanceInfo);
-  set_sim_state_c3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*)
+  set_sim_state_c3_simulation2((SFc3_simulation2InstanceStruct*)
     chartInfo->chartInstance, st);
 }
 
-static void sf_opaque_terminate_c3_simulation_lqr(void *chartInstanceVar)
+static void sf_opaque_terminate_c3_simulation2(void *chartInstanceVar)
 {
   if (chartInstanceVar!=NULL) {
-    SimStruct *S = ((SFc3_simulation_lqrInstanceStruct*) chartInstanceVar)->S;
+    SimStruct *S = ((SFc3_simulation2InstanceStruct*) chartInstanceVar)->S;
     ChartRunTimeInfo * crtInfo = (ChartRunTimeInfo *)(ssGetUserData(S));
     if (sim_mode_is_rtw_gen(S) || sim_mode_is_external(S)) {
       sf_clear_rtw_identifier(S);
-      unload_simulation_lqr_optimization_info();
+      unload_simulation2_optimization_info();
     }
 
-    finalize_c3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*)
-      chartInstanceVar);
+    finalize_c3_simulation2((SFc3_simulation2InstanceStruct*) chartInstanceVar);
     utFree(chartInstanceVar);
     if (crtInfo != NULL) {
       utFree(crtInfo);
@@ -753,12 +742,12 @@ static void sf_opaque_terminate_c3_simulation_lqr(void *chartInstanceVar)
 
 static void sf_opaque_init_subchart_simstructs(void *chartInstanceVar)
 {
-  initSimStructsc3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*)
+  initSimStructsc3_simulation2((SFc3_simulation2InstanceStruct*)
     chartInstanceVar);
 }
 
 extern unsigned int sf_machine_global_initializer_called(void);
-static void mdlProcessParameters_c3_simulation_lqr(SimStruct *S)
+static void mdlProcessParameters_c3_simulation2(SimStruct *S)
 {
   int i;
   for (i=0;i<ssGetNumRunTimeParams(S);i++) {
@@ -770,15 +759,15 @@ static void mdlProcessParameters_c3_simulation_lqr(SimStruct *S)
   if (sf_machine_global_initializer_called()) {
     ChartRunTimeInfo * crtInfo = (ChartRunTimeInfo *)(ssGetUserData(S));
     ChartInfoStruct * chartInfo = (ChartInfoStruct *)(crtInfo->instanceInfo);
-    initialize_params_c3_simulation_lqr((SFc3_simulation_lqrInstanceStruct*)
+    initialize_params_c3_simulation2((SFc3_simulation2InstanceStruct*)
       (chartInfo->chartInstance));
   }
 }
 
-static void mdlSetWorkWidths_c3_simulation_lqr(SimStruct *S)
+static void mdlSetWorkWidths_c3_simulation2(SimStruct *S)
 {
   if (sim_mode_is_rtw_gen(S) || sim_mode_is_external(S)) {
-    mxArray *infoStruct = load_simulation_lqr_optimization_info();
+    mxArray *infoStruct = load_simulation2_optimization_info();
     int_T chartIsInlinable =
       (int_T)sf_is_chart_inlinable(sf_get_instance_specialization(),infoStruct,3);
     ssSetStateflowIsInlinable(S,chartIsInlinable);
@@ -828,21 +817,21 @@ static void mdlSetWorkWidths_c3_simulation_lqr(SimStruct *S)
   ssSupportsMultipleExecInstances(S,1);
 }
 
-static void mdlRTW_c3_simulation_lqr(SimStruct *S)
+static void mdlRTW_c3_simulation2(SimStruct *S)
 {
   if (sim_mode_is_rtw_gen(S)) {
     ssWriteRTWStrParam(S, "StateflowChartType", "Embedded MATLAB");
   }
 }
 
-static void mdlStart_c3_simulation_lqr(SimStruct *S)
+static void mdlStart_c3_simulation2(SimStruct *S)
 {
-  SFc3_simulation_lqrInstanceStruct *chartInstance;
+  SFc3_simulation2InstanceStruct *chartInstance;
   ChartRunTimeInfo * crtInfo = (ChartRunTimeInfo *)utMalloc(sizeof
     (ChartRunTimeInfo));
-  chartInstance = (SFc3_simulation_lqrInstanceStruct *)utMalloc(sizeof
-    (SFc3_simulation_lqrInstanceStruct));
-  memset(chartInstance, 0, sizeof(SFc3_simulation_lqrInstanceStruct));
+  chartInstance = (SFc3_simulation2InstanceStruct *)utMalloc(sizeof
+    (SFc3_simulation2InstanceStruct));
+  memset(chartInstance, 0, sizeof(SFc3_simulation2InstanceStruct));
   if (chartInstance==NULL) {
     sf_mex_error_message("Could not allocate memory for chart instance.");
   }
@@ -850,26 +839,21 @@ static void mdlStart_c3_simulation_lqr(SimStruct *S)
   chartInstance->chartInfo.chartInstance = chartInstance;
   chartInstance->chartInfo.isEMLChart = 1;
   chartInstance->chartInfo.chartInitialized = 0;
-  chartInstance->chartInfo.sFunctionGateway =
-    sf_opaque_gateway_c3_simulation_lqr;
-  chartInstance->chartInfo.initializeChart =
-    sf_opaque_initialize_c3_simulation_lqr;
-  chartInstance->chartInfo.terminateChart =
-    sf_opaque_terminate_c3_simulation_lqr;
-  chartInstance->chartInfo.enableChart = sf_opaque_enable_c3_simulation_lqr;
-  chartInstance->chartInfo.disableChart = sf_opaque_disable_c3_simulation_lqr;
-  chartInstance->chartInfo.getSimState =
-    sf_opaque_get_sim_state_c3_simulation_lqr;
-  chartInstance->chartInfo.setSimState =
-    sf_opaque_set_sim_state_c3_simulation_lqr;
+  chartInstance->chartInfo.sFunctionGateway = sf_opaque_gateway_c3_simulation2;
+  chartInstance->chartInfo.initializeChart = sf_opaque_initialize_c3_simulation2;
+  chartInstance->chartInfo.terminateChart = sf_opaque_terminate_c3_simulation2;
+  chartInstance->chartInfo.enableChart = sf_opaque_enable_c3_simulation2;
+  chartInstance->chartInfo.disableChart = sf_opaque_disable_c3_simulation2;
+  chartInstance->chartInfo.getSimState = sf_opaque_get_sim_state_c3_simulation2;
+  chartInstance->chartInfo.setSimState = sf_opaque_set_sim_state_c3_simulation2;
   chartInstance->chartInfo.getSimStateInfo =
-    sf_get_sim_state_info_c3_simulation_lqr;
+    sf_get_sim_state_info_c3_simulation2;
   chartInstance->chartInfo.zeroCrossings = NULL;
   chartInstance->chartInfo.outputs = NULL;
   chartInstance->chartInfo.derivatives = NULL;
-  chartInstance->chartInfo.mdlRTW = mdlRTW_c3_simulation_lqr;
-  chartInstance->chartInfo.mdlStart = mdlStart_c3_simulation_lqr;
-  chartInstance->chartInfo.mdlSetWorkWidths = mdlSetWorkWidths_c3_simulation_lqr;
+  chartInstance->chartInfo.mdlRTW = mdlRTW_c3_simulation2;
+  chartInstance->chartInfo.mdlStart = mdlStart_c3_simulation2;
+  chartInstance->chartInfo.mdlSetWorkWidths = mdlSetWorkWidths_c3_simulation2;
   chartInstance->chartInfo.extModeExec = NULL;
   chartInstance->chartInfo.restoreLastMajorStepConfiguration = NULL;
   chartInstance->chartInfo.restoreBeforeLastMajorStepConfiguration = NULL;
@@ -892,25 +876,25 @@ static void mdlStart_c3_simulation_lqr(SimStruct *S)
   chart_debug_initialization(S,1);
 }
 
-void c3_simulation_lqr_method_dispatcher(SimStruct *S, int_T method, void *data)
+void c3_simulation2_method_dispatcher(SimStruct *S, int_T method, void *data)
 {
   switch (method) {
    case SS_CALL_MDL_START:
-    mdlStart_c3_simulation_lqr(S);
+    mdlStart_c3_simulation2(S);
     break;
 
    case SS_CALL_MDL_SET_WORK_WIDTHS:
-    mdlSetWorkWidths_c3_simulation_lqr(S);
+    mdlSetWorkWidths_c3_simulation2(S);
     break;
 
    case SS_CALL_MDL_PROCESS_PARAMETERS:
-    mdlProcessParameters_c3_simulation_lqr(S);
+    mdlProcessParameters_c3_simulation2(S);
     break;
 
    default:
     /* Unhandled method */
     sf_mex_error_message("Stateflow Internal Error:\n"
-                         "Error calling c3_simulation_lqr_method_dispatcher.\n"
+                         "Error calling c3_simulation2_method_dispatcher.\n"
                          "Can't handle method %d.\n", method);
     break;
   }

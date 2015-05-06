@@ -8,7 +8,7 @@ LD = $(CC)
  
 MACHINE     = simulation2
 TARGET      = sfun
-CHART_SRCS   = c2_simulation2.c
+CHART_SRCS   = c2_simulation2.c c3_simulation2.c
 MACHINE_SRC  = simulation2_sfun.c
 MACHINE_REG = simulation2_sfun_registry.c
 MAKEFILE    = simulation2_sfun.mku

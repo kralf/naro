@@ -3,6 +3,7 @@
 #include "simulation2_sfun.h"
 #include "simulation2_sfun_debug_macros.h"
 #include "c2_simulation2.h"
+#include "c3_simulation2.h"
 
 /* Type Definitions */
 
@@ -30,6 +31,11 @@ unsigned int sf_simulation2_method_dispatcher(SimStruct *simstructPtr, unsigned
 {
   if (chartFileNumber==2) {
     c2_simulation2_method_dispatcher(simstructPtr, method, data);
+    return 1;
+  }
+
+  if (chartFileNumber==3) {
+    c3_simulation2_method_dispatcher(simstructPtr, method, data);
     return 1;
   }
 
@@ -72,10 +78,10 @@ unsigned int sf_simulation2_process_check_sum_call( int nlhs, mxArray * plhs[],
       ((real_T *)mxGetPr((plhs[0])))[2] = (real_T)(0U);
       ((real_T *)mxGetPr((plhs[0])))[3] = (real_T)(0U);
     } else if (!strcmp(commandName,"makefile")) {
-      ((real_T *)mxGetPr((plhs[0])))[0] = (real_T)(3855336823U);
-      ((real_T *)mxGetPr((plhs[0])))[1] = (real_T)(371412500U);
-      ((real_T *)mxGetPr((plhs[0])))[2] = (real_T)(2776140579U);
-      ((real_T *)mxGetPr((plhs[0])))[3] = (real_T)(2425617877U);
+      ((real_T *)mxGetPr((plhs[0])))[0] = (real_T)(256772950U);
+      ((real_T *)mxGetPr((plhs[0])))[1] = (real_T)(1868502253U);
+      ((real_T *)mxGetPr((plhs[0])))[2] = (real_T)(776021341U);
+      ((real_T *)mxGetPr((plhs[0])))[3] = (real_T)(260548224U);
     } else if (nrhs==3 && !strcmp(commandName,"chart")) {
       unsigned int chartFileNumber;
       chartFileNumber = (unsigned int)mxGetScalar(prhs[2]);
@@ -84,6 +90,13 @@ unsigned int sf_simulation2_process_check_sum_call( int nlhs, mxArray * plhs[],
         {
           extern void sf_c2_simulation2_get_check_sum(mxArray *plhs[]);
           sf_c2_simulation2_get_check_sum(plhs);
+          break;
+        }
+
+       case 3:
+        {
+          extern void sf_c3_simulation2_get_check_sum(mxArray *plhs[]);
+          sf_c3_simulation2_get_check_sum(plhs);
           break;
         }
 
@@ -102,10 +115,10 @@ unsigned int sf_simulation2_process_check_sum_call( int nlhs, mxArray * plhs[],
       return 0;
     }
   } else {
-    ((real_T *)mxGetPr((plhs[0])))[0] = (real_T)(335830608U);
-    ((real_T *)mxGetPr((plhs[0])))[1] = (real_T)(4082799834U);
-    ((real_T *)mxGetPr((plhs[0])))[2] = (real_T)(2510582596U);
-    ((real_T *)mxGetPr((plhs[0])))[3] = (real_T)(3073187304U);
+    ((real_T *)mxGetPr((plhs[0])))[0] = (real_T)(4086283545U);
+    ((real_T *)mxGetPr((plhs[0])))[1] = (real_T)(2170758149U);
+    ((real_T *)mxGetPr((plhs[0])))[2] = (real_T)(4046313398U);
+    ((real_T *)mxGetPr((plhs[0])))[3] = (real_T)(310050853U);
   }
 
   return 1;
@@ -146,6 +159,18 @@ unsigned int sf_simulation2_autoinheritance_info( int nlhs, mxArray * plhs[],
         if (strcmp(aiChksum, "1s6LcltLaNj2r3ZeAZiMNB") == 0) {
           extern mxArray *sf_c2_simulation2_get_autoinheritance_info(void);
           plhs[0] = sf_c2_simulation2_get_autoinheritance_info();
+          break;
+        }
+
+        plhs[0] = mxCreateDoubleMatrix(0,0,mxREAL);
+        break;
+      }
+
+     case 3:
+      {
+        if (strcmp(aiChksum, "S3jq8e0vGot7IWlf6AoqPG") == 0) {
+          extern mxArray *sf_c3_simulation2_get_autoinheritance_info(void);
+          plhs[0] = sf_c3_simulation2_get_autoinheritance_info();
           break;
         }
 
@@ -199,6 +224,17 @@ unsigned int sf_simulation2_get_eml_resolved_functions_info( int nlhs, mxArray *
         break;
       }
 
+     case 3:
+      {
+        extern const mxArray *sf_c3_simulation2_get_eml_resolved_functions_info
+          (void);
+        mxArray *persistentMxArray = (mxArray *)
+          sf_c3_simulation2_get_eml_resolved_functions_info();
+        plhs[0] = mxDuplicateArray(persistentMxArray);
+        mxDestroyArray(persistentMxArray);
+        break;
+      }
+
      default:
       plhs[0] = mxCreateDoubleMatrix(0,0,mxREAL);
     }
@@ -243,6 +279,15 @@ unsigned int sf_simulation2_third_party_uses_info( int nlhs, mxArray * plhs[],
         }
       }
 
+     case 3:
+      {
+        if (strcmp(tpChksum, "L3PQDZyGaoZ9FMr9gXJjVD") == 0) {
+          extern mxArray *sf_c3_simulation2_third_party_uses_info(void);
+          plhs[0] = sf_c3_simulation2_third_party_uses_info();
+          break;
+        }
+      }
+
      default:
       plhs[0] = mxCreateDoubleMatrix(0,0,mxREAL);
     }
@@ -276,6 +321,15 @@ unsigned int sf_simulation2_jit_fallback_info( int nlhs, mxArray * plhs[], int
         if (strcmp(tpChksum, "5yq5gOSmnheZ2j6vv8hWMD") == 0) {
           extern mxArray *sf_c2_simulation2_jit_fallback_info(void);
           plhs[0] = sf_c2_simulation2_jit_fallback_info();
+          break;
+        }
+      }
+
+     case 3:
+      {
+        if (strcmp(tpChksum, "L3PQDZyGaoZ9FMr9gXJjVD") == 0) {
+          extern mxArray *sf_c3_simulation2_jit_fallback_info(void);
+          plhs[0] = sf_c3_simulation2_jit_fallback_info();
           break;
         }
       }
@@ -317,6 +371,15 @@ unsigned int sf_simulation2_updateBuildInfo_args_info( int nlhs, mxArray * plhs[
         }
       }
 
+     case 3:
+      {
+        if (strcmp(tpChksum, "L3PQDZyGaoZ9FMr9gXJjVD") == 0) {
+          extern mxArray *sf_c3_simulation2_updateBuildInfo_args_info(void);
+          plhs[0] = sf_c3_simulation2_updateBuildInfo_args_info();
+          break;
+        }
+      }
+
      default:
       plhs[0] = mxCreateDoubleMatrix(0,0,mxREAL);
     }
@@ -343,6 +406,16 @@ void sf_simulation2_get_post_codegen_info( int nlhs, mxArray * plhs[], int nrhs,
     }
     break;
 
+   case 3:
+    {
+      if (strcmp(tpChksum, "L3PQDZyGaoZ9FMr9gXJjVD") == 0) {
+        extern mxArray *sf_c3_simulation2_get_post_codegen_info(void);
+        plhs[0] = sf_c3_simulation2_get_post_codegen_info();
+        return;
+      }
+    }
+    break;
+
    default:
     break;
   }
@@ -353,7 +426,7 @@ void sf_simulation2_get_post_codegen_info( int nlhs, mxArray * plhs[], int nrhs,
 void simulation2_debug_initialize(struct SfDebugInstanceStruct* debugInstance)
 {
   _simulation2MachineNumber_ = sf_debug_initialize_machine(debugInstance,
-    "simulation2","sfun",0,1,0,0,0);
+    "simulation2","sfun",0,2,0,0,0);
   sf_debug_set_machine_event_thresholds(debugInstance,_simulation2MachineNumber_,
     0,0);
   sf_debug_set_machine_data_thresholds(debugInstance,_simulation2MachineNumber_,

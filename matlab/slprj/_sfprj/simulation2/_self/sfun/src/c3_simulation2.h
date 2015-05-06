@@ -1,5 +1,5 @@
-#ifndef __c3_simulation_lqr_h__
-#define __c3_simulation_lqr_h__
+#ifndef __c3_simulation2_h__
+#define __c3_simulation2_h__
 
 /* Include files */
 #include "sf_runtime/sfc_sf.h"
@@ -8,8 +8,8 @@
 #include "multiword_types.h"
 
 /* Type Definitions */
-#ifndef typedef_SFc3_simulation_lqrInstanceStruct
-#define typedef_SFc3_simulation_lqrInstanceStruct
+#ifndef typedef_SFc3_simulation2InstanceStruct
+#define typedef_SFc3_simulation2InstanceStruct
 
 typedef struct {
   SimStruct *S;
@@ -19,13 +19,13 @@ typedef struct {
   int32_T c3_sfEvent;
   boolean_T c3_isStable;
   boolean_T c3_doneDoubleBufferReInit;
-  uint8_T c3_is_active_c3_simulation_lqr;
+  uint8_T c3_is_active_c3_simulation2;
   real_T *c3_y;
   real_T *c3_uold;
   real_T *c3_u;
-} SFc3_simulation_lqrInstanceStruct;
+} SFc3_simulation2InstanceStruct;
 
-#endif                                 /*typedef_SFc3_simulation_lqrInstanceStruct*/
+#endif                                 /*typedef_SFc3_simulation2InstanceStruct*/
 
 /* Named Constants */
 
@@ -35,11 +35,11 @@ extern struct SfDebugInstanceStruct *sfGlobalDebugInstanceStruct;
 /* Variable Definitions */
 
 /* Function Declarations */
-extern const mxArray *sf_c3_simulation_lqr_get_eml_resolved_functions_info(void);
+extern const mxArray *sf_c3_simulation2_get_eml_resolved_functions_info(void);
 
 /* Function Definitions */
-extern void sf_c3_simulation_lqr_get_check_sum(mxArray *plhs[]);
-extern void c3_simulation_lqr_method_dispatcher(SimStruct *S, int_T method, void
+extern void sf_c3_simulation2_get_check_sum(mxArray *plhs[]);
+extern void c3_simulation2_method_dispatcher(SimStruct *S, int_T method, void
   *data);
 
 #endif

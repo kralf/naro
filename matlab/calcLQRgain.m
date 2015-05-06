@@ -49,4 +49,4 @@ B = [zeros(2,2);...
 Q = 0.1*diag([1,1,0.1,0.1]);
 R = 1*diag([1,1]);
 
-[K,S,e] = lqr(A,B,Q,R)
+[K,S,e] = lqr(A,B,Q,R);
