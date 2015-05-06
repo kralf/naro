@@ -7,6 +7,7 @@
 #include <thread>
 #include <string>
 #include "naro_sensor_srvs/GPIOClass.h"
+#include "ros/ros.h"
 
 using namespace std;
 
@@ -19,16 +20,15 @@ class HallSensor {
 		void resetCount();
 		void setFrequency(int freq);
 		int getFrequency();
-		void startReadingSensor();
-		void join();
 
 	private:
 		int counter;
-		int waitMicroSec;
+		float duration;
 		bool running;
 		string gpioName;
 		GPIOClass* gpio;
-		thread readingThread;
-
-		void work();
+		ros::Timer timer;
+		ros::NodeHandle n;
+		ros::Duration period;
+		void readSensor(const ros::TimerEvent& event);
 };

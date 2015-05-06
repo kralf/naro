@@ -24,7 +24,6 @@ void HallSensorNode::init() {
 	int freq = getParam("sensor/frequency", freq);
 	name = getParam("sensor/name", name);
 
-
 	NODEWRAP_INFO("Initialize: %s", name.c_str());
 
 	// setup services
@@ -36,12 +35,11 @@ void HallSensorNode::init() {
 	// start reading sensor data
 	sensor = new HallSensor(gpioNum);
 	sensor->setFrequency(freq);
-	sensor->startReadingSensor();
+
 }
 
 void HallSensorNode::cleanup() {
 	NODEWRAP_INFO("Shutting down: %s", name.c_str());
-	sensor->join();
 }
 
 // return position of piston tank
@@ -70,5 +68,6 @@ bool HallSensorNode::resetCounter(std_srvs::Empty::Request& request, std_srvs::E
 	NODEWRAP_DEBUG("Counter reset to 0");
 	return 1;
 }
+
 
 }

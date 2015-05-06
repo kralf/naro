@@ -15,6 +15,7 @@
 #include "naro_sensor_srvs/GetPosition.h"
 #include "naro_sensor_srvs/SetFrequency.h"
 #include "naro_sensor_srvs/GetFrequency.h"
+#include "ros/ros.h"
 
 using namespace naro_sensor_srvs;
 namespace nodewrap {
@@ -51,7 +52,6 @@ class HallSensorNode:
 
 			// reset the counter
 			bool resetCounter(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
-
 
 };
 

@@ -15,38 +15,31 @@ HallSensor::HallSensor() {};
 
 HallSensor::HallSensor(string gpioId) {
 	running = true;
-	waitMicroSec = 100000;
+	duration = 0.01;
 	counter = 0;
+
 	// Init GPIO
 	gpioName = gpioId;
 	gpio = new GPIOClass(gpioName);
+
+	// setup ros timer
+	timer = n.createTimer(ros::Duration(duration), &HallSensor::readSensor, this);
 }
 
 HallSensor::~HallSensor() {
 	delete gpio;
 }
 
-void HallSensor::startReadingSensor()  {
-	this->running = true;
-	readingThread = thread(&HallSensor::work, this);
-}
-
-void HallSensor::work() {
+void HallSensor::readSensor(const ros::TimerEvent& event) {
 	string valueOld = "0";
 	string value;
-	while(running){
-		gpio->getval_gpio(value);
-		if((valueOld == "0") && (value == "1")) {
-			counter++;
-		}
-		valueOld = value;
-		usleep(this->waitMicroSec);
-	}
-}
 
-void HallSensor::join() {
-	this->running = false;
-	readingThread.join();
+	gpio->getval_gpio(value);
+	if((valueOld == "0") && (value == "1")) {
+		this->counter++;
+	}
+	valueOld = value;
+
 }
 
 int HallSensor::getCount() {
@@ -58,10 +51,10 @@ void HallSensor::resetCount() {
 }
 
 void HallSensor::setFrequency(int freq) {
-	int msec = 1000000/freq; // convert from Hz -> microsec
-	this->waitMicroSec = msec;
+	this->duration = 1/freq; // convert from Hz -> seconds
+	this->timer.setPeriod(ros::Duration(duration));
 }
 
 int HallSensor::getFrequency() {
-	return this->waitMicroSec*1000000;
+	return (1/duration);
 }
