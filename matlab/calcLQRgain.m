@@ -46,7 +46,7 @@ B = [zeros(2,2);...
     -inv(M)*G_dyn];
 
 % Design Matrices
-Q = 0.1*diag([1,1,0.1,0.1]);
+Q = diag([1,1,1,1]);
 R = 1*diag([1,1]);
 
 [K,S,e] = lqr(A,B,Q,R);

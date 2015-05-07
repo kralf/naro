@@ -16,7 +16,7 @@ x0_t = 0.25;                % [m]       displacement piston tank in x direction
 z0_t = 0.05;                % [m]       displacement piston tank in z direction
 A_t = pi*(65/(2*1000))^2;   % [m^2]     area piston tank
 V_t = 250e-6;               % [m^3]     volume of piston tank
-h_max = V_t/A_t;            % [m]       max height of water in piston tank
+h_max = V_t/A_t            % [m]       max height of water in piston tank
 
 Iy0 = 0.134;                % [kgm^2]   moment of inertia around y-axis
 
