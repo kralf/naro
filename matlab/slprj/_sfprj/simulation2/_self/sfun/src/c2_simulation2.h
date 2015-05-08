@@ -22,8 +22,6 @@ typedef struct {
   uint8_T c2_is_active_c2_simulation2;
   real_T (*c2_u)[10];
   real_T (*c2_y)[8];
-  real_T (*c2_A_sys)[64];
-  real_T (*c2_B_sys)[16];
 } SFc2_simulation2InstanceStruct;
 
 #endif                                 /*typedef_SFc2_simulation2InstanceStruct*/

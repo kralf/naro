@@ -22,6 +22,7 @@ typedef struct {
   uint8_T c2_is_active_c2_simulation_lqr;
   real_T (*c2_u)[3];
   real_T (*c2_y)[2];
+  real_T (*c2_x)[2];
 } SFc2_simulation_lqrInstanceStruct;
 
 #endif                                 /*typedef_SFc2_simulation_lqrInstanceStruct*/

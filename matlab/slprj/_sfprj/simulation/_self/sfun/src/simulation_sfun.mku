@@ -23,7 +23,7 @@ MLSLSF_INCLUDES  = \
     -I"/Applications/MATLAB_R2014b.app/simulink/include" \
     -I"/Applications/MATLAB_R2014b.app/stateflow/c/mex/include" \
     -I"/Applications/MATLAB_R2014b.app/rtw/c/src" \
-    -I"/Users/jonas/Dropbox/ETH/Master/8. Semester/Semester Project/ControllerDesign/slprj/_sfprj/simulation/_self/sfun/src" 
+    -I"/Users/jonas/git/naro/matlab/slprj/_sfprj/simulation/_self/sfun/src" 
 
 THIRD_PARTY_INCLUDES = 
 
