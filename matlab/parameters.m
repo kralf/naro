@@ -21,8 +21,8 @@ h_max = V_t/A_t            % [m]       max height of water in piston tank
 Iy0 = 0.134;                % [kgm^2]   moment of inertia around y-axis
 
 % restoring static forces
-W_r = m0*g;          % [N]       gravitational force empty
-B_r = rho*g*V_n;    % [N]       buoancy restoring force
+W_r = m0*g          % [N]       gravitational force empty
+B_r = rho*g*V_n    % [N]       buoancy restoring force
 
 % Added mass coefficents
 Z_w = -rho*V_n;             % [kg]
@@ -30,5 +30,9 @@ M_q = -1/12*rho*V_n*l_n;    % [km*m]
 
 % ------
 
-m_max = m0+1*V_t*rho;
-Fg_max = g*m_max;
+m_max = m0+2*V_t*rho;
+Fg_max = g*m_max
+
+u0 = ((B_r-W_r)/(2*rho*A_t*g))/h_max
+
+F = W_r + u0*h_max*A_t*rho*g*2

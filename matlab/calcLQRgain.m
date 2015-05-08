@@ -12,8 +12,8 @@ parameters;
 % use reduced system without constant term
 
 % rename parameters for clarification
-h1 = 0.1;
-h2 = 0.1;
+h1 = 0.2264;
+h2 = 0.2264;
 theta = 0;
 
 % Denormalize input
@@ -38,15 +38,19 @@ M = [ m-Z_w,  -m*x_g;...
 G_dyn = g*rho*A_t*[-cos(theta), -cos(theta);...
                     sin(theta)*z0_t+cos(theta)*x1, sin(theta)*z0_t+cos(theta)*x2];
 
-% state space model x_dot = Ax+Bu
+% state space model x_dot = Ax+Bu x = [z theta w_dot q_dot]
 A = [zeros(2,2), [cos(theta) 0; 0 1];...
     zeros(2,4)];
 
 B = [zeros(2,2);...
     -inv(M)*G_dyn];
 
-% Design Matrices
-Q = diag([1,1,1,1]);
-R = 1*diag([1,1]);
+C = eye(4,4);
 
-[K,S,e] = lqr(A,B,Q,R);
+D = zeros(4,2);
+
+% Design Matrices
+Q = 0.1*diag([10,1,1,1]);
+R = 10*diag([1,1]);
+
+[K,S,e] = lqr(A,B,Q,R)
