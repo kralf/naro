@@ -1,0 +1,4 @@
+<launch>
+  <node name="tankCtrl" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
+  </node>
+</launch>
