@@ -1,4 +1,14 @@
 <launch>
+  <node name="tankPos" pkg="naro_tank_ctrl" type="tank_pos" output="screen">
+    <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_rear.yaml"/>
+  </node>
   <node name="tankCtrl" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
+    <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_rear.yaml"/>
+  </node>
+    <node name="tankPos" pkg="naro_tank_ctrl" type="tank_pos" output="screen">
+    <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_front.yaml"/>
+  </node>
+  <node name="tankCtrl" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
+    <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_front.yaml"/>
   </node>
 </launch>

@@ -1,0 +1,6 @@
+position:
+	name: "TankPositionRear"
+	totalTicks: 950
+control:
+	name: "TankCtrlRear"
+positionThreshold: 0.01

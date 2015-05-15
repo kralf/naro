@@ -7,13 +7,13 @@
 
 #include <roscpp_nodewrap/NodeImpl.h>
 #include <roscpp_nodewrap/Nodelet.h>
-#include "std_msgs/String.h"
+#include "ros/ros.h"
 
 #include "naro_sensor_srvs/GetPosition.h"
 #include "naro_smc_srvs/SetSpeed.h"
 #include "naro_tank_ctrl/GetTankPosition.h"
 #include "naro_tank_ctrl/SetTankPosition.h"
- #include "naro_tank_ctrl/SetDirection.h"
+#include "naro_tank_ctrl/SetDirection.h"
 
 using namespace naro_tank_ctrl;
 
@@ -36,6 +36,7 @@ class TankCtrl:
 			float ticksOld;
 			float speedDirection;
 			bool finalPosition;
+			std::string nodeName;
 
 			ros::NodeHandle n;
 

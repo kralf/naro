@@ -15,7 +15,12 @@ TankCtrl::TankCtrl() {};
 TankCtrl::~TankCtrl() {};
 
 void TankCtrl::init() {
-	NODEWRAP_INFO("Initialize <TankCtrl>");
+	// GET PARAMETERS
+	nodeName = getParam("control/name", nodeName);
+	double tmpPos = getParam("positionThreshold", tmpPos);
+	positionThreshold = (float)tmpPos;
+
+	NODEWRAP_INFO("Initialize: <%s>", nodeName.c_str());
 
 	// SERVICES
 	// -> subscribe
@@ -31,16 +36,15 @@ void TankCtrl::init() {
 
 	startup();
 
-	// INIT VAROIABLES
+	// INIT VARIABLES
 	speedDirection = 0.0;
 	positionRequest = 0.0;
-	positionThreshold = 0.01;
 	finalPosition = true;
 
 }
 
 void TankCtrl::cleanup() {
-	NODEWRAP_INFO("Shutting down: TankCtrl");
+	NODEWRAP_INFO("Shutting down: <%s>", nodeName.c_str());
 }
 
 

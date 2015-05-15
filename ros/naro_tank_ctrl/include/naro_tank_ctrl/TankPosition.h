@@ -11,6 +11,8 @@
 #include "naro_sensor_srvs/GetPosition.h"
 #include "naro_tank_ctrl/SetDirection.h"
 #include "naro_tank_ctrl/GetTankPosition.h"
+#include <std_srvs/Empty.h>
+#include <std_msgs/String.h>
 
 using namespace naro_tank_ctrl;
 
@@ -30,6 +32,7 @@ class TankPosition:
             float totalTicks;
             float ticksOld;
             float speedDirection;
+            std::string nodeName;
 
             ros::NodeHandle n;
 
@@ -40,10 +43,12 @@ class TankPosition:
 
             ros::ServiceServer setDirectionService;
             ros::ServiceServer getPositionService;
+            ros::ServiceServer resetPositionCounterService;
 
             void readPosition(const ros::TimerEvent& event);
             bool setSpeedDirection(SetDirection::Request& request, SetDirection::Response& response);
             bool getTankPosition(GetTankPosition::Request& request, GetTankPosition::Response& response);
+            bool resetPositionCounter(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
 
     };
 };
