@@ -19,17 +19,21 @@ void TankCtrl::init() {
 	nodeName = getParam("control/name", nodeName);
 	double tmpPos = getParam("positionThreshold", tmpPos);
 	positionThreshold = (float)tmpPos;
+	std::string smcServerName = getParam("control/smcServer", smcServerName);
+	std::string tankPosName = getParam("position/name", tankPosName);
 
 	NODEWRAP_INFO("Initialize: <%s>", nodeName.c_str());
 
 	// SERVICES
 	// -> subscribe
-	speedClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/smc_server_rear/set_speed");
-	positionClient = n.serviceClient<naro_tank_ctrl::GetTankPosition>("/tankPos/getTankPosition");
-	directionClient = n.serviceClient<naro_tank_ctrl::SetDirection>("/tankPos/setDirection");
+	speedClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/"+smcServerName+"/set_speed");
+	limitClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/"+smcServerName+"/get_limits");
+	positionClient = n.serviceClient<naro_tank_ctrl::GetTankPosition>("/"+tankPosName+"/getTankPosition");
+	directionClient = n.serviceClient<naro_tank_ctrl::SetDirection>("/"+tankPosName+"/setDirection");
 
 	// -> advertise
 	setTankPositionService = advertiseService("setTankPosition", "setTankPosition", &TankCtrl::setTankPosition);
+	resetTankPositionService = advertiseService("resetTankPosition", "resetTankPosition", &TankCtrl::resetTankPosition);
 
 	// TIMER
 	checkPositionTimer = n.createTimer(ros::Duration(1/300), &TankCtrl::checkPosition, this); // timer for checking position
@@ -52,8 +56,8 @@ void TankCtrl::cleanup() {
 * set correct motor speed according actual position and requested position of piston tank
 */
 bool TankCtrl::setTankPosition(SetTankPosition::Request& request, SetTankPosition::Response& response) {
-	positionRequest = (float)(request.position);
-	float speed = fabs((float)(request.speed));
+	positionRequest = clamp((float)(request.position), 0.0, 1.0);
+	float speed = clamp(fabs((float)(request.speed)), 0.0, 1.0);
 
 	float position = getPosition();
 
@@ -69,13 +73,13 @@ bool TankCtrl::setTankPosition(SetTankPosition::Request& request, SetTankPositio
 
 		if(direction!=speedDirection) { // check if change in direction
 			// stop motor
-			callSpeedClient(0);
+			setSpeed(0);
 			// change direction
 			setDirection(direction);
 			speedDirection = direction;
 		}
 
-		callSpeedClient(speedDirection*speed);
+		setSpeed(speedDirection*speed);
 
 		finalPosition = false;
 	} else {
@@ -88,7 +92,7 @@ bool TankCtrl::setTankPosition(SetTankPosition::Request& request, SetTankPositio
 /*
 * set the speed of the motor 
 */
-void TankCtrl::callSpeedClient(float speed) {
+void TankCtrl::setSpeed(float speed) {
 	speedSrv.request.speed = speed;
 	speedSrv.request.start = true;
 	if(speedClient.call(speedSrv)) {
@@ -107,7 +111,7 @@ void TankCtrl::checkPosition(const ros::TimerEvent& event) {
 	if(fabs(position-positionRequest)<positionThreshold) {
 		if(!finalPosition) {
 			NODEWRAP_INFO("Reached final position");
-			callSpeedClient(0.0);
+			setSpeed(0.0);
 			speedDirection = 0;
 			setDirection(0);
 			finalPosition = true;
@@ -119,7 +123,7 @@ void TankCtrl::checkPosition(const ros::TimerEvent& event) {
 * startup procedure for piston tank
 */
 void TankCtrl::startup() {
-	callSpeedClient(0.0);
+	resetPosition();
 }
 
 /*
@@ -130,7 +134,7 @@ void TankCtrl::setDirection(float direction) {
 	if(directionClient.call(directionSrv)) {
 		NODEWRAP_INFO("direction set to: %f", direction);	
 	} else {
-		NODEWRAP_INFO("TankPosition node not avialable");
+		NODEWRAP_INFO("TankPosition node not available");
 	}
 }
 
@@ -146,5 +150,56 @@ float TankCtrl::getPosition() {
 	}
 }
 
+/*
+* reset tank position service
+*/
+bool TankCtrl::resetTankPosition(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response) {
+	return resetPosition();
+}
 
+/*
+* reset tank position from (unknown) position to 0
+*/
+bool TankCtrl::resetPosition() {
+	bool notFinish = true;
+	setSpeed(0.0); // stop tank
+	setSpeed(0.5); // start driving in
+
+	while(notFinish) { // check if in limit switch
+		if(limitClient.call(limitSrv)) {
+			int limit = limitSrv.response.limits;
+			if(limit==128) { // in limit
+				notFinish = false;
+			}
+		} else {
+			NODEWRAP_INFO("smc limit service not available");
+		}
+	}
+
+	setSpeed(0.0);
+
+	// reset position counter
+	if(resetClient.call(resetSrv)) {
+		NODEWRAP_INFO("%s reset to position 0", nodeName.c_str());
+		return true;
+	} else {
+		NODEWRAP_INFO("tank position reset service not available");
+		return false;
+	}
+}
+
+/*
+ * check value
+ */
+float TankCtrl::clamp(float value, float min, float max) {
+	if(value<min) {
+		return min;
+	} else if(value>max) {
+		return max;
+	} else {
+		return value;
+	}
+}
+
+// ---- END
 }

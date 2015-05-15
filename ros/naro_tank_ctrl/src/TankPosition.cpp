@@ -22,10 +22,11 @@ void TankPosition::init() {
 	totalTicks = (float)tmpTicks;
 	double tmpPos = getParam("positionThreshold", tmpPos);
 	positionThreshold = (float)tmpPos;
+	std::string hallSensorName = getParam("position/hallSensor", hallSensorName);
 
     NODEWRAP_INFO("Initialize: <%s>", nodeName.c_str());
 
-    positionClient = n.serviceClient<naro_sensor_srvs::GetPosition>("hallSensor_rear/getPosition");
+    positionClient = n.serviceClient<naro_sensor_srvs::GetPosition>(hallSensorName+"/getPosition");
 
     timerHallSensor = n.createTimer(ros::Duration(1/300), &TankPosition::readPosition, this); // timer for reading HallSensor
 

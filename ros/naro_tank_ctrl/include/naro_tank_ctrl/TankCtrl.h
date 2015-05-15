@@ -11,9 +11,11 @@
 
 #include "naro_sensor_srvs/GetPosition.h"
 #include "naro_smc_srvs/SetSpeed.h"
+#include "naro_smc_srvs/GetLimits.h"
 #include "naro_tank_ctrl/GetTankPosition.h"
 #include "naro_tank_ctrl/SetTankPosition.h"
 #include "naro_tank_ctrl/SetDirection.h"
+#include <std_srvs/Empty.h>
 
 using namespace naro_tank_ctrl;
 
@@ -45,22 +47,32 @@ class TankCtrl:
 
 			ros::ServiceClient positionClient;
 			naro_tank_ctrl::GetTankPosition posSrv;
+			ros::ServiceClient directionClient;
+			naro_tank_ctrl::SetDirection directionSrv;
+			ros::ServiceClient resetClient;
+			std_srvs::Empty resetSrv;
 
 			ros::ServiceClient speedClient;
 			naro_smc_srvs::SetSpeed speedSrv;
+			ros::ServiceClient limitClient;
+			naro_smc_srvs::GetLimits limitSrv;
 
-			ros::ServiceClient directionClient;
-			naro_tank_ctrl::SetDirection directionSrv;
+
 
 			ros::ServiceServer setTankPositionService;
+			ros::ServiceServer resetTankPositionService;
 
 			void readPosition(const ros::TimerEvent& event);
 			void checkPosition(const ros::TimerEvent& event);
 			bool setTankPosition(SetTankPosition::Request& request, SetTankPosition::Response& response);
+			bool resetTankPosition(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
+			bool resetPosition();
 
-			void callSpeedClient(float speed);
+			void setSpeed(float speed);
 			void setDirection(float direction);
 			float getPosition();
+
+			float clamp(float value, float min, float max);
 
 			void startup();
 
