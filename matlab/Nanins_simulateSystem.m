@@ -6,19 +6,34 @@ clear all
 clc
 close all
 
-%% simulate Simulink model
+%% SIMULATE SIMULINK MODEL
+parameters;
 modelPID = 'Nanins_PID_Controller';
 load_system(modelPID)
 
-% set parameters
-depth = 2;
+% -- SET PARAMETERS
+% inputs
+depth = 3;
 set_param('Nanins_PID_Controller/refDepth', 'Value', num2str(depth));
+motorSpeed = 0.7;
+set_param('Nanins_PID_Controller/motorSpeed', 'Value', num2str(motorSpeed));
 
+% starting positions
+iDepth = 0;
+iTheta = 10/180*pi;
+iTank1 = 0; %u0*h_max/10;
+iTank2 = iTank1;
+set_param('Nanins_PID_Controller/AUV dynamic/z_dot > z', 'InitialCondition', num2str(iDepth));
+set_param('Nanins_PID_Controller/AUV dynamic/theta_dot > theta', 'InitialCondition', num2str(iTheta));
+set_param('Nanins_PID_Controller/piston tank dynamic front/h_dot -> h', 'InitialCondition', num2str(iTank1));
+set_param('Nanins_PID_Controller/piston tank dynamic rear/h_dot -> h', 'InitialCondition', num2str(iTank2));
+
+% -- PID CONTROLLER
 % PID tuning Depth controller Ziegler-Nicholson
 Ku = 0.35;
 Tu = 106-69;
 Kp = 0.33*Ku;
-Ki = 2*Kp/Tu
+Ki = 2*Kp/Tu;
 Kd = Kp*Tu/3;
 
 set_param('Nanins_PID_Controller/PID Dive', 'P', num2str(Kp), 'I', num2str(Ki), 'D', num2str(Kd));
@@ -30,11 +45,11 @@ Kd = 0;
 
 set_param('Nanins_PID_Controller/PID Pitch', 'P', num2str(Kp), 'I', num2str(Ki), 'D', num2str(Kd));
 
-% start simulation
+% -- START SIMULATION
 sim(modelPID)
 
 
-%% plot output
+%% PLOT OUTPUTS
 figure(1)
 n=4; m=1;
 % plot depth z

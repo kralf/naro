@@ -7,13 +7,13 @@ clear all;
 
 %% --- Calculate LQR Gain ---
 
-parameters;
+Nanins_parameters;
 
 % use reduced system without constant term
 
 % rename parameters for clarification
-h1 = 0.2264;
-h2 = 0.2264;
+h1 = u0;
+h2 = u0;
 theta = 0;
 
 % Denormalize input
@@ -49,8 +49,9 @@ C = eye(4,4);
 
 D = zeros(4,2);
 
+
 % Design Matrices
-Q = 0.1*diag([10,1,1,1]);
+Q = 0.1*diag([10,10,1,1]);
 R = 10*diag([1,1]);
 
 [K,S,e] = lqr(A,B,Q,R)
