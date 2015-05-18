@@ -13,11 +13,17 @@
 
   <build_depend>message_generation</build_depend>
   <build_depend>diagnostic_updater</build_depend>
-  <build_depend>naro_smc_srvs</build_depend>
   <build_depend>naro_sensor_srvs</build_depend>
+  <build_depend>naro_tank_ctrl</build_depend>
+  <build_depend>roscpp_nodewrap</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
 
   <run_depend>message_runtime</run_depend>
   <run_depend>diagnostic_updater</run_depend>
-  <run_depend>naro_smc_srvs</run_depend>
+  <run_depend>naro_tank_ctrl</run_depend>
   <run_depend>naro_sensor_srvs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>roscpp_nodewrap</run_depend>
 </package>

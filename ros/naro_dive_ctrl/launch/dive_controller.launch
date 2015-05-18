@@ -1,5 +1,5 @@
 <launch>
-  <node name="dive_controller" pkg="naro_dive_ctrl" type="dive_controller" respawn="true">
-    <rosparam command="load" file="$(find naro_dive_ctrl)/config/dive_controller.yaml"/>
+  <node name="dive_controller" pkg="naro_dive_ctrl" type="dive_controller" output="screen">
+    <rosparam command="load" file="$(find naro_dive_ctrl)/config/dive_controller_new.yaml"/>
   </node>
 </launch>

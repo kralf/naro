@@ -16,6 +16,8 @@ PIDController::PIDController() {
 	timeStep = 1.0;
 }
 
+PIDController::~PIDController() {}
+
 void PIDController::setGains(double Kp, double Ki, double Kd) {
 	this->Kp = Kp;
 	this->Ki = Ki;

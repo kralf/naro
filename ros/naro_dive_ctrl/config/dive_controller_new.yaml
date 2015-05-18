@@ -1,0 +1,17 @@
+Depth:
+    Frequency: 100
+    Kp: 0.1155
+    Ki: 0.0062
+    Kd: 1.4245
+Pitch:
+    Frequency: 200
+    Kp: 0.2
+    Ki: 0.0
+    Kd: 0.0
+Services:
+    tankFrontCtrl: "tankCtrlFront"
+    tankRearCtrl: "tankCtrlRear"
+    depthService: "depth_sensor"
+    pitchService: ""
+Tank:
+    Speed: 0.6
