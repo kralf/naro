@@ -19,7 +19,22 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   roscpp_nodewrap
   tf
+  message_generation
 )
+
+################################################
+## Declare ROS messages, services and actions ##
+################################################
+
+
+## Generate services in the 'srv' folder
+add_service_files(
+  FILES
+    GetPitch.srv
+)
+
+## Generate added messages and services with any dependencies listed here
+generate_messages()
 
 ###################################
 ## catkin specific configuration ##
@@ -33,7 +48,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES naro_imu
-    CATKIN_DEPENDS std_msgs std_srvs roscpp_nodewrap
+    CATKIN_DEPENDS std_msgs std_srvs roscpp_nodewrap message_runtime 
 )
 
 ###########

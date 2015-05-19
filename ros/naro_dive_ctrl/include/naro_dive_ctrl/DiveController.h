@@ -17,6 +17,7 @@
 #include "naro_dive_ctrl/GetRefPitch.h"
 #include "naro_dive_ctrl/Enable.h"
 #include "naro_dive_ctrl/Disable.h"
+#include "naro_imu/GetPitch.h"
 
 
 using namespace naro_dive_ctrl;
@@ -48,6 +49,9 @@ class DiveController:
 
 		ros::ServiceClient depthClient;
 		naro_sensor_srvs::GetDepth depthSrv;
+
+		ros::ServiceClient pitchClient;
+		naro_imu::GetPitch pitchSrv;
 
 		ros::ServiceServer depthService;
 		ros::ServiceServer getDepthService;

@@ -23,6 +23,9 @@ void NaroImu::init() {
 
 	subscriber = subscribe("bla", "/imu/data", 100, &NaroImu::getImuData);
 	publisher = advertise<geometry_msgs::Pose>("bla", "/base/pose", 10);
+
+	// Service
+	pitchService = advertiseService("getPitch", "getPitch", &NaroImu::getPitch);
 }
 
 void NaroImu::cleanup() {
@@ -61,6 +64,7 @@ void NaroImu::getImuData(const sensor_msgs::Imu::ConstPtr& msg) {
 	}
 
 	//publisher.publish(orientation_base);
+	lastPose = poseBase;
 	publisher.publish(poseBase);
 
 }
@@ -155,6 +159,19 @@ void NaroImu::resetPose() {
 	oldPosition.setValue(0.0,0.0,0.0);
 	oldVelocity.setValue(0.0,0.0,0.0);
 	startIntegration = true;
+}
+
+/**
+ * pitch service
+ */
+bool NaroImu::getPitch(GetPitch::Request& request, GetPitch::Response& response) {
+	 double roll, pitch, yaw;
+	 tf::Quaternion quat;
+	 tf::quaternionMsgToTF(lastPose.orientation, quat);
+	 tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+
+	 response.pitch = pitch;
+	 return 1;
 }
 
 }

@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   naro_sensor_srvs
   naro_tank_ctrl
+  naro_imu
 )
 
 ################################################
@@ -41,15 +42,15 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
     Disable.srv
-    Emerge.srv
+    #Emerge.srv
     Enable.srv
-    GetActual.srv
-    GetCommand.srv
-    GetEnabled.srv
-    GetError.srv
-    GetGains.srv
-    SetCommand.srv
-    SetGains.srv
+    #GetActual.srv
+    #GetCommand.srv
+    #GetEnabled.srv
+    #GetError.srv
+    #GetGains.srv
+    #SetCommand.srv
+    #SetGains.srv
     SetDepth.srv
     SetPitch.srv
     GetRefDepth.srv
@@ -86,6 +87,7 @@ catkin_package(
     	message_runtime 
     	naro_sensor_srvs
     	naro_tank_ctrl
+    	naro_imu
 )
 
 ###########

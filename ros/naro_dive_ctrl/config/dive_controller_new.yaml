@@ -12,6 +12,6 @@ Services:
     tankFrontCtrl: "tankCtrlFront"
     tankRearCtrl: "tankCtrlRear"
     depthService: "depth_sensor"
-    pitchService: ""
+    pitchService: "base"
 Tank:
     Speed: 0.6

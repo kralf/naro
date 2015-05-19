@@ -24,6 +24,7 @@ void DiveController::init() {
 	std::string tankFront = getParam("Services/tankFrontCtrl", tankFront);
 	std::string tankRear = getParam("Services/tankRearCtrl", tankRear);
 	std::string depthName = getParam("Services/depthService", depthName);
+	std::string pitchName = getParam("Services/pitchService", pitchName);
 
 	tankMotorSpeed = getParam("Tank/Speed", tankMotorSpeed);
 	refDepth = 0.0;
@@ -51,6 +52,7 @@ void DiveController::init() {
 	controlFrontClient = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankFront+"/setTankPosition");
 	controlRearClient  = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankRear+"/setTankPosition");
 	depthClient = n.serviceClient<naro_sensor_srvs::GetDepth>("/"+depthName+"/setTankPosition");
+	pitchClient = n.serviceClient<naro_imu::GetPitch>("/"+pitchName+"/getPitch");
 	//-> advertise
 	depthService = advertiseService("setRefDepth", "setRefDepth", &DiveController::setDepth);
 	getDepthService = advertiseService("getRefDepth", "getRefDepth", &DiveController::getRefDepth);
@@ -59,7 +61,7 @@ void DiveController::init() {
 	enableService = advertiseService("enable", "enable", &DiveController::enable);
 	disableService = advertiseService("disable", "disable", &DiveController::disable);
 
-	// Init TIMER, not starting
+	// TIMER, not starting
 	depthTimer = n.createTimer(ros::Duration(1/freqDepth), &DiveController::depthCallback, this, 0, 0);
 	pitchTimer = n.createTimer(ros::Duration(1/freqPitch), &DiveController::pitchCallback, this, 0, 0);
 
@@ -132,13 +134,18 @@ double DiveController::getDepth() {
 	if(depthClient.call(depthSrv)) {
 		return depthSrv.response.filtered;
 	} else {
-		NODEWRAP_INFO("depth sensor node not available");
+		NODEWRAP_INFO("depth sensor service not available");
 		return 0;
 	}
 }
 
 double DiveController::getPitch() {
-
+	if(pitchClient.call(pitchSrv)) {
+		return pitchSrv.response.pitch;
+	} else {
+		NODEWRAP_INFO("imu pitch service not available");
+		return 0;
+	}
 }
 
 bool DiveController::setPitch(SetPitch::Request& request, SetPitch::Response& response) {

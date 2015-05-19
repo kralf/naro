@@ -3,9 +3,14 @@
 
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Pose.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 
+#include "naro_imu/GetPitch.h"
+
+
+using namespace naro_imu;
 
 namespace nodewrap {
 
@@ -19,6 +24,9 @@ class NaroImu:
 				ros::Subscriber subscriber;
 				ros::Publisher publisher;
 				tf::TransformListener transformer;
+
+				ros::ServiceServer pitchService;
+				geometry_msgs::Pose lastPose;
 
 				tf::Vector3 oldPosition;
 				tf::Vector3 newPosition;
@@ -44,6 +52,8 @@ class NaroImu:
 				void resetPose();
 
 				void integrateImuToPosition(const sensor_msgs::Imu::ConstPtr& msg, geometry_msgs::Point& position);
+
+				bool getPitch(GetPitch::Request& request, GetPitch::Response& response);
 
 };
 };
