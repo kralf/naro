@@ -26,6 +26,7 @@ class HallSensor {
 		float duration;
 		bool running;
 		string gpioName;
+		string valueOld;
 		GPIOClass* gpio;
 		ros::Timer timer;
 		ros::NodeHandle n;

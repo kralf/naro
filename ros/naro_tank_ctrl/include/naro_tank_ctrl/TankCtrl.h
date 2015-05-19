@@ -57,8 +57,6 @@ class TankCtrl:
 			ros::ServiceClient limitClient;
 			naro_smc_srvs::GetLimits limitSrv;
 
-
-
 			ros::ServiceServer setTankPositionService;
 			ros::ServiceServer resetTankPositionService;
 

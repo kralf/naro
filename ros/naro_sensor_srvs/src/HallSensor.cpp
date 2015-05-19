@@ -6,6 +6,7 @@
  */
 #include "naro_sensor_srvs/HallSensor.h"
 #include <unistd.h>
+#include <iostream>
 
 
 using namespace std;
@@ -14,8 +15,9 @@ HallSensor::HallSensor() {};
 
 HallSensor::HallSensor(string gpioId) {
 	running = true;
-	duration = 0.01;
+	duration = 1/300;
 	counter = 0;
+	valueOld = "0";
 
 	// Init GPIO
 	gpioName = gpioId;
@@ -30,12 +32,12 @@ HallSensor::~HallSensor() {
 }
 
 void HallSensor::readSensor(const ros::TimerEvent& event) {
-	string valueOld = "0";
 	string value;
 
 	gpio->getval_gpio(value);
 	if((valueOld == "0") && (value == "1")) {
 		this->counter++;
+		//std::cout << counter << endl;
 	}
 	valueOld = value;
 

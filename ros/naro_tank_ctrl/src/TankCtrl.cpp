@@ -27,9 +27,10 @@ void TankCtrl::init() {
 	// SERVICES
 	// -> subscribe
 	speedClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/"+smcServerName+"/set_speed");
-	limitClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/"+smcServerName+"/get_limits");
+	limitClient = n.serviceClient<naro_smc_srvs::GetLimits>("/"+smcServerName+"/get_limits");
 	positionClient = n.serviceClient<naro_tank_ctrl::GetTankPosition>("/"+tankPosName+"/getTankPosition");
 	directionClient = n.serviceClient<naro_tank_ctrl::SetDirection>("/"+tankPosName+"/setDirection");
+	resetClient = n.serviceClient<std_srvs::Empty>("/"+tankPosName+"/resetPositionCounter");
 
 	// -> advertise
 	setTankPositionService = advertiseService("setTankPosition", "setTankPosition", &TankCtrl::setTankPosition);
@@ -65,10 +66,10 @@ bool TankCtrl::setTankPosition(SetTankPosition::Request& request, SetTankPositio
 		float direction = speedDirection;
 		if(position > positionRequest) {
 			direction = 1.0; // drive in
-			NODEWRAP_INFO("set speed direction +");
+			//NODEWRAP_INFO("set speed direction +");
 		} else {
 			direction = -1.0; // drive in
-			NODEWRAP_INFO("set speed direction -");
+			//NODEWRAP_INFO("set speed direction -");
 		}
 
 		if(direction!=speedDirection) { // check if change in direction
@@ -123,7 +124,7 @@ void TankCtrl::checkPosition(const ros::TimerEvent& event) {
 * startup procedure for piston tank
 */
 void TankCtrl::startup() {
-	resetPosition();
+	//resetPosition();
 }
 
 /*
@@ -163,16 +164,18 @@ bool TankCtrl::resetTankPosition(std_srvs::Empty::Request& request, std_srvs::Em
 bool TankCtrl::resetPosition() {
 	bool notFinish = true;
 	setSpeed(0.0); // stop tank
+	setDirection(1.0);
 	setSpeed(0.5); // start driving in
 
 	while(notFinish) { // check if in limit switch
 		if(limitClient.call(limitSrv)) {
 			int limit = limitSrv.response.limits;
-			if(limit==128) { // in limit
+			if(limit==257) { // in limit
 				notFinish = false;
 			}
 		} else {
-			NODEWRAP_INFO("smc limit service not available");
+			NODEWRAP_INFO("smc limit service not available"); 
+			notFinish = false;
 		}
 	}
 

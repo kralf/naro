@@ -28,7 +28,7 @@ void TankPosition::init() {
 
     positionClient = n.serviceClient<naro_sensor_srvs::GetPosition>(hallSensorName+"/getPosition");
 
-    timerHallSensor = n.createTimer(ros::Duration(1/300), &TankPosition::readPosition, this); // timer for reading HallSensor
+    timerHallSensor = n.createTimer(ros::Duration(1/400), &TankPosition::readPosition, this); // timer for reading HallSensor
 
     // services
     setDirectionService = advertiseService("setDirection", "setDirection", &TankPosition::setSpeedDirection);
