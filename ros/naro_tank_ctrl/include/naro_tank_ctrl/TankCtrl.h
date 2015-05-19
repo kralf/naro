@@ -69,6 +69,7 @@ class TankCtrl:
 			void setSpeed(float speed);
 			void setDirection(float direction);
 			float getPosition();
+			int getLimit();
 
 			float clamp(float value, float min, float max);
 

@@ -22,6 +22,11 @@ void TankCtrl::init() {
 	std::string smcServerName = getParam("control/smcServer", smcServerName);
 	std::string tankPosName = getParam("position/name", tankPosName);
 
+	// INIT VARIABLES
+	speedDirection = 0.0;
+	positionRequest = 0.0;
+	finalPosition = true;
+
 	NODEWRAP_INFO("Initialize: <%s>", nodeName.c_str());
 
 	// SERVICES
@@ -40,11 +45,6 @@ void TankCtrl::init() {
 	checkPositionTimer = n.createTimer(ros::Duration(1/300), &TankCtrl::checkPosition, this); // timer for checking position
 
 	startup();
-
-	// INIT VARIABLES
-	speedDirection = 0.0;
-	positionRequest = 0.0;
-	finalPosition = true;
 
 }
 
@@ -162,21 +162,18 @@ bool TankCtrl::resetTankPosition(std_srvs::Empty::Request& request, std_srvs::Em
 * reset tank position from (unknown) position to 0
 */
 bool TankCtrl::resetPosition() {
-	bool notFinish = true;
-	setSpeed(0.0); // stop tank
-	setDirection(1.0);
-	setSpeed(0.5); // start driving in
+	if(getLimit()!=257) { // already in limit
+		setSpeed(0.0); // stop tank
+		setDirection(1.0);
+		setSpeed(0.5); // start driving in
 
-	while(notFinish) { // check if in limit switch
-		if(limitClient.call(limitSrv)) {
-			int limit = limitSrv.response.limits;
-			if(limit==257) { // in limit
-				notFinish = false;
+		while(true) { // check if in limit switch
+			if(getLimit()==257) { // in limit
+				break;
 			}
-		} else {
-			NODEWRAP_INFO("smc limit service not available"); 
-			notFinish = false;
 		}
+	} else {
+		NODEWRAP_INFO("Already at position 0");
 	}
 
 	setSpeed(0.0);
@@ -187,6 +184,15 @@ bool TankCtrl::resetPosition() {
 		return true;
 	} else {
 		NODEWRAP_INFO("tank position reset service not available");
+		return false;
+	}
+}
+
+int TankCtrl::getLimit() {
+	if(limitClient.call(limitSrv)) {
+		return limitSrv.response.limits;
+	} else {
+		NODEWRAP_INFO("smc limit service not available");
 		return false;
 	}
 }

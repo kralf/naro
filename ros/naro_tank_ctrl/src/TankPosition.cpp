@@ -16,6 +16,8 @@ TankPosition::TankPosition() {};
 TankPosition::~TankPosition() {};
 
 void TankPosition::init() {
+    NODEWRAP_INFO("Initialize: <%s>", nodeName.c_str());
+
 	// get parameters
 	nodeName = getParam("position/name", nodeName);
 	int tmpTicks = getParam("position/totalTicks", tmpTicks);
@@ -24,20 +26,20 @@ void TankPosition::init() {
 	positionThreshold = (float)tmpPos;
 	std::string hallSensorName = getParam("position/hallSensor", hallSensorName);
 
-    NODEWRAP_INFO("Initialize: <%s>", nodeName.c_str());
+    ticksOld = 0.0;
+    speedDirection = 0.0;
+    position = 0.0;
 
+    // SERVICES
+    // -> subscribe
     positionClient = n.serviceClient<naro_sensor_srvs::GetPosition>(hallSensorName+"/getPosition");
-
-    timerHallSensor = n.createTimer(ros::Duration(1/400), &TankPosition::readPosition, this); // timer for reading HallSensor
-
-    // services
+    //-> advertise
     setDirectionService = advertiseService("setDirection", "setDirection", &TankPosition::setSpeedDirection);
     getPositionService = advertiseService("getTankPosition", "getTankPosition", &TankPosition::getTankPosition);
     resetPositionCounterService = advertiseService("resetPositionCounter", "resetPositionCounter", &TankPosition::resetPositionCounter);
 
-    ticksOld = 0.0;
-    speedDirection = 0.0;
-    position = 0.0;
+    // TIMER
+    timerHallSensor = n.createTimer(ros::Duration(1/300), &TankPosition::readPosition, this); // timer for reading HallSensor
 
 }
 
