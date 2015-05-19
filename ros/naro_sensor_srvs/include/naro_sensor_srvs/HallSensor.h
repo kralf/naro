@@ -4,7 +4,6 @@
  * jo.eichenberger@gmail.com
  * 2015
  */
-#include <thread>
 #include <string>
 #include "naro_sensor_srvs/GPIOClass.h"
 #include "ros/ros.h"
