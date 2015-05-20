@@ -15,7 +15,7 @@ HallSensor::HallSensor() {};
 
 HallSensor::HallSensor(string gpioId) {
 	running = true;
-	duration = 1/300;
+	duration = 1.0/300.0;
 	counter = 0;
 	valueOld = "0";
 

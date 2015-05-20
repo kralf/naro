@@ -31,18 +31,18 @@ void TankCtrl::init() {
 
 	// SERVICES
 	// -> subscribe
-	speedClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/"+smcServerName+"/set_speed");
-	limitClient = n.serviceClient<naro_smc_srvs::GetLimits>("/"+smcServerName+"/get_limits");
-	positionClient = n.serviceClient<naro_tank_ctrl::GetTankPosition>("/"+tankPosName+"/getTankPosition");
-	directionClient = n.serviceClient<naro_tank_ctrl::SetDirection>("/"+tankPosName+"/setDirection");
-	resetClient = n.serviceClient<std_srvs::Empty>("/"+tankPosName+"/resetPositionCounter");
+	speedClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/"+smcServerName+"/set_speed", true);
+	limitClient = n.serviceClient<naro_smc_srvs::GetLimits>("/"+smcServerName+"/get_limits", true);
+	positionClient = n.serviceClient<naro_tank_ctrl::GetTankPosition>("/"+tankPosName+"/getTankPosition", true);
+	directionClient = n.serviceClient<naro_tank_ctrl::SetDirection>("/"+tankPosName+"/setDirection", true);
+	resetClient = n.serviceClient<std_srvs::Empty>("/"+tankPosName+"/resetPositionCounter", true);
 
 	// -> advertise
 	setTankPositionService = advertiseService("setTankPosition", "setTankPosition", &TankCtrl::setTankPosition);
 	resetTankPositionService = advertiseService("resetTankPosition", "resetTankPosition", &TankCtrl::resetTankPosition);
 
 	// TIMER
-	checkPositionTimer = n.createTimer(ros::Duration(1/300), &TankCtrl::checkPosition, this); // timer for checking position
+	checkPositionTimer = n.createTimer(ros::Duration(1.0/100.0		), &TankCtrl::checkPosition, this); // timer for checking position
 
 	startup();
 

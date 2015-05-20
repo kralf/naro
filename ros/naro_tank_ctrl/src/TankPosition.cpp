@@ -32,14 +32,14 @@ void TankPosition::init() {
 
     // SERVICES
     // -> subscribe
-    positionClient = n.serviceClient<naro_sensor_srvs::GetPosition>(hallSensorName+"/getPosition");
+    positionClient = n.serviceClient<naro_sensor_srvs::GetPosition>(hallSensorName+"/getPosition", true);
     //-> advertise
     setDirectionService = advertiseService("setDirection", "setDirection", &TankPosition::setSpeedDirection);
     getPositionService = advertiseService("getTankPosition", "getTankPosition", &TankPosition::getTankPosition);
     resetPositionCounterService = advertiseService("resetPositionCounter", "resetPositionCounter", &TankPosition::resetPositionCounter);
 
     // TIMER
-    timerHallSensor = n.createTimer(ros::Duration(1/300), &TankPosition::readPosition, this); // timer for reading HallSensor
+    timerHallSensor = n.createTimer(ros::Duration(1.0/100.0), &TankPosition::readPosition, this); // timer for reading HallSensor
 
 }
 

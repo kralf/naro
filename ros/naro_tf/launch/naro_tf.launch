@@ -1,6 +1,4 @@
-  <launch>
-  
-    <node pkg="naro_tf" type="baseFrame_tf_broadcaster" name="baseFrame_tf_broadcaster" />
+  <launch> 
     <include file="$(find naro_tf)/launch/naro_tf_static.launch" />
-
+    <node pkg="naro_tf" type="baseFrame_tf_broadcaster" name="baseFrame_tf_broadcaster" />
   </launch>
