@@ -24,7 +24,8 @@ void TankPosition::init() {
 	totalTicks = (float)tmpTicks;
 	double tmpPos = getParam("positionThreshold", tmpPos);
 	positionThreshold = (float)tmpPos;
-	hallSensorName = getParam("position/hallSensor", hallSensorName);
+	hallSensorName = getParam("position/hallSensorName", hallSensorName);
+	double readingHallFreq = getParam("position/hallSensorReadingFreq", readingHallFreq);
 
     ticksOld = 0.0;
     speedDirection = 0.0;
@@ -39,7 +40,7 @@ void TankPosition::init() {
     resetPositionCounterService = advertiseService("resetPositionCounter", "resetPositionCounter", &TankPosition::resetPositionCounter);
 
     // TIMER
-    timerHallSensor = n.createTimer(ros::Duration(1.0/100.0), &TankPosition::readPosition, this); // timer for reading HallSensor
+    timerHallSensor = n.createTimer(ros::Duration(1.0/readingHallFreq), &TankPosition::readPosition, this); // timer for reading HallSensor
 
 }
 

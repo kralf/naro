@@ -21,6 +21,7 @@ void TankCtrl::init() {
 	positionThreshold = (float)tmpPos;
 	smcServerName = getParam("control/smcServer", smcServerName);
 	tankPosName = getParam("position/name", tankPosName);
+	double positionCheckFreq = getParam("control/checkPosFreq", positionCheckFreq);
 
 	// INIT VARIABLES
 	speedDirection = 0.0;
@@ -38,7 +39,7 @@ void TankCtrl::init() {
 	resetTankPositionService = advertiseService("resetTankPosition", "resetTankPosition", &TankCtrl::resetTankPosition);
 
 	// TIMER
-	checkPositionTimer = n.createTimer(ros::Duration(1.0/100.0		), &TankCtrl::checkPosition, this); // timer for checking position
+	checkPositionTimer = n.createTimer(ros::Duration(1.0/positionCheckFreq), &TankCtrl::checkPosition, this); // timer for checking position
 
 	startup();
 
@@ -96,7 +97,7 @@ void TankCtrl::setSpeed(float speed) {
 	speedSrv.request.speed = speed;
 	speedSrv.request.start = true;
 	if(speedClient.call(speedSrv)) {
-		NODEWRAP_INFO("speed set to: %f", speed);
+		//NODEWRAP_INFO("speed set to: %f", speed);
 		
 	} else {
 		NODEWRAP_INFO("smc node not avialable");

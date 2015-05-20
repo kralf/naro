@@ -1,8 +1,10 @@
 position:
     name: "TankPositionFront"
-    hallSensor: "hallSensor_front"
+    hallSensorName: "hallSensor_front"
+    hallSensorReadingFreq: 100.0
     totalTicks: 950
 control:
     name: "TankCtrlFront"
     smcServer: "smc_server_front"
+    checkPosFreq: 100.0
 positionThreshold: 0.01
