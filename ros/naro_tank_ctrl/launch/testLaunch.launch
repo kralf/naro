@@ -7,6 +7,9 @@
     <rosparam command="load" file="$(find naro_smc_srvs)/config/smc_server_rear.yaml"/>
     <param name="configuration/file" value="$(find naro_smc_srvs)/config/smc_rear.xml"/>
   </node>
+  <node name="usc_server" pkg="naro_usc_srvs" type="usc_server" respawn="true">
+    <rosparam command="load" file="$(find naro_usc_srvs)/config/usc_server.yaml"/>
+  </node>
 
     <node name="hallSensor_front" pkg="naro_sensor_srvs" type="hall_sensor" output="screen">
     <rosparam command="load" file="$(find naro_sensor_srvs)/config/hallSensor_front.yaml"/>
@@ -26,6 +29,10 @@
   </node>
   <node name="TankCtrlFront" pkg="naro_tank_ctrl" type="tank_ctrl" output="screen">
     <rosparam command="load" file="$(find naro_tank_ctrl)/config/tank_front.yaml"/>
+  </node>
+
+  <node name="DepthSensor" pkg="naro_sensor_srvs" type="depth_sensor" output="screen">
+    <rosparam command="load" file="$(find naro_sensor_srvs)/config/depth_sensor.yaml"/>
   </node>
 
 </launch>
