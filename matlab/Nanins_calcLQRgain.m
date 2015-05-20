@@ -1,13 +1,13 @@
 % Semester Project Nanins
 % Jonas
 
-clc;
-close all;
-clear all;
+%clc;
+%close all;
+%clear all;
 
 %% --- Calculate LQR Gain ---
 
-Nanins_parameters;
+%Nanins_parameters;
 
 % use reduced system without constant term
 
@@ -49,9 +49,4 @@ C = eye(4,4);
 
 D = zeros(4,2);
 
-
-% Design Matrices
-Q = 0.1*diag([10,10,1,1]);
-R = 10*diag([1,1]);
-
-[K,S,e] = lqr(A,B,Q,R)
+[K,S,e] = lqr(A,B,Q,R);

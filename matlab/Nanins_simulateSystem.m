@@ -1,32 +1,33 @@
-% SemesterProject Nanins
+% SEMESTER PROJECT NANINS
+% Jonas Eichenberger
 
-% --- Control Simulation of Nanins ---
+% --- CONTROL SIMULATION OF NANINS ---
 
 clear all
 clc
 close all
 
-%% SIMULATE SIMULINK MODEL
-parameters;
-modelPID = 'Nanins_PID_Controller';
-load_system(modelPID)
+% load parameters
+Nanins_parameters;
 
-% -- SET PARAMETERS
-% inputs
-depth = 3;
-set_param('Nanins_PID_Controller/refDepth', 'Value', num2str(depth));
+%% SET REFERENCE INPUTS
+rDepth = 1;  % [m]
+
+rPitch = 0/180*pi;  % [rad]
+rW_dot = 0;  % [m/s^2]
+rQ_dot = 0;  % [rad/s]
+
 motorSpeed = 0.7;
-set_param('Nanins_PID_Controller/motorSpeed', 'Value', num2str(motorSpeed));
 
-% starting positions
+% integrator initial conditions
 iDepth = 0;
 iTheta = 10/180*pi;
 iTank1 = 0; %u0*h_max/10;
 iTank2 = iTank1;
-set_param('Nanins_PID_Controller/AUV dynamic/z_dot > z', 'InitialCondition', num2str(iDepth));
-set_param('Nanins_PID_Controller/AUV dynamic/theta_dot > theta', 'InitialCondition', num2str(iTheta));
-set_param('Nanins_PID_Controller/piston tank dynamic front/h_dot -> h', 'InitialCondition', num2str(iTank1));
-set_param('Nanins_PID_Controller/piston tank dynamic rear/h_dot -> h', 'InitialCondition', num2str(iTank2));
+
+%% PID MODEL
+
+modelPID = 'Nanins_PID_Controller';
 
 % -- PID CONTROLLER
 % PID tuning Depth controller Ziegler-Nicholson
@@ -36,18 +37,48 @@ Kp = 0.33*Ku;
 Ki = 2*Kp/Tu;
 Kd = Kp*Tu/3;
 
-set_param('Nanins_PID_Controller/PID Dive', 'P', num2str(Kp), 'I', num2str(Ki), 'D', num2str(Kd));
-
 % PID tuning pitch controller Ziegler-Nicholson
 Kp = 0.2;
 Ki = 0;
 Kd = 0;
 
-set_param('Nanins_PID_Controller/PID Pitch', 'P', num2str(Kp), 'I', num2str(Ki), 'D', num2str(Kd));
+%% LQR Model
+
+modelLQR = 'Nanins_LQR_Controller';
+
+% Design Matrices
+Q = diag([2,5,0.1,0.1]);
+R = 4*diag([10,10]);
+
+Nanins_calcLQRgain % calculate LQR Gain
+
+%% SIMULATE MODEL
+% choose model
+
+model = modelLQR;
+load_system(model)
+
+% set parameters
+set_param(strcat(model,'/motorSpeed'), 'Value', num2str(motorSpeed));
+
+set_param(strcat(model,'/AUV dynamic/z_dot > z'), 'InitialCondition', num2str(iDepth));
+set_param(strcat(model,'/AUV dynamic/theta_dot > theta'), 'InitialCondition', num2str(iTheta));
+set_param(strcat(model,'/piston tank dynamic front/h_dot -> h'), 'InitialCondition', num2str(iTank1));
+set_param(strcat(model,'/piston tank dynamic rear/h_dot -> h'), 'InitialCondition', num2str(iTank2));
+
+if(strcmp(model, modelPID))
+   set_param(strcat(model,'/refDepth'), 'Value', num2str(rDepth));
+   % set PID parameters
+   set_param(strcat(model,'/PID Dive'), 'P', num2str(Kp), 'I', num2str(Ki), 'D', num2str(Kd));
+   set_param(strcat(model,'/PID Pitch'), 'P', num2str(Kp), 'I', num2str(Ki), 'D', num2str(Kd));
+elseif(strcmp(model, modelLQR))
+   input_lqr = [rDepth rPitch rW_dot rQ_dot];
+   input_lqr = strcat('[',num2str(input_lqr),']');
+   set_param(strcat(model,'/Input'), 'Value', input_lqr);  
+end
 
 % -- START SIMULATION
-sim(modelPID)
-
+sim(model)
 
 %% PLOT OUTPUTS
 figure(1)
@@ -56,7 +87,7 @@ n=4; m=1;
 subplot(n,m,1)
 plot(tout, sim_z)
 hold on
-plot([tout(1) tout(end)], [depth depth])
+plot([tout(1) tout(end)], [rDepth rDepth])
 
 title('Depth z')
 ylim([-0.5, max(sim_z)+1])
@@ -77,9 +108,7 @@ subplot(n,m,4)
 plot(tout, sim_h)
 title('fill height pisto tanks')
 
-% % plot depth z
-% figure(2)
-% plot(tout, sim_theta)
-% hold on
-% plot([tout(1) tout(end)], [depth depth])
+%
+titleStr = strrep(model, '_', ' ');
+suptitle(['Simulation: ', titleStr]);
 
