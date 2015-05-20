@@ -52,16 +52,11 @@ void NaroImu::getImuData(const sensor_msgs::Imu::ConstPtr& msg) {
 	catch(tf::TransformException& ex) {
 			NODEWRAP_ERROR("Transform base: %s", ex.what());
 		}
-	try {
-		// position
-		geometry_msgs::Point point = geometry_msgs::Point();
-		integrateImuToPosition(msg, point);
-		poseBase.position = point;
 
-	}
-	catch(tf::TransformException& ex) {
-		NODEWRAP_ERROR("Transform map: %s", ex.what());
-	}
+	// position
+	geometry_msgs::Point point = geometry_msgs::Point();
+	integrateImuToPosition(msg, point);
+	poseBase.position = point;
 
 	//publisher.publish(orientation_base);
 	lastPose = poseBase;
@@ -135,7 +130,11 @@ geometry_msgs::Vector3 NaroImu::getGravity(const std::string& target_frame) {
 	tf::vector3StampedMsgToTF(gravityMap, gin);
 
 	tf::StampedTransform transform;
-	transformer.lookupTransform(target_frame, "map", ros::Time(0), transform);
+	try {
+		transformer.lookupTransform(target_frame, "map", ros::Time(0), transform);
+	} catch(tf::TransformException& ex) {
+			NODEWRAP_ERROR("Transform gravity: %s", ex.what());
+		}
 	gout.setData(transform*gin);
 
 	tf::Vector3 origin = tf::Vector3(0,0,0);
@@ -170,7 +169,7 @@ bool NaroImu::getPitch(GetPitch::Request& request, GetPitch::Response& response)
 	 tf::quaternionMsgToTF(lastPose.orientation, quat);
 	 tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
-	 response.pitch = pitch;
+	 response.pitch = -pitch;
 	 return 1;
 }
 

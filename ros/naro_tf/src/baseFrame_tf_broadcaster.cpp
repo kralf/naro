@@ -16,7 +16,7 @@ void poseCallback(const geometry_msgs::Pose::ConstPtr& msg) {
 	transform.setOrigin(positionBase); // adapt for correct dynamic position
 	transform.setRotation(q);
 
-	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "base_link"));
+	br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "base_link", "map"));
 }
 
 int main(int argc, char** argv){
