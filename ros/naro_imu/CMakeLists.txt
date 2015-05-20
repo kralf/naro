@@ -55,6 +55,7 @@ catkin_package(
 ## Build ##
 ###########
 
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
@@ -85,3 +86,5 @@ target_link_libraries(
   ${catkin_LIBRARIES}
 )
 
+## Add cmake target dependencies of the executable/library
+add_dependencies(naro_imu naro_imu_generate_messages_cpp)
