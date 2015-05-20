@@ -57,6 +57,9 @@ class TankCtrl:
 			ros::ServiceClient limitClient;
 			naro_smc_srvs::GetLimits limitSrv;
 
+			std::string smcServerName;
+			std::string tankPosName;
+
 			ros::ServiceServer setTankPositionService;
 			ros::ServiceServer resetTankPositionService;
 
@@ -74,6 +77,8 @@ class TankCtrl:
 			float clamp(float value, float min, float max);
 
 			void startup();
+
+			void connectServices();
 
 };
 

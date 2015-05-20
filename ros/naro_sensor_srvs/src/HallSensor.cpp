@@ -48,14 +48,14 @@ int HallSensor::getCount() {
 }
 
 void HallSensor::resetCount() {
-	this->counter = 0;
+	this->counter = 0.0;
 }
 
 void HallSensor::setFrequency(int freq) {
-	this->duration = 1/freq; // convert from Hz -> seconds
+	this->duration = 1.0/freq; // convert from Hz -> seconds
 	this->timer.setPeriod(ros::Duration(duration));
 }
 
 int HallSensor::getFrequency() {
-	return (1/duration);
+	return (1.0/duration);
 }

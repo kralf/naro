@@ -21,10 +21,10 @@ void DiveController::init() {
 	// get parameters
 	double freqDepth = getParam("Depth/Frequency", freqDepth);
 	double freqPitch = getParam("Pitch/Frequency", freqPitch);
-	std::string tankFront = getParam("Services/tankFrontCtrl", tankFront);
-	std::string tankRear = getParam("Services/tankRearCtrl", tankRear);
-	std::string depthName = getParam("Services/depthService", depthName);
-	std::string pitchName = getParam("Services/pitchService", pitchName);
+	tankFront = getParam("Services/tankFrontCtrl", tankFront);
+	tankRear = getParam("Services/tankRearCtrl", tankRear);
+	depthName = getParam("Services/depthService", depthName);
+	pitchName = getParam("Services/pitchService", pitchName);
 
 	tankMotorSpeed = getParam("Tank/Speed", tankMotorSpeed);
 	refDepth = 0.0;
@@ -49,10 +49,7 @@ void DiveController::init() {
 
 	// SERVICES
 	// -> subscribe
-	controlFrontClient = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankFront+"/setTankPosition");
-	controlRearClient  = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankRear+"/setTankPosition");
-	depthClient = n.serviceClient<naro_sensor_srvs::GetDepth>("/"+depthName+"/setTankPosition");
-	pitchClient = n.serviceClient<naro_imu::GetPitch>("/"+pitchName+"/getPitch");
+	connectServices();
 	//-> advertise
 	depthService = advertiseService("setRefDepth", "setRefDepth", &DiveController::setDepth);
 	getDepthService = advertiseService("getRefDepth", "getRefDepth", &DiveController::getRefDepth);
@@ -94,6 +91,10 @@ void DiveController::pitchCallback(const ros::TimerEvent& event) {
 void DiveController::setTankPosition(ros::ServiceClient client, double input) {
 	tankSrv.request.position = input;
 	tankSrv.request.speed = tankMotorSpeed;
+
+	if(!client)
+		connectServices();
+
 	if(client.call(tankSrv)) {
 
 	} else {
@@ -131,6 +132,9 @@ void DiveController::setControlInput(double inputDepth, double inputPitch) {
 }
 
 double DiveController::getDepth() {
+	if(!depthClient)
+		connectServices();
+
 	if(depthClient.call(depthSrv)) {
 		return depthSrv.response.filtered;
 	} else {
@@ -140,6 +144,8 @@ double DiveController::getDepth() {
 }
 
 double DiveController::getPitch() {
+	if(!pitchClient)
+		connectServices();
 	if(pitchClient.call(pitchSrv)) {
 		return pitchSrv.response.pitch;
 	} else {
@@ -180,6 +186,17 @@ bool DiveController::disable(Disable::Request& request, Disable::Response& respo
 	depthTimer.stop();
 	NODEWRAP_INFO("DiveCtrl disabled!");
 	return 1;
+}
+
+void DiveController::connectServices() {
+	if(!controlFrontClient)
+		controlFrontClient = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankFront+"/setTankPosition", true);
+	if(!controlRearClient)
+		controlRearClient  = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankRear+"/setTankPosition", true);
+	if(!depthClient)
+		depthClient = n.serviceClient<naro_sensor_srvs::GetDepth>("/"+depthName+"/setTankPosition", true);
+	if(!pitchClient)
+		pitchClient = n.serviceClient<naro_imu::GetPitch>("/"+pitchName+"/getPitch", true);
 }
 
 }

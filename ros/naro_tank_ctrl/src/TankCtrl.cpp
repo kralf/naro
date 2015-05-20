@@ -19,8 +19,8 @@ void TankCtrl::init() {
 	nodeName = getParam("control/name", nodeName);
 	double tmpPos = getParam("positionThreshold", tmpPos);
 	positionThreshold = (float)tmpPos;
-	std::string smcServerName = getParam("control/smcServer", smcServerName);
-	std::string tankPosName = getParam("position/name", tankPosName);
+	smcServerName = getParam("control/smcServer", smcServerName);
+	tankPosName = getParam("position/name", tankPosName);
 
 	// INIT VARIABLES
 	speedDirection = 0.0;
@@ -31,11 +31,7 @@ void TankCtrl::init() {
 
 	// SERVICES
 	// -> subscribe
-	speedClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/"+smcServerName+"/set_speed", true);
-	limitClient = n.serviceClient<naro_smc_srvs::GetLimits>("/"+smcServerName+"/get_limits", true);
-	positionClient = n.serviceClient<naro_tank_ctrl::GetTankPosition>("/"+tankPosName+"/getTankPosition", true);
-	directionClient = n.serviceClient<naro_tank_ctrl::SetDirection>("/"+tankPosName+"/setDirection", true);
-	resetClient = n.serviceClient<std_srvs::Empty>("/"+tankPosName+"/resetPositionCounter", true);
+	connectServices();
 
 	// -> advertise
 	setTankPositionService = advertiseService("setTankPosition", "setTankPosition", &TankCtrl::setTankPosition);
@@ -94,6 +90,9 @@ bool TankCtrl::setTankPosition(SetTankPosition::Request& request, SetTankPositio
 * set the speed of the motor 
 */
 void TankCtrl::setSpeed(float speed) {
+	if(!speedClient)
+			connectServices();
+
 	speedSrv.request.speed = speed;
 	speedSrv.request.start = true;
 	if(speedClient.call(speedSrv)) {
@@ -131,6 +130,9 @@ void TankCtrl::startup() {
 * call TankPosition node and update direction for position counting
 */
 void TankCtrl::setDirection(float direction) {
+	if(!directionClient)
+		connectServices();
+
 	directionSrv.request.direction = direction;
 	if(directionClient.call(directionSrv)) {
 		NODEWRAP_INFO("direction set to: %f", direction);	
@@ -143,6 +145,9 @@ void TankCtrl::setDirection(float direction) {
 * get tank position from PositionNode
 */
 float TankCtrl::getPosition() {
+	if(!positionClient)
+		connectServices();
+
 	if(positionClient.call(posSrv)) {
 		return posSrv.response.position;	
 	} else {
@@ -171,6 +176,8 @@ bool TankCtrl::resetPosition() {
 			if(getLimit()==257) { // in limit
 				break;
 			}
+
+			ros::Duration(2.0).sleep();
 		}
 	} else {
 		NODEWRAP_INFO("Already at position 0");
@@ -189,6 +196,9 @@ bool TankCtrl::resetPosition() {
 }
 
 int TankCtrl::getLimit() {
+	if(!limitClient)
+		connectServices();
+
 	if(limitClient.call(limitSrv)) {
 		return limitSrv.response.limits;
 	} else {
@@ -208,6 +218,22 @@ float TankCtrl::clamp(float value, float min, float max) {
 	} else {
 		return value;
 	}
+}
+
+/*
+ * connect or reconnect to service clients
+ */
+void TankCtrl::connectServices() {
+	if(!speedClient)
+		speedClient = n.serviceClient<naro_smc_srvs::SetSpeed>("/"+smcServerName+"/set_speed", true);
+	if(!limitClient)
+		limitClient = n.serviceClient<naro_smc_srvs::GetLimits>("/"+smcServerName+"/get_limits", true);
+	if(!positionClient)
+		positionClient = n.serviceClient<naro_tank_ctrl::GetTankPosition>("/"+tankPosName+"/getTankPosition", true);
+	if(!directionClient)
+		directionClient = n.serviceClient<naro_tank_ctrl::SetDirection>("/"+tankPosName+"/setDirection", true);
+	if(!resetClient)
+		resetClient = n.serviceClient<std_srvs::Empty>("/"+tankPosName+"/resetPositionCounter", true);
 }
 
 // ---- END

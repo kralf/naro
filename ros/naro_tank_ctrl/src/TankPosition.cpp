@@ -24,7 +24,7 @@ void TankPosition::init() {
 	totalTicks = (float)tmpTicks;
 	double tmpPos = getParam("positionThreshold", tmpPos);
 	positionThreshold = (float)tmpPos;
-	std::string hallSensorName = getParam("position/hallSensor", hallSensorName);
+	hallSensorName = getParam("position/hallSensor", hallSensorName);
 
     ticksOld = 0.0;
     speedDirection = 0.0;
@@ -51,6 +51,10 @@ void TankPosition::cleanup() {
 * get information from hall sensor and transform into normalized tank position
 */
 void TankPosition::readPosition(const ros::TimerEvent& event) {
+	if(!positionClient) {
+		positionClient = n.serviceClient<naro_sensor_srvs::GetPosition>(hallSensorName+"/getPosition", true);
+	}
+
     if(positionClient.call(posSrv)) {
         float ticksNew = posSrv.response.position;
         float diff = ticksNew-ticksOld; // calculate diff in position

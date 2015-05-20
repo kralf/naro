@@ -40,6 +40,7 @@ class TankPosition:
 
             ros::ServiceClient positionClient;
             naro_sensor_srvs::GetPosition posSrv;
+            std::string hallSensorName;
 
             ros::ServiceServer setDirectionService;
             ros::ServiceServer getPositionService;

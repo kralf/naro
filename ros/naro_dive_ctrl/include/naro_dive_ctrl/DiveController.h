@@ -53,6 +53,11 @@ class DiveController:
 		ros::ServiceClient pitchClient;
 		naro_imu::GetPitch pitchSrv;
 
+		std::string tankFront;
+		std::string tankRear;
+		std::string depthName;
+		std::string pitchName;
+
 		ros::ServiceServer depthService;
 		ros::ServiceServer getDepthService;
 		ros::ServiceServer pitchService;
@@ -72,6 +77,7 @@ class DiveController:
 		void setControlInput(double inputDepth, double inputPitch);
 		double getDepth();
 		double getPitch();
+		void connectServices();
 
 		bool setPitch(SetPitch::Request& request, SetPitch::Response& response);
 		bool getRefPitch(GetRefPitch::Request& request, GetRefPitch::Response& response);
