@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   naro_sensor_srvs
   naro_tank_ctrl
   naro_imu
+  naro_monitoring
 )
 
 ################################################
@@ -77,7 +78,7 @@ generate_messages()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- #   INCLUDE_DIRS include
+ # INCLUDE_DIRS include 
  #   LIBRARIES naro_sensor_srvs
     CATKIN_DEPENDS 
     	std_msgs 
@@ -88,6 +89,7 @@ catkin_package(
     	naro_sensor_srvs
     	naro_tank_ctrl
     	naro_imu
+    	naro_monitoring
 )
 
 ###########
@@ -101,6 +103,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+
 ## Declare a cpp library
 add_library(
 	pidCtrl src/PIDController.cpp
@@ -108,6 +111,10 @@ add_library(
 
 add_library(
 	diveCtrl_node src/DiveController.cpp
+)
+
+add_library(
+    logging_class src/LoggingClass.cpp
 )
 
 
@@ -120,7 +127,7 @@ add_executable(
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(pidCtrl diveCtrl naro_dive_ctrl_generate_messages_cpp)
+add_dependencies(pidCtrl diveCtrl naro_monitoring naro_dive_ctrl_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(
@@ -141,5 +148,11 @@ target_link_libraries(
   ${catkin_LIBRARIES}
 )
 
-
+target_link_libraries(
+  dive_controller
+  diveCtrl_node
+  pidCtrl
+  logging_class
+  ${catkin_LIBRARIES}
+)
 

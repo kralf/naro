@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(naro_imu)
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+project(naro_monitoring)
 
 # Set the build type.  Options are:
 #  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
@@ -18,7 +19,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   roscpp_nodewrap
-  tf
   message_generation
 )
 
@@ -27,14 +27,30 @@ find_package(catkin REQUIRED COMPONENTS
 ################################################
 
 
+## Generate messages in the 'msg' folder
+# add_message_files(
+#    FILES
+#    Message1.msg
+#    Message2.msg
+# )
+
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-    GetPitch.srv
-)
+#add_service_files(
+#  FILES
+#   GetTankPosition.srv
+#   SetTankPosition.srv
+#   SetDirection.srv
+#)
+
+## Generate actions in the 'action' folder
+# add_action_files(
+#   FILES
+#   Action1.action
+#   Action2.action
+# )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages()
+#generate_messages()
 
 ###################################
 ## catkin specific configuration ##
@@ -46,15 +62,18 @@ generate_messages()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES naro_imu
-    CATKIN_DEPENDS std_msgs std_srvs roscpp_nodewrap message_runtime 
+ #   INCLUDE_DIRS include
+ #   LIBRARIES naro_sensor_srvs
+    CATKIN_DEPENDS 
+      std_msgs 
+      std_srvs 
+      roscpp_nodewrap 
+      message_runtime 
 )
 
 ###########
 ## Build ##
 ###########
-
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -64,28 +83,41 @@ include_directories(
 )
 
 ## Declare a cpp library
-add_library(naro_imu
-  src/NaroImu.cpp
+add_library(
+    naro_logging src/LoggingClass.cpp
 )
+
+add_library(
+  naro_monitoring_class src/MonitoringClass.cpp
+)
+
 
 ## Declare a cpp executable
 add_executable(
-  naro_imu_node
-  src/naro_imu_start.cpp
+  naro_monitoring src/naro_monitoring.cpp
 )
 
-## Specify libraries to link a library or executable target against
-target_link_libraries(
-  naro_imu
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(
-  naro_imu_node
-  naro_imu
-  ${catkin_LIBRARIES}
-)
 
 ## Add cmake target dependencies of the executable/library
-add_dependencies(naro_imu naro_imu_generate_messages_cpp)
+#add_dependencies(naro_tank_ctrl naro_tank_pos naro_tank_ctrl_generate_messages_cpp)
 
+
+## Specify libraries to link a library or executable target against
+
+target_link_libraries(
+  naro_monitoring
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(
+  naro_monitoring
+  naro_monitoring_class
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(
+  naro_monitoring
+  naro_monitoring_class
+  naro_logging
+  ${catkin_LIBRARIES}
+)

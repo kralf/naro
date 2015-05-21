@@ -47,6 +47,11 @@ void DiveController::init() {
 	pitchCtrl.setGains(Kp,Ki,Kd);
 	pitchCtrl.setTimestep(dt);
 
+	// setup logging topics
+	logger.createPublisher("ctrlInputs");
+	logger.createPublisher("depthLog");
+	logger.createPublisher("pitchLog");
+
 	// SERVICES
 	// -> subscribe
 	connectServices();
@@ -73,6 +78,9 @@ void DiveController::depthCallback(const ros::TimerEvent& event) {
 	double error = refDepth-actualDepth;
 	double inputDepth = depthCtrl.updateControl(error);
 
+	std::vector<float> depthData{(float)refDepth, (float)actualDepth};
+	logger.log(depthData, "depthLog");
+
 	setControlInput(inputDepth, controlInputPitch);
 
 	controlInputDepth = inputDepth;
@@ -82,6 +90,9 @@ void DiveController::pitchCallback(const ros::TimerEvent& event) {
 	double actualPitch = getPitch();
 	double error = refPitch-actualPitch;
 	double inputPitch = pitchCtrl.updateControl(error);
+
+	std::vector<float> pitchData{(float)refPitch, (float)actualPitch};
+	logger.log(pitchData, "pitchLog");
 
 	setControlInput(controlInputDepth, inputPitch);
 
@@ -129,6 +140,9 @@ void DiveController::setControlInput(double inputDepth, double inputPitch) {
 	// set tank inputs
 	setTankPosition(controlFrontClient, inputFront);
 	setTankPosition(controlRearClient, inputRear);
+
+	std::vector<float> inputData{(float)inputFront, (float)inputRear};
+	logger.log(inputData, "ctrlInputs");
 }
 
 double DiveController::getDepth() {

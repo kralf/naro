@@ -18,6 +18,7 @@
 #include "naro_dive_ctrl/Enable.h"
 #include "naro_dive_ctrl/Disable.h"
 #include "naro_imu/GetPitch.h"
+#include "naro_dive_ctrl/LoggingClass.h"
 
 
 using namespace naro_dive_ctrl;
@@ -64,6 +65,8 @@ class DiveController:
 		ros::ServiceServer getPitchService;
 		ros::ServiceServer enableService;
 		ros::ServiceServer disableService;
+
+		LoggingClass logger;
 
 		double tankMotorSpeed;
 		double refDepth;
