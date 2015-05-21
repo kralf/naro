@@ -107,7 +107,7 @@ add_executable(
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(depth_sensor naro_sensor_srvs_generate_messages_cpp)
+add_dependencies(depth_sensor hall_sensor hall_sensor_class hall_sensor_node naro_sensor_srvs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(

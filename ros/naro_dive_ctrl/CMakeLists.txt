@@ -24,7 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   naro_sensor_srvs
   naro_tank_ctrl
   naro_imu
-  naro_monitoring
+  #naro_monitoring
 )
 
 ################################################
@@ -89,7 +89,7 @@ catkin_package(
     	naro_sensor_srvs
     	naro_tank_ctrl
     	naro_imu
-    	naro_monitoring
+    	#naro_monitoring
 )
 
 ###########

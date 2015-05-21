@@ -120,7 +120,7 @@ void DiveController::setControlInput(double inputDepth, double inputPitch) {
 	// divide control inputs on front and rear tank
 	double inputFront = 0.0;
 	double inputRear = 0.0;
-	if(inputDepth>0 && (inputDepth+inputPitch)<1) {
+	if(inputDepth>0.0 && (inputDepth+inputPitch)<1.0) {
 		inputFront = inputDepth+inputPitch;
 		inputRear = inputDepth-inputPitch;
 	} else {
