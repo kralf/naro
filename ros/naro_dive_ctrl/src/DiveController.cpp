@@ -45,8 +45,8 @@ void DiveController::init() {
 	Kd = getParam("Pitch/Kd", Kd);
 	freq = getParam("Depth/Frequency", freq);
 	dt = 1.0/freq;
-	pitchCtrl.setGains(Kp,Ki,Kd);
-	pitchCtrl.setTimestep(dt);
+	pitchCtrl.setGains((float)Kp,(float)Ki,(float)Kd);
+	pitchCtrl.setTimestep((float)dt);
 
 	// setup logging topics
 	logger.createPublisher("ctrlInputs");
@@ -68,7 +68,7 @@ void DiveController::init() {
 	setGainDepthService = advertiseService("setGainsDepthPID", "setGainsDepthPID", &DiveController::setGainsDepth);
 	setGainPitchService = advertiseService("setGainsPitchPID", "setGainsPitchPID", &DiveController::setGainsPitch);
 
-	// TIMER, not starting
+	// TIMER, not starting yet
 	depthTimer = n.createTimer(ros::Duration(1.0/((float)freqDepth)), &DiveController::depthCallback, this, 0, 0);
 	pitchTimer = n.createTimer(ros::Duration(1.0/((float)freqPitch)), &DiveController::pitchCallback, this, 0, 0);
 
