@@ -77,35 +77,43 @@ void DiveController::cleanup() {
 	NODEWRAP_INFO("Shutting down: <DiveCtrl>");
 }
 
+/*
+ * depth control loop
+ */
 void DiveController::depthCallback(const ros::TimerEvent& event) {
-	double actualDepth = getDepth();
-	double error = refDepth-actualDepth;
-	double inputDepth = depthCtrl.updateControl(error);
-
-	std::vector<float> depthData{(float)refDepth, (float)actualDepth};
-	logger.log(depthData, "depthLog");
+	float actualDepth = getDepth();
+	float error = refDepth-actualDepth;
+	float inputDepth = depthCtrl.updateControl(error);
 
 	setControlInput(inputDepth, controlInputPitch);
 
 	controlInputDepth = inputDepth;
+
+	// Log data
+	std::vector<float> depthData{refDepth, actualDepth};
+	logger.log(depthData, "depthLog");
 }
 
+/*
+ * pitch control loop
+ */
 void DiveController::pitchCallback(const ros::TimerEvent& event) {
-	double actualPitch = getPitch();
-	double error = refPitch-actualPitch;
-	double inputPitch = pitchCtrl.updateControl(error);
-
-	std::vector<float> pitchData{(float)refPitch, (float)actualPitch};
-	logger.log(pitchData, "pitchLog");
-
-	NODEWRAP_INFO("Pitch error: %f", (float)error);
-	NODEWRAP_INFO("Input Pitch: %f", (float)inputPitch);
+	float actualPitch = getPitch();
+	float error = refPitch-actualPitch;
+	float inputPitch = pitchCtrl.updateControl(error);
 
 	setControlInput(controlInputDepth, inputPitch);
 
 	controlInputPitch = inputPitch;
+
+	// log data
+	std::vector<float> pitchData{refPitch, actualPitch};
+	logger.log(pitchData, "pitchLog");
 }
 
+/*
+ * perform service calls to the tankCtrl for the tank positions
+ */
 void DiveController::setTankPosition(ros::ServiceClient client, float input) {
 	tankSrv.request.position = input;
 	tankSrv.request.speed = tankMotorSpeed;
@@ -120,6 +128,9 @@ void DiveController::setTankPosition(ros::ServiceClient client, float input) {
 	}
 }
 
+/*
+ * combine the control inputs from the depth and pitch controller
+ */
 void DiveController::setControlInput(float inputDepth, float inputPitch) {
 	// divide control inputs on front and rear tank
 	float inputFront = 0.0;
@@ -148,12 +159,14 @@ void DiveController::setControlInput(float inputDepth, float inputPitch) {
 	setTankPosition(controlFrontClient, inputFront);
 	setTankPosition(controlRearClient, inputRear);
 
-	NODEWRAP_INFO("Input Front: %f", (float)inputFront);
-	NODEWRAP_INFO("Input Rear: %f", (float)inputRear);
+	// log data
 	std::vector<float> inputData{(float)inputFront, (float)inputRear};
 	logger.log(inputData, "ctrlInputs");
 }
 
+/*
+ * handle service call for depth
+ */
 float DiveController::getDepth() {
 	if(!depthClient)
 		connectServices();
@@ -166,6 +179,9 @@ float DiveController::getDepth() {
 	}
 }
 
+/*
+ * handle service call for pitch
+ */
 float DiveController::getPitch() {
 	if(!pitchClient)
 		connectServices();
@@ -176,6 +192,24 @@ float DiveController::getPitch() {
 		return 0;
 	}
 }
+
+/*
+ * connect with the service clients
+ */
+void DiveController::connectServices() {
+	if(!controlFrontClient)
+		controlFrontClient = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankFront+"/setTankPosition", true);
+	if(!controlRearClient)
+		controlRearClient  = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankRear+"/setTankPosition", true);
+	if(!depthClient)
+		depthClient = n.serviceClient<naro_sensor_srvs::GetDepth>("/"+depthName+"/get_depth", true);
+	if(!pitchClient)
+		pitchClient = n.serviceClient<naro_imu::GetPitch>("/"+pitchName+"/getPitch", true);
+}
+
+/*
+ * advertised service functions
+ */
 
 bool DiveController::setPitch(SetPitch::Request& request, SetPitch::Response& response) {
 	refPitch = request.pitch;
@@ -233,17 +267,6 @@ bool DiveController::setGainsDepth(SetGains::Request& request, SetGains::Respons
 bool DiveController::setGainsPitch(SetGains::Request& request, SetGains::Response& response) {
 	pitchCtrl.setGains(request.proportional, request.integral, request.differential);
 	return 1;
-}
-
-void DiveController::connectServices() {
-	if(!controlFrontClient)
-		controlFrontClient = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankFront+"/setTankPosition", true);
-	if(!controlRearClient)
-		controlRearClient  = n.serviceClient<naro_tank_ctrl::SetTankPosition>("/"+tankRear+"/setTankPosition", true);
-	if(!depthClient)
-		depthClient = n.serviceClient<naro_sensor_srvs::GetDepth>("/"+depthName+"/get_depth", true);
-	if(!pitchClient)
-		pitchClient = n.serviceClient<naro_imu::GetPitch>("/"+pitchName+"/getPitch", true);
 }
 
 }
