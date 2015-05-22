@@ -12,6 +12,7 @@
 #include <naro_sensor_srvs/GetDepth.h>
 #include <naro_imu/GetPitch.h>
 #include <naro_monitoring/LoggingClass.h>
+#include <std_srvs/Empty.h>
 
 #include "naro_dive_ctrl/PIDController.h"
 #include "naro_dive_ctrl/SetDepth.h"
@@ -50,6 +51,10 @@ class DiveController:
 		ros::ServiceClient controlRearClient;
 		naro_tank_ctrl::SetTankPosition tankSrv;
 
+		ros::ServiceClient resetFrontCient;
+		ros::ServiceClient resetRearClient;
+		std_srvs::Empty resetSrv;
+
 		ros::ServiceClient depthClient;
 		naro_sensor_srvs::GetDepth depthSrv;
 
@@ -68,6 +73,7 @@ class DiveController:
 		ros::ServiceServer enableService;
 		ros::ServiceServer disableService;
 		ros::ServiceServer tankPosService;
+		ros::ServiceServer resetTankPosService;
 		ros::ServiceServer setGainDepthService;
 		ros::ServiceServer setGainPitchService;
 
@@ -96,6 +102,7 @@ class DiveController:
 		bool setTankPosService(SetTankPos::Request& request, SetTankPos::Response& response);
 		bool setGainsDepth(SetGains::Request& request, SetGains::Response& response);
 		bool setGainsPitch(SetGains::Request& request, SetGains::Response& response);
+		bool resetTankPos(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response);
 };
 
 };

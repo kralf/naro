@@ -64,6 +64,7 @@ void DiveController::init() {
 	enableService = advertiseService("enable", "enable", &DiveController::enable);
 	disableService = advertiseService("disable", "disable", &DiveController::disable);
 	tankPosService = advertiseService("setTankPos", "setTankPos", &DiveController::setTankPosService);
+	resetTankPosService = advertiseService("resetTankPos", "resetTankPos", &DiveController::resetTankPos);
 	setGainDepthService = advertiseService("setGainsDepthPID", "setGainsDepthPID", &DiveController::setGainsDepth);
 	setGainPitchService = advertiseService("setGainsPitchPID", "setGainsPitchPID", &DiveController::setGainsPitch);
 
@@ -257,6 +258,27 @@ bool DiveController::setTankPosService(SetTankPos::Request& request, SetTankPos:
 	setTankPosition(controlRearClient, (float)request.position);
 
 	return 1;
+}
+
+bool DiveController::resetTankPos(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response) {
+	resetFrontCient = n.serviceClient<std_srvs::Empty>("/"+tankFront+"/resetTankPosition");
+	resetRearClient = n.serviceClient<std_srvs::Empty>("/"+tankRear+"/resetTankPosition");
+	bool ok = false;
+
+	if(resetFrontCient.call(resetSrv))
+		ok = true;
+	else {
+		NODEWRAP_INFO("TankCtrl node not available");
+		ok = false;
+	}
+	if(resetRearClient.call(resetSrv))
+		ok = true;
+	else {
+		NODEWRAP_INFO("TankCtrl node not available");
+		ok = false;
+	}
+
+	return ok;
 }
 
 bool DiveController::setGainsDepth(SetGains::Request& request, SetGains::Response& response) {
