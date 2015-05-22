@@ -10,15 +10,15 @@ public:
 	PIDController();
 	~PIDController();
 
-	void setGains(double Kp, double Ki, double Kd);
-	void setTimestep(double dt);
-	double updateControl(double error);
+	void setGains(float Kp, float Ki, float Kd);
+	void setTimestep(float dt);
+	float updateControl(float error);
 
 private:
-	double Kp;
-	double Ki;
-	double Kd;
-	double integralError;
-	double lastError;
-	double timeStep;
+	float Kp;
+	float Ki;
+	float Kd;
+	float integralError;
+	float lastError;
+	float timeStep;
 };

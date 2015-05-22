@@ -18,24 +18,24 @@ PIDController::PIDController() {
 
 PIDController::~PIDController() {}
 
-void PIDController::setGains(double Kp, double Ki, double Kd) {
+void PIDController::setGains(float Kp, float Ki, float Kd) {
 	this->Kp = Kp;
 	this->Ki = Ki;
 	this->Kd = Kd;
 }
 
-void PIDController::setTimestep(double dt) {
+void PIDController::setTimestep(float dt) {
 	this->timeStep = dt;
 }
 
-double PIDController::updateControl(double error) {
+float PIDController::updateControl(float error) {
 	// update errors
 	this->integralError += error*timeStep;
-	double derivativeError = 0.0;
+	float derivativeError = 0.0;
 	if(lastError != error)
 		derivativeError = (error-lastError)/timeStep;
 
-	double output = Kp*error+Ki*integralError+Kd*derivativeError;
+	float output = Kp*error+Ki*integralError+Kd*derivativeError;
 	lastError = error;
 
 	return output;
