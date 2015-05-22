@@ -14,6 +14,8 @@ public:
 	void setTimestep(float dt);
 	float updateControl(float error);
 
+	float antiWindup;
+
 private:
 	float Kp;
 	float Ki;
@@ -21,4 +23,8 @@ private:
 	float integralError;
 	float lastError;
 	float timeStep;
+	float outputMin;
+	float outputMax;
+
+	void setOutputRange(float min, float max);
 };
