@@ -24,9 +24,11 @@ void MonitoringClass::init() {
 void MonitoringClass::cleanup() {};
 
 void MonitoringClass::callback(const ros::TimerEvent& event) {
-	std::vector<float> array{10, 12};
+	std::vector<float> array;
+	array[0] = 10; array[1] = 12;
 	logger.log(array,"test1");
-	std::vector<float> array2{22, 20};
+	std::vector<float> array2;
+	array2[0] = 20; array2[1]=24;
 	logger.log(array2,"test2");
 }
 

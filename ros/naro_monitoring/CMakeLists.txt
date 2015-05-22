@@ -62,8 +62,11 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- #   INCLUDE_DIRS include
- #   LIBRARIES naro_sensor_srvs
+    INCLUDE_DIRS
+      include
+    LIBRARIES
+      naro_logging
+      naro_monitoring_class
     CATKIN_DEPENDS 
       std_msgs 
       std_srvs 
