@@ -22,6 +22,8 @@ public:
 	ros::NodeHandle n;
 	map<string,ros::Publisher> publisher;
 
+	ros::Time startTime;
+
 	void log(vector<float> vector, string topic);
 	void createPublisher(string topic);
 

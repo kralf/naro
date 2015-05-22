@@ -17,17 +17,18 @@ MonitoringClass::~MonitoringClass() {}
 void MonitoringClass::init() {
 
 	logger.createPublisher("test1");
-	testTimer = n.createTimer(ros::Duration(1.0), &MonitoringClass::callback, this);
+	logger.createPublisher("test2");
+	testTimer = n.createTimer(ros::Duration(0.1), &MonitoringClass::callback, this);
 
 }
 
 void MonitoringClass::cleanup() {};
 
 void MonitoringClass::callback(const ros::TimerEvent& event) {
-	std::vector<float> array;
-	array[0] = 10; array[1] = 12;
+	std::vector<float> array(2);
+	array[0] = rand()%10; array[1] = rand()%20;
 	logger.log(array,"test1");
-	std::vector<float> array2;
+	std::vector<float> array2(2);
 	array2[0] = 20; array2[1]=24;
 	logger.log(array2,"test2");
 }
