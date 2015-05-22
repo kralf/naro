@@ -26,7 +26,8 @@ void DiveController::init() {
 	depthName = getParam("Services/depthService", depthName);
 	pitchName = getParam("Services/pitchService", pitchName);
 
-	tankMotorSpeed = getParam("Tank/Speed", tankMotorSpeed);
+	double ms = getParam("Tank/Speed", ms);
+	tankMotorSpeed = (float)ms;
 	refDepth = 0.0;
 	refPitch = 0.0;
 
@@ -36,8 +37,8 @@ void DiveController::init() {
 	double Kd = getParam("Depth/Kd", Kd);
 	double freq = getParam("Depth/Frequency", freq);
 	double dt = 1.0/freq;
-	depthCtrl.setGains(Kp,Ki,Kd);
-	depthCtrl.setTimestep(dt);
+	depthCtrl.setGains((float)Kp,(float)Ki,(float)Kd);
+	depthCtrl.setTimestep((float)dt);
 
 	Kp = getParam("Pitch/Kp", Kp);
 	Ki = getParam("Pitch/Ki", Ki);
@@ -62,10 +63,13 @@ void DiveController::init() {
 	getPitchService = advertiseService("getRefPitch", "getRefPitch", &DiveController::getRefPitch);
 	enableService = advertiseService("enable", "enable", &DiveController::enable);
 	disableService = advertiseService("disable", "disable", &DiveController::disable);
+	tankPosService = advertiseService("setTankPos", "setTankPos", &DiveController::setTankPosService);
+	setGainDepthService = advertiseService("setGainsDepthPID", "setGainsDepthPID", &DiveController::setGainsDepth);
+	setGainPitchService = advertiseService("setGainsPitchPID", "setGainsPitchPID", &DiveController::setGainsPitch);
 
 	// TIMER, not starting
-	depthTimer = n.createTimer(ros::Duration(1.0/freqDepth), &DiveController::depthCallback, this, 0, 0);
-	pitchTimer = n.createTimer(ros::Duration(1.0/freqPitch), &DiveController::pitchCallback, this, 0, 0);
+	depthTimer = n.createTimer(ros::Duration(1.0/((float)freqDepth)), &DiveController::depthCallback, this, 0, 0);
+	pitchTimer = n.createTimer(ros::Duration(1.0/((float)freqPitch)), &DiveController::pitchCallback, this, 0, 0);
 
 }
 
@@ -102,7 +106,7 @@ void DiveController::pitchCallback(const ros::TimerEvent& event) {
 	controlInputPitch = inputPitch;
 }
 
-void DiveController::setTankPosition(ros::ServiceClient client, double input) {
+void DiveController::setTankPosition(ros::ServiceClient client, float input) {
 	tankSrv.request.position = input;
 	tankSrv.request.speed = tankMotorSpeed;
 
@@ -116,10 +120,10 @@ void DiveController::setTankPosition(ros::ServiceClient client, double input) {
 	}
 }
 
-void DiveController::setControlInput(double inputDepth, double inputPitch) {
+void DiveController::setControlInput(float inputDepth, float inputPitch) {
 	// divide control inputs on front and rear tank
-	double inputFront = 0.0;
-	double inputRear = 0.0;
+	float inputFront = 0.0;
+	float inputRear = 0.0;
 	if(inputDepth>0.0 && (inputDepth+inputPitch)<1.0) {
 		inputFront = inputDepth+inputPitch;
 		inputRear = inputDepth-inputPitch;
@@ -150,7 +154,7 @@ void DiveController::setControlInput(double inputDepth, double inputPitch) {
 	logger.log(inputData, "ctrlInputs");
 }
 
-double DiveController::getDepth() {
+float DiveController::getDepth() {
 	if(!depthClient)
 		connectServices();
 
@@ -162,7 +166,7 @@ double DiveController::getDepth() {
 	}
 }
 
-double DiveController::getPitch() {
+float DiveController::getPitch() {
 	if(!pitchClient)
 		connectServices();
 	if(pitchClient.call(pitchSrv)) {
@@ -210,6 +214,24 @@ bool DiveController::disable(Disable::Request& request, Disable::Response& respo
 	pitchTimer.stop();
 	depthTimer.stop();
 	NODEWRAP_INFO("DiveCtrl disabled!");
+	return 1;
+}
+
+bool DiveController::setTankPosService(SetTankPos::Request& request, SetTankPos::Response& response) {
+	// set tank inputs
+	setTankPosition(controlFrontClient, (float)request.position);
+	setTankPosition(controlRearClient, (float)request.position);
+
+	return 1;
+}
+
+bool DiveController::setGainsDepth(SetGains::Request& request, SetGains::Response& response) {
+	depthCtrl.setGains(request.proportional, request.integral, request.differential);
+	return 1;
+}
+
+bool DiveController::setGainsPitch(SetGains::Request& request, SetGains::Response& response) {
+	pitchCtrl.setGains(request.proportional, request.integral, request.differential);
 	return 1;
 }
 

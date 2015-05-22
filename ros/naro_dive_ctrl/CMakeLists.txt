@@ -24,7 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   naro_sensor_srvs
   naro_tank_ctrl
   naro_imu
-  #naro_monitoring
+  naro_monitoring
 )
 
 ################################################
@@ -51,11 +51,12 @@ add_service_files(
     #GetError.srv
     #GetGains.srv
     #SetCommand.srv
-    #SetGains.srv
+    SetGains.srv
     SetDepth.srv
     SetPitch.srv
     GetRefDepth.srv
     GetRefPitch.srv
+    SetTankPos.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -89,7 +90,7 @@ catkin_package(
     	naro_sensor_srvs
     	naro_tank_ctrl
     	naro_imu
-    	#naro_monitoring
+    	naro_monitoring
 )
 
 ###########
@@ -113,9 +114,9 @@ add_library(
 	diveCtrl_node src/DiveController.cpp
 )
 
-add_library(
-    logging_class src/LoggingClass.cpp
-)
+#add_library(
+#    logging_class src/LoggingClass.cpp
+#)
 
 
 ## Declare a cpp executable
@@ -152,7 +153,7 @@ target_link_libraries(
   dive_controller
   diveCtrl_node
   pidCtrl
-  logging_class
+  #logging_class
   ${catkin_LIBRARIES}
 )
 

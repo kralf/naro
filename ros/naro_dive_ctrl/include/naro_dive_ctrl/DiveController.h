@@ -7,19 +7,21 @@
 
 #include <roscpp_nodewrap/NodeImpl.h>
 #include <roscpp_nodewrap/Nodelet.h>
-#include "ros/ros.h"
+#include <ros/ros.h>
+#include <naro_tank_ctrl/SetTankPosition.h>
+#include <naro_sensor_srvs/GetDepth.h>
+#include <naro_imu/GetPitch.h>
+#include <naro_monitoring/LoggingClass.h>
+
 #include "naro_dive_ctrl/PIDController.h"
-#include "naro_tank_ctrl/SetTankPosition.h"
-#include "naro_sensor_srvs/GetDepth.h"
 #include "naro_dive_ctrl/SetDepth.h"
 #include "naro_dive_ctrl/SetPitch.h"
 #include "naro_dive_ctrl/GetRefDepth.h"
 #include "naro_dive_ctrl/GetRefPitch.h"
 #include "naro_dive_ctrl/Enable.h"
 #include "naro_dive_ctrl/Disable.h"
-#include "naro_imu/GetPitch.h"
-#include "naro_dive_ctrl/LoggingClass.h"
-
+#include "naro_dive_ctrl/SetGains.h"
+#include "naro_dive_ctrl/SetTankPos.h"
 
 using namespace naro_dive_ctrl;
 
@@ -65,21 +67,24 @@ class DiveController:
 		ros::ServiceServer getPitchService;
 		ros::ServiceServer enableService;
 		ros::ServiceServer disableService;
+		ros::ServiceServer tankPosService;
+		ros::ServiceServer setGainDepthService;
+		ros::ServiceServer setGainPitchService;
 
 		LoggingClass logger;
 
-		double tankMotorSpeed;
-		double refDepth;
-		double refPitch;
-		double controlInputDepth;
-		double controlInputPitch;
+		float tankMotorSpeed;
+		float refDepth;
+		float refPitch;
+		float controlInputDepth;
+		float controlInputPitch;
 
 		void depthCallback(const ros::TimerEvent& event);
 		void pitchCallback(const ros::TimerEvent& event);
-		void setTankPosition(ros::ServiceClient client, double input);
-		void setControlInput(double inputDepth, double inputPitch);
-		double getDepth();
-		double getPitch();
+		void setTankPosition(ros::ServiceClient client, float input);
+		void setControlInput(float inputDepth, float inputPitch);
+		float getDepth();
+		float getPitch();
 		void connectServices();
 
 		bool setPitch(SetPitch::Request& request, SetPitch::Response& response);
@@ -88,6 +93,9 @@ class DiveController:
 		bool getRefDepth(GetRefDepth::Request& request, GetRefDepth::Response& response);
 		bool enable(Enable::Request& request, Enable::Response& response);
 		bool disable(Disable::Request& request, Disable::Response& response);
+		bool setTankPosService(SetTankPos::Request& request, SetTankPos::Response& response);
+		bool setGainsDepth(SetGains::Request& request, SetGains::Response& response);
+		bool setGainsPitch(SetGains::Request& request, SetGains::Response& response);
 };
 
 };
