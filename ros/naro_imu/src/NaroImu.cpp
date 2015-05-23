@@ -41,6 +41,9 @@ void NaroImu::getImuData(const sensor_msgs::Imu::ConstPtr& msg) {
 	orientation_IMU.header = msg->header;
 	orientation_IMU.quaternion = msg->orientation;
 
+	angularVel = msg->angular_velocity;
+	linearAcc = msg->linear_acceleration;
+
 	// Transform
 	try {
 		geometry_msgs::QuaternionStamped orientation_base;
@@ -50,7 +53,7 @@ void NaroImu::getImuData(const sensor_msgs::Imu::ConstPtr& msg) {
 		poseBase.orientation = orientation_base.quaternion;
 	}
 	catch(tf::TransformException& ex) {
-			NODEWRAP_ERROR("Transform base: %s", ex.what());
+			//NODEWRAP_ERROR("Transform base: %s", ex.what());
 		}
 
 	// position
@@ -171,6 +174,18 @@ bool NaroImu::getPitch(GetPitch::Request& request, GetPitch::Response& response)
 
 	 response.pitch = -pitch;
 	 return 1;
+}
+
+bool NaroImu::getState(GetState::Request& request, GetState::Response& response) {
+	 double roll, pitch, yaw;
+	 tf::Quaternion quat;
+	 tf::quaternionMsgToTF(lastPose.orientation, quat);
+	 tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+
+	 response.pitch = -pitch;
+
+	 response.q_dot = angularVel.y;
+	 response.w_dot = linearAcc.z-9.81;
 }
 
 }

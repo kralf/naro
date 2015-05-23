@@ -8,7 +8,7 @@
 #include <tf/tf.h>
 
 #include "naro_imu/GetPitch.h"
-
+#include "naro_imu/GetState.h"
 
 using namespace naro_imu;
 
@@ -27,6 +27,10 @@ class NaroImu:
 
 				ros::ServiceServer pitchService;
 				geometry_msgs::Pose lastPose;
+
+				ros::ServiceServer ctrlStateService;
+				geometry_msgs::Vector3 angularVel;
+				geometry_msgs::Vector3 linearAcc;
 
 				tf::Vector3 oldPosition;
 				tf::Vector3 newPosition;
@@ -54,6 +58,7 @@ class NaroImu:
 				void integrateImuToPosition(const sensor_msgs::Imu::ConstPtr& msg, geometry_msgs::Point& position);
 
 				bool getPitch(GetPitch::Request& request, GetPitch::Response& response);
+				bool getState(GetState::Request& request, GetState::Response& response);
 
 };
 };

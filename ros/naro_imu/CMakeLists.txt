@@ -31,6 +31,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
     GetPitch.srv
+    GetState.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
