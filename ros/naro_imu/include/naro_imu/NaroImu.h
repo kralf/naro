@@ -28,7 +28,7 @@ class NaroImu:
 				ros::ServiceServer pitchService;
 				geometry_msgs::Pose lastPose;
 
-				ros::ServiceServer ctrlStateService;
+				ros::ServiceServer stateService;
 				geometry_msgs::Vector3 angularVel;
 				geometry_msgs::Vector3 linearAcc;
 

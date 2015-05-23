@@ -26,6 +26,7 @@ void NaroImu::init() {
 
 	// Service
 	pitchService = advertiseService("getPitch", "getPitch", &NaroImu::getPitch);
+	stateService = advertiseService("getState", "getState", &NaroImu::getState);
 }
 
 void NaroImu::cleanup() {
