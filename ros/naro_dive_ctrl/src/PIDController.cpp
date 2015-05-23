@@ -15,7 +15,7 @@ PIDController::PIDController() {
 	lastError = 0.0;
 	timeStep = 1.0;
 	outputMax = 1.0;
-	outputMin = 0.0;
+	outputMin = -1.0;
 	antiWindup = 0.1;
 }
 
@@ -33,23 +33,23 @@ void PIDController::setTimestep(float dt) {
 
 float PIDController::updateControl(float error) {
 	// update errors
-	this->integralError += error*timeStep;
+	float iError = integralError + error*timeStep;
 	float derivativeError = 0.0;
 	if(lastError != error)
 		derivativeError = (error-lastError)/timeStep;
 
-	float output = Kp*error+Ki*integralError+Kd*derivativeError;
+	float output = Kp*error+Ki*iError+Kd*derivativeError;
 	lastError = error;
 
 	// Limit output and anti-reset windup
 	if(output>outputMax) {
 		output = outputMax;
-		integralError += antiWindup*error;
+		integralError += antiWindup*error*timeStep;
 	} else if(output<outputMin) {
 		output=outputMin;
-		integralError += antiWindup*error;
+		integralError += antiWindup*error*timeStep;
 	} else {
-		integralError += error;
+		integralError += error*timeStep;
 	}
 
 	return output;

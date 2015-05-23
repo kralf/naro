@@ -1,13 +1,15 @@
 Depth:
     Frequency: 100
-    Kp: 0.1155
-    Ki: 0.0062
-    Kd: 1.4245
-Pitch:
-    Frequency: 1
-    Kp: 0.2
+    Kp: 1.0
     Ki: 0.0
     Kd: 0.0
+    InitialInput: 0.4
+Pitch:
+    Frequency: 150
+    Kp: 1.0
+    Ki: 0.0
+    Kd: 0.0
+    InitialInput: 0.0
 Services:
     tankFrontCtrl: "TankCtrlFront"
     tankRearCtrl: "TankCtrlRear"

@@ -31,8 +31,10 @@ void DiveController::init() {
 	refDepth = 0.0;
 	refPitch = 0.0;
 
-	controlInputPitch = 0;
-	controlInputDepth = 0.4;
+	double iDepth = getParam("Depth/InitialInput", iDepth);
+	double iPitch = getParam("Pitch/InitialInput", iPitch);
+	controlInputPitch = iPitch;
+	controlInputDepth = iDepth;
 
 	// init controller
 	double Kp = getParam("Depth/Kp", Kp);
@@ -46,7 +48,7 @@ void DiveController::init() {
 	Kp = getParam("Pitch/Kp", Kp);
 	Ki = getParam("Pitch/Ki", Ki);
 	Kd = getParam("Pitch/Kd", Kd);
-	freq = getParam("Depth/Frequency", freq);
+	freq = getParam("Pitch/Frequency", freq);
 	dt = 1.0/freq;
 	pitchCtrl.setGains((float)Kp,(float)Ki,(float)Kd);
 	pitchCtrl.setTimestep((float)dt);
@@ -67,7 +69,6 @@ void DiveController::init() {
 	enableService = advertiseService("enable", "enable", &DiveController::enable);
 	disableService = advertiseService("disable", "disable", &DiveController::disable);
 	tankPosService = advertiseService("setTankPos", "setTankPos", &DiveController::setTankPosService);
-	resetTankPosService = advertiseService("resetTankPos", "resetTankPos", &DiveController::resetTankPos);
 	setGainDepthService = advertiseService("setGainsDepthPID", "setGainsDepthPID", &DiveController::setGainsDepth);
 	setGainPitchService = advertiseService("setGainsPitchPID", "setGainsPitchPID", &DiveController::setGainsPitch);
 
@@ -139,9 +140,9 @@ void DiveController::setControlInput(float inputDepth, float inputPitch) {
 	// divide control inputs on front and rear tank
 	float inputFront = 0.0;
 	float inputRear = 0.0;
-	if(inputDepth>0.0 && (inputDepth+inputPitch)<1.0) {
-		inputFront = inputDepth+inputPitch;
-		inputRear = inputDepth-inputPitch;
+	if(inputDepth>0.0 && (inputDepth)<1.0) {
+		inputFront = inputDepth-inputPitch;
+		inputRear = inputDepth+inputPitch;
 	} else {
 		if(inputDepth == 0) {
 			if(inputPitch>0) {
@@ -154,8 +155,8 @@ void DiveController::setControlInput(float inputDepth, float inputPitch) {
 			}
 		}
 		else {
-			inputFront = inputDepth+inputPitch;
-			inputRear = inputDepth-inputPitch;
+			inputFront = inputDepth-inputPitch;
+			inputRear = inputDepth+inputPitch;
 		}
 	}
 
@@ -263,26 +264,6 @@ bool DiveController::setTankPosService(SetTankPos::Request& request, SetTankPos:
 	return 1;
 }
 
-bool DiveController::resetTankPos(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response) {
-	resetFrontCient = n.serviceClient<std_srvs::Empty>("/"+tankFront+"/resetTankPosition");
-	resetRearClient = n.serviceClient<std_srvs::Empty>("/"+tankRear+"/resetTankPosition");
-	bool ok = false;
-
-	if(resetFrontCient.call(resetSrv))
-		ok = true;
-	else {
-		NODEWRAP_INFO("TankCtrl node not available");
-		ok = false;
-	}
-	if(resetRearClient.call(resetSrv))
-		ok = true;
-	else {
-		NODEWRAP_INFO("TankCtrl node not available");
-		ok = false;
-	}
-
-	return ok;
-}
 
 bool DiveController::setGainsDepth(SetGains::Request& request, SetGains::Response& response) {
 	depthCtrl.setGains(request.proportional, request.integral, request.differential);

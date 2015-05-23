@@ -7,4 +7,4 @@ control:
     name: "TankCtrlRear"
     smcServer: "smc_server_rear"
     checkPosFreq: 100.0
-positionThreshold: 0.01
+positionThreshold: 0.05

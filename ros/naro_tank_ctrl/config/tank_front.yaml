@@ -7,4 +7,4 @@ control:
     name: "TankCtrlFront"
     smcServer: "smc_server_front"
     checkPosFreq: 100.0
-positionThreshold: 0.01
+positionThreshold: 0.05

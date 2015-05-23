@@ -41,12 +41,13 @@ void TankCtrl::init() {
 	// TIMER
 	checkPositionTimer = n.createTimer(ros::Duration(1.0/positionCheckFreq), &TankCtrl::checkPosition, this); // timer for checking position
 
-	startup();
+	//startup();
 
 }
 
 void TankCtrl::cleanup() {
 	NODEWRAP_INFO("Shutting down: <%s>", nodeName.c_str());
+	resetPosition();
 }
 
 
@@ -124,7 +125,7 @@ void TankCtrl::checkPosition(const ros::TimerEvent& event) {
 * startup procedure for piston tank
 */
 void TankCtrl::startup() {
-	//resetPosition();
+	resetPosition();
 }
 
 /*
