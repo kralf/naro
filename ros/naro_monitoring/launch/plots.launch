@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="rqt_plot" name="plotCtrlInputs" type="rqt_plot" output="screen" 
+        args="/naro_monitoring/ctrlInputs/data[0]:data[1]"/>
+    <node pkg="rqt_plot" name="plotPitch" type="rqt_plot" output="screen" 
+        args="/naro_monitoring/pitchLog/data[0]:data[1]"/>
+    <node pkg="rqt_plot" name="plotDepth" type="rqt_plot" output="screen" 
+        args="/naro_monitoring/depthLog/data[0]:data[1]"/>
+</launch>
