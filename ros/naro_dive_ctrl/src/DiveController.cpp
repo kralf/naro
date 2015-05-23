@@ -31,6 +31,9 @@ void DiveController::init() {
 	refDepth = 0.0;
 	refPitch = 0.0;
 
+	controlInputPitch = 0;
+	controlInputDepth = 0.4;
+
 	// init controller
 	double Kp = getParam("Depth/Kp", Kp);
 	double Ki = getParam("Depth/Ki", Ki);
