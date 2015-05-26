@@ -47,7 +47,8 @@ void TankCtrl::init() {
 
 void TankCtrl::cleanup() {
 	NODEWRAP_INFO("Shutting down: <%s>", nodeName.c_str());
-	resetPosition();
+	//resetPosition();
+	setSpeed(0.5); // empty tanks (don't check for limits, as already shut down)
 }
 
 
@@ -114,8 +115,8 @@ void TankCtrl::checkPosition(const ros::TimerEvent& event) {
 		if(fabs(position-positionRequest)<positionThreshold) {
 			//NODEWRAP_INFO("Reached final position");
 			setSpeed(0.0);
-			speedDirection = 0;
-			setDirection(0);
+			//speedDirection = 0;
+			//setDirection(0);
 			finalPosition = true;
 		}
 	}
