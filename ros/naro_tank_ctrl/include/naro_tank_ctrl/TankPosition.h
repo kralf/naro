@@ -5,14 +5,16 @@
  * 2015
  */
 
-#include <roscpp_nodewrap/NodeImpl.h>
-#include <roscpp_nodewrap/Nodelet.h>
-
-#include "naro_sensor_srvs/GetPosition.h"
-#include "naro_tank_ctrl/SetDirection.h"
-#include "naro_tank_ctrl/GetTankPosition.h"
 #include <std_srvs/Empty.h>
 #include <std_msgs/String.h>
+#include <roscpp_nodewrap/NodeImpl.h>
+#include <roscpp_nodewrap/Nodelet.h>
+#include <naro_monitoring/LoggingClass.h>
+#include <naro_sensor_srvs/GetPosition.h>
+
+#include "naro_tank_ctrl/SetDirection.h"
+#include "naro_tank_ctrl/GetTankPosition.h"
+
 
 using namespace naro_tank_ctrl;
 
@@ -37,6 +39,8 @@ class TankPosition:
             ros::NodeHandle n;
 
             ros::Timer timerHallSensor;
+
+            LoggingClass logger;
 
             ros::ServiceClient positionClient;
             naro_sensor_srvs::GetPosition posSrv;

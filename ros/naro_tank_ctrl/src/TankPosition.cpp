@@ -31,6 +31,9 @@ void TankPosition::init() {
     speedDirection = 0.0;
     position = 0.0;
 
+    // LOGGING
+	logger.createPublisher(nodeName);
+
     // SERVICES
     // -> subscribe
     positionClient = n.serviceClient<naro_sensor_srvs::GetPosition>(hallSensorName+"/getPosition", true);
@@ -73,6 +76,11 @@ void TankPosition::readPosition(const ros::TimerEvent& event) {
         }
 
         ticksOld = ticksNew;
+
+    	// Log data
+    	std::vector<float> posData(1);
+    	posData[0] = position;
+    	logger.log(posData, nodeName);
 
     }
     else {
