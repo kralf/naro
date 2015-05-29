@@ -2,7 +2,7 @@ position:
     name: "TankPositionRear"
     hallSensorName: "hallSensor_rear"
     hallSensorReadingFreq: 100.0
-    totalTicks: 950
+    totalTicks: 945
 control:
     name: "TankCtrlRear"
     smcServer: "smc_server_rear"
