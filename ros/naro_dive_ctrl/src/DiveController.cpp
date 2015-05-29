@@ -95,7 +95,8 @@ void DiveController::depthCallback(const ros::TimerEvent& event) {
 	controlInputDepth = inputDepth;
 
 	// Log data
-	std::vector<float> depthData{refDepth, actualDepth};
+	std::vector<float> depthData(2);
+	depthData[0] = refDepth; depthData[1] = actualDepth;
 	logger.log(depthData, "depthLog");
 }
 
@@ -112,7 +113,8 @@ void DiveController::pitchCallback(const ros::TimerEvent& event) {
 	controlInputPitch = inputPitch;
 
 	// log data
-	std::vector<float> pitchData{refPitch, actualPitch};
+	std::vector<float> pitchData(2);
+	pitchData[0] = refPitch; pitchData[1] = actualPitch;
 	logger.log(pitchData, "pitchLog");
 }
 
@@ -165,7 +167,8 @@ void DiveController::setControlInput(float inputDepth, float inputPitch) {
 	setTankPosition(controlRearClient, inputRear);
 
 	// log data
-	std::vector<float> inputData{(float)inputFront, (float)inputRear};
+	std::vector<float> inputData(2);
+	inputData[0] = inputFront; inputData[1] = inputRear;
 	logger.log(inputData, "ctrlInputs");
 }
 
