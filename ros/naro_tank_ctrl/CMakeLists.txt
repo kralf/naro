@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   naro_sensor_srvs
   naro_smc_srvs
+  naro_monitoring
 )
 
 ################################################
@@ -73,6 +74,7 @@ catkin_package(
       message_runtime 
       naro_sensor_srvs
       naro_smc_srvs
+      naro_monitoring
 )
 
 ###########
