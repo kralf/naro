@@ -16,4 +16,4 @@ Services:
     depthService: "DepthSensor"
     pitchService: "naro_imu_node"
 Tank:
-    Speed: 0.6
+    Speed: 0.7

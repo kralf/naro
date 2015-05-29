@@ -38,6 +38,7 @@ class TankCtrl:
 			float ticksOld;
 			float speedDirection;
 			bool finalPosition;
+			float motorSpeed;
 			std::string nodeName;
 
 			ros::NodeHandle n;

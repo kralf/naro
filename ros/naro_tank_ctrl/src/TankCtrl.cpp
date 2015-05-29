@@ -22,6 +22,8 @@ void TankCtrl::init() {
 	smcServerName = getParam("control/smcServer", smcServerName);
 	tankPosName = getParam("position/name", tankPosName);
 	double positionCheckFreq = getParam("control/checkPosFreq", positionCheckFreq);
+	double tmp = getParam("motorSpeed", tmp);
+	motorSpeed = tmp;
 
 	// INIT VARIABLES
 	speedDirection = 0.0;
@@ -48,7 +50,7 @@ void TankCtrl::init() {
 void TankCtrl::cleanup() {
 	NODEWRAP_INFO("Shutting down: <%s>", nodeName.c_str());
 	//resetPosition();
-	setSpeed(0.5); // empty tanks (don't check for limits, as already shut down)
+	setSpeed(motorSpeed); // empty tanks (don't check for limits, as already shut down)
 }
 
 

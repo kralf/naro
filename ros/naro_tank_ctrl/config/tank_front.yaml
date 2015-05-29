@@ -8,3 +8,4 @@ control:
     smcServer: "smc_server_front"
     checkPosFreq: 100.0
 positionThreshold: 0.05
+motorSpeed: 0.7
