@@ -111,7 +111,7 @@ add_library(
 )
 
 add_library(
-	diveCtrl_node src/DiveController.cpp
+	diveCtrl src/DiveController.cpp
 )
 
 #add_library(
@@ -123,7 +123,7 @@ add_library(
 #add_executable(dive_controller_old src/dive_controller.cpp)
 
 add_executable(
-	dive_controller src/diveController.cpp
+	dive_controller src/diveController_node.cpp
 )
 
 ## Add cmake target dependencies of the executable/library
@@ -132,26 +132,26 @@ add_dependencies(pidCtrl diveCtrl diveCtrl_node naro_monitoring naro_dive_ctrl_g
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(
-  diveCtrl_node
+  diveCtrl
   ${catkin_LIBRARIES}
 )
 
 target_link_libraries(
   dive_controller
-  diveCtrl_node
+  diveCtrl
   ${catkin_LIBRARIES}
 )
 
 target_link_libraries(
   dive_controller
-  diveCtrl_node
+  diveCtrl
   pidCtrl
   ${catkin_LIBRARIES}
 )
 
 target_link_libraries(
   dive_controller
-  diveCtrl_node
+  diveCtrl
   pidCtrl
   #logging_class
   ${catkin_LIBRARIES}
