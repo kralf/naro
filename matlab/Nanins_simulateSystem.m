@@ -27,7 +27,7 @@ iTank2 = iTank1;
 
 %% PID MODEL
 
-modelPID = 'Nanins_PID_Controller';
+modelPID = 'Nanins_Controller_PID';
 
 % -- PID CONTROLLER
 % PID tuning Depth controller Ziegler-Nicholson
@@ -53,7 +53,7 @@ Kd_p = 0;
 
 %% LQR Model
 
-modelLQR = 'Nanins_LQR_Controller';
+modelLQR = 'Nanins_Controller_LQR';
 
 % Design Matrices
 Q = diag([2,5,80,50]);
