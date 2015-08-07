@@ -2,9 +2,9 @@
 
 % open bag file
 disp('- open bag file')
-%filePath = fullfile('../bagFiles', '2015-06-02-16-39-40.bag'); % test 1m
+filePath = fullfile('../bagFiles', '2015-06-02-16-39-40.bag'); % test 1m
 %filePath = fullfile('../bagFiles', '2015-06-02-16-47-34.bag'); % test 2m
-filePath = fullfile('../bagFiles', '2015-05-29-19-01-43.bag'); % 
+%filePath = fullfile('../bagFiles', '2015-05-29-19-01-43.bag'); % 
 bag = rosbag(filePath);
 
 %% Get Pitch Data

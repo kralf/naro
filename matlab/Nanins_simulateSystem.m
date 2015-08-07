@@ -3,7 +3,7 @@
 
 % --- CONTROL SIMULATION OF NANINS ---
 
-clear all
+%clear all
 clc
 close all
 
@@ -87,7 +87,7 @@ elseif(strcmp(model, modelLQR))
 end
 
 % -- START SIMULATION
-sim(model, [0 100])
+sim(model, [0 200])
 
 %% PLOT OUTPUTS
 gca = figure(1);
@@ -121,6 +121,7 @@ subplot(n,m,4)
 plot(tout, sim_h, 'LineWidth', 2)
 ylim([0, 1])
 title('fill height piston tanks')
+xlabel('time [s]')
 
 %
 titleStr = strrep(model, '_', ' ');
