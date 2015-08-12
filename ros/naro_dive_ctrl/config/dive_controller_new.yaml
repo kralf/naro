@@ -10,10 +10,16 @@ Pitch:
     Ki: 0.24
     Kd: 0.52
     InitialInput: 0.0
+LQR:
+    Frequency: 100
+    Input0: 0.2264
+    KalmanGain_Line1: [0.1581, -0.2500, 1.0278, -0.7956]
+    KalmanGain_Line2: [0.1581, 0.2500, 1.0278, 0.7956]
+    RefState: [0.0, 0.0, 0.0, 0.0]
 Services:
     tankFrontCtrl: "TankCtrlFront"
     tankRearCtrl: "TankCtrlRear"
     depthService: "DepthSensor"
-    pitchService: "naro_imu_node"
+    imuService: "naro_imu_node"
 Tank:
     Speed: 0.7

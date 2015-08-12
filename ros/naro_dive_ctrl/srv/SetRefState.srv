@@ -1,0 +1,5 @@
+float64 depth
+float64 w_dot
+float64 pitch # [deg]
+float64 q_dot
+---

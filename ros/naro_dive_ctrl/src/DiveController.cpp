@@ -21,22 +21,24 @@ void DiveController::init() {
 	// get parameters
 	double freqDepth = getParam("Depth/Frequency", freqDepth);
 	double freqPitch = getParam("Pitch/Frequency", freqPitch);
+	double freqLQR = getParam("LQR/Frequeny", freqLQR);
 	tankFront = getParam("Services/tankFrontCtrl", tankFront);
 	tankRear = getParam("Services/tankRearCtrl", tankRear);
 	depthName = getParam("Services/depthService", depthName);
-	pitchName = getParam("Services/pitchService", pitchName);
+	imuName = getParam("Services/imuService", imuName);
 
 	double ms = getParam("Tank/Speed", ms);
 	tankMotorSpeed = (float)ms;
 	refDepth = 0.0;
 	refPitch = 0.0;
+	refState[0] = 0; refState[1] = 0; refState[2] = 0; refState[3] = 0; // [depth, w_dot, pitch, q_dot]
 
 	double iDepth = getParam("Depth/InitialInput", iDepth);
 	double iPitch = getParam("Pitch/InitialInput", iPitch);
 	controlInputPitch = iPitch;
 	controlInputDepth = iDepth;
 
-	// init controller
+	// init PID controller
 	double Kp = getParam("Depth/Kp", Kp);
 	double Ki = getParam("Depth/Ki", Ki);
 	double Kd = getParam("Depth/Kd", Kd);
@@ -53,6 +55,14 @@ void DiveController::init() {
 	pitchCtrl.setGains((float)Kp,(float)Ki,(float)Kd);
 	pitchCtrl.setTimestep((float)dt);
 
+	// init LQR controller
+	double i0 = getParam("LQR/Input0", i0); // neutral buoyant
+	input0 = (float)i0;
+	//TODO init kalman Gain
+	//double l1 = getParam("LQR/KalmanGain_Line1", l1);
+	//double l2 = getParam("LQR/KalmanGain_Line2", l2);
+
+
 	// setup logging topics
 	logger.createPublisher("ctrlInputs");
 	logger.createPublisher("depthLog");
@@ -66,7 +76,8 @@ void DiveController::init() {
 	getDepthService = advertiseService("getRefDepth", "getRefDepth", &DiveController::getRefDepth);
 	pitchService = advertiseService("setRefPitch", "setRefPitch", &DiveController::setPitch);
 	getPitchService = advertiseService("getRefPitch", "getRefPitch", &DiveController::getRefPitch);
-	enableService = advertiseService("enable", "enable", &DiveController::enable);
+	enablePIDService = advertiseService("enablePIDCtrl", "enablePIDCtrl", &DiveController::enablePIDCtrl);
+	enableLQRService = advertiseService("enableLQRCtrl", "enableLQRCtrl", &DiveController::enableLQRCtrl);
 	disableService = advertiseService("disable", "disable", &DiveController::disable);
 	tankPosService = advertiseService("setTankPos", "setTankPos", &DiveController::setTankPosService);
 	setGainDepthService = advertiseService("setGainsDepthPID", "setGainsDepthPID", &DiveController::setGainsDepth);
@@ -75,12 +86,19 @@ void DiveController::init() {
 	// TIMER, not starting yet
 	depthTimer = n.createTimer(ros::Duration(1.0/((float)freqDepth)), &DiveController::depthCallback, this, 0, 0);
 	pitchTimer = n.createTimer(ros::Duration(1.0/((float)freqPitch)), &DiveController::pitchCallback, this, 0, 0);
+	lqrTimer = n.createTimer(ros::Duration(1.0/((float)freqLQR)), &DiveController::lqrCallback, this, 0, 0);
 
 }
 
 void DiveController::cleanup() {
 	NODEWRAP_INFO("Shutting down: <DiveCtrl>");
 }
+
+/*
+ * =============================================================
+ * PID CONTROLLER
+ * =============================================================
+ */
 
 /*
  * depth control loop
@@ -118,22 +136,6 @@ void DiveController::pitchCallback(const ros::TimerEvent& event) {
 	logger.log(pitchData, "pitchLog");
 }
 
-/*
- * perform service calls to the tankCtrl for the tank positions
- */
-void DiveController::setTankPosition(ros::ServiceClient client, float input) {
-	tankSrv.request.position = input;
-	tankSrv.request.speed = tankMotorSpeed;
-
-	if(!client)
-		connectServices();
-
-	if(client.call(tankSrv)) {
-
-	} else {
-		NODEWRAP_INFO("TankCtrl node not available");
-	}
-}
 
 /*
  * combine the control inputs from the depth and pitch controller
@@ -173,6 +175,44 @@ void DiveController::setControlInput(float inputDepth, float inputPitch) {
 }
 
 /*
+ * =============================================================
+ * LQR CONTROLLER
+ * =============================================================
+ */
+
+void DiveController::lqrCallback(const ros::TimerEvent& event) {
+	getState(); // update state
+	// calc error
+	float error[4];
+	for(int i=0; i<4; i++) {
+		error[i] = refState[i]-state[i];
+	}
+	// calculate new input
+	float input[2];
+	for(int i=0; i<2; i++) {
+		for(int j=0; j<4; j++) {
+			input[i] += kalmanGain[i][j]*error[j];
+		}
+	}
+
+	// add feed-forward term
+	input[0] += input0;
+	input[1] += input0;
+
+	// set tank inputs
+	setTankPosition(controlFrontClient, input[0]);
+	setTankPosition(controlRearClient, input[1]);
+}
+
+/*
+ * =============================================================
+ * SERVICE FUNCTIONS
+ * =============================================================
+ */
+
+// ======= SERVICE CALLS ========
+
+/*
  * handle service call for depth
  */
 float DiveController::getDepth() {
@@ -202,6 +242,43 @@ float DiveController::getPitch() {
 }
 
 /*
+ * handle service call for state [depth, w_dot, pitch, q_dot]
+ */
+void DiveController::getState() {
+	// get depth
+	state[0] = getDepth();
+
+	// get state information from imus
+	if(!imuStateClient)
+		connectServices();
+	if(imuStateClient.call(imuStateSrv)) {
+		state[1] = imuStateSrv.response.w_dot;
+		state[2] = imuStateSrv.response.pitch;
+		state[3] = imuStateSrv.response.q_dot;
+	} else {
+		NODEWRAP_INFO("imu state service not available");
+	}
+}
+
+
+/*
+ * perform service calls to the tankCtrl for the tank positions
+ */
+void DiveController::setTankPosition(ros::ServiceClient client, float input) {
+	tankSrv.request.position = input;
+	tankSrv.request.speed = tankMotorSpeed;
+
+	if(!client)
+		connectServices();
+
+	if(client.call(tankSrv)) {
+
+	} else {
+		NODEWRAP_INFO("TankCtrl node not available");
+	}
+}
+
+/*
  * connect with the service clients
  */
 void DiveController::connectServices() {
@@ -212,20 +289,22 @@ void DiveController::connectServices() {
 	if(!depthClient)
 		depthClient = n.serviceClient<naro_sensor_srvs::GetDepth>("/"+depthName+"/get_depth", true);
 	if(!pitchClient)
-		pitchClient = n.serviceClient<naro_imu::GetPitch>("/"+pitchName+"/getPitch", true);
+		pitchClient = n.serviceClient<naro_imu::GetPitch>("/"+imuName+"/getPitch", true);
+	if(!imuStateClient)
+		imuStateClient = n.serviceClient<naro_imu::GetState>("/"+imuName+"/getState", true);
 }
 
-/*
- * advertised service functions
- */
+// ======= ADVERTISE SERVICE FUNCTIONS ========
 
 bool DiveController::setPitch(SetPitch::Request& request, SetPitch::Response& response) {
 	refPitch = request.pitch;
+	refState[2] = refPitch;
 	return 1;
 }
 
 bool DiveController::setDepth(SetDepth::Request& request, SetDepth::Response& response) {
 	refDepth = request.depth;
+	refState[0] = refDepth;
 	return 1;
 }
 
@@ -239,22 +318,48 @@ bool DiveController::getRefDepth(GetRefDepth::Request& request, GetRefDepth::Res
 	return 1;
 }
 
-bool DiveController::enable(Enable::Request& request, Enable::Response& response) {
+bool DiveController::setRefState(SetRefState::Request& request, SetRefState::Response& response) {
+	refDepth = request.depth;
+	refState[0] = refDepth;
+	refState[1] = request.w_dot;
+	refPitch = request.pitch;
+	refState[2] = refPitch;
+	refState[3] = request.q_dot;
+
+}
+
+bool DiveController::enablePIDCtrl(EnablePIDCtrl::Request& request, EnablePIDCtrl::Response& response) {
 	if(request.enablePitchCtrl) {
 		pitchTimer.start();
-		NODEWRAP_INFO("PitchCtrl ENABLED!");
+		NODEWRAP_INFO("Pitch PID-control ENABLED!");
 	}
 	if(request.enableDepthCtrl) {
 		depthTimer.start();
-		NODEWRAP_INFO("DepthCtrl ENABLED!");
+		NODEWRAP_INFO("Depth PID-control ENABLED!");
 	}
 
 	return 1;
 }
 
+bool DiveController::enableLQRCtrl(EnableLQRCtrl::Request& request, EnableLQRCtrl::Response& response) {
+	// stop PID ctrl
+	pitchTimer.stop();
+	depthTimer.stop();
+
+	// start LQR ctrl
+	if(request.enableLQRCtrl) {
+		lqrTimer.start();
+		NODEWRAP_INFO("LQR control ENABLED!");
+	}
+
+	return 1;
+
+}
+
 bool DiveController::disable(Disable::Request& request, Disable::Response& response) {
 	pitchTimer.stop();
 	depthTimer.stop();
+	lqrTimer.stop();
 	NODEWRAP_INFO("DiveCtrl disabled!");
 	return 1;
 }
@@ -266,7 +371,6 @@ bool DiveController::setTankPosService(SetTankPos::Request& request, SetTankPos:
 
 	return 1;
 }
-
 
 bool DiveController::setGainsDepth(SetGains::Request& request, SetGains::Response& response) {
 	depthCtrl.setGains(request.proportional, request.integral, request.differential);

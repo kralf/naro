@@ -44,7 +44,8 @@ add_service_files(
   FILES
     Disable.srv
     #Emerge.srv
-    Enable.srv
+    EnablePIDCtrl.srv
+    EnableLQRCtrl.srv
     #GetActual.srv
     #GetCommand.srv
     #GetEnabled.srv
@@ -54,6 +55,7 @@ add_service_files(
     SetGains.srv
     SetDepth.srv
     SetPitch.srv
+    SetRefState.srv
     GetRefDepth.srv
     GetRefPitch.srv
     SetTankPos.srv
