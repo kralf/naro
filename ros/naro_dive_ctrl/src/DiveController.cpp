@@ -29,9 +29,6 @@ void DiveController::init() {
 
 	double ms = getParam("Tank/Speed", ms);
 	tankMotorSpeed = (float)ms;
-	refDepth = 0.0;
-	refPitch = 0.0;
-	refState[0] = 0; refState[1] = 0; refState[2] = 0; refState[3] = 0; // [depth, w_dot, pitch, q_dot]
 
 	double iDepth = getParam("Depth/InitialInput", iDepth);
 	double iPitch = getParam("Pitch/InitialInput", iPitch);
@@ -58,9 +55,17 @@ void DiveController::init() {
 	// init LQR controller
 	double i0 = getParam("LQR/Input0", i0); // neutral buoyant
 	input0 = (float)i0;
-	//TODO init kalman Gain
-	//double l1 = getParam("LQR/KalmanGain_Line1", l1);
-	//double l2 = getParam("LQR/KalmanGain_Line2", l2);
+	// init kalman Gain
+	std::vector<double> l1 = getParam("LQR/KalmanGain_Line1", l1);
+	std::vector<double> l2 = getParam("LQR/KalmanGain_Line2", l2);
+	std::vector<double> ref = getParam("LQR/RefState", ref); // [depth, w_dot, pitch, q_dot]
+	for(int i=0; i!=l1.size(); ++i) {
+		kalmanGain[0][i] = l1[i];
+		kalmanGain[1][i] = l2[i];
+		refState[i] = ref[i];
+	}
+	refDepth = refState[0];
+	refPitch = refState[2];
 
 
 	// setup logging topics
@@ -248,7 +253,7 @@ void DiveController::getState() {
 	// get depth
 	state[0] = getDepth();
 
-	// get state information from imus
+	// get state information from imu
 	if(!imuStateClient)
 		connectServices();
 	if(imuStateClient.call(imuStateSrv)) {
