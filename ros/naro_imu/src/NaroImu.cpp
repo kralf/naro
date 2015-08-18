@@ -185,7 +185,7 @@ bool NaroImu::getState(GetState::Request& request, GetState::Response& response)
 
 	 response.pitch = -pitch;
 
-	 response.q_dot = angularVel.y;
+	 response.q_dot = -angularVel.y;
 	 response.w_dot = linearAcc.z-9.81;
 }
 
