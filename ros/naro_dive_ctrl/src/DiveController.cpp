@@ -207,6 +207,11 @@ void DiveController::lqrCallback(const ros::TimerEvent& event) {
 	// set tank inputs
 	setTankPosition(controlFrontClient, input[0]);
 	setTankPosition(controlRearClient, input[1]);
+
+	// log data
+	std::vector<float> inputData(2);
+	inputData[0] = input[0]; inputData[1] = input[1];
+	logger.log(inputData, "ctrlInputs");
 }
 
 /*
