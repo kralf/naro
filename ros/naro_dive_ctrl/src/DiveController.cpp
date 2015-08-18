@@ -196,7 +196,7 @@ void DiveController::lqrCallback(const ros::TimerEvent& event) {
 	float input[2];
 	for(int i=0; i<2; i++) {
 		for(int j=0; j<4; j++) {
-			input[i] += kalmanGain[i][j]*error[j];
+			input[i] = kalmanGain[i][j]*error[j];
 		}
 	}
 
