@@ -16,7 +16,6 @@ TankPosition::TankPosition() {};
 TankPosition::~TankPosition() {};
 
 void TankPosition::init() {
-    NODEWRAP_INFO("Initialize: <%s>", nodeName.c_str());
 
 	// get parameters
 	nodeName = getParam("position/name", nodeName);
@@ -26,6 +25,8 @@ void TankPosition::init() {
 	positionThreshold = (float)tmpPos;
 	hallSensorName = getParam("position/hallSensorName", hallSensorName);
 	double readingHallFreq = getParam("position/hallSensorReadingFreq", readingHallFreq);
+
+	NODEWRAP_INFO("Initialize: <%s>", nodeName.c_str());
 
     ticksOld = 0.0;
     speedDirection = 0.0;

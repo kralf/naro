@@ -69,7 +69,7 @@ bool TankCtrl::setTankPosition(SetTankPosition::Request& request, SetTankPositio
 			direction = 1.0; // drive in
 			//NODEWRAP_INFO("set speed direction +");
 		} else {
-			direction = -1.0; // drive in
+			direction = -1.0; // drive out
 			//NODEWRAP_INFO("set speed direction -");
 		}
 
