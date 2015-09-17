@@ -103,6 +103,7 @@ class DiveController:
 		float getPitch();
 		void getState();
 		void connectServices();
+		void disable();
 
 		bool setPitch(SetPitch::Request& request, SetPitch::Response& response);
 		bool getRefPitch(GetRefPitch::Request& request, GetRefPitch::Response& response);
@@ -111,7 +112,7 @@ class DiveController:
 		bool setRefState(SetRefState::Request& request, SetRefState::Response& response);
 		bool enablePIDCtrl(EnablePIDCtrl::Request& request, EnablePIDCtrl::Response& response);
 		bool enableLQRCtrl(EnableLQRCtrl::Request& request, EnableLQRCtrl::Response& response);
-		bool disable(Disable::Request& request, Disable::Response& response);
+		bool disableServiceCall(Disable::Request& request, Disable::Response& response);
 		bool setTankPosService(SetTankPos::Request& request, SetTankPos::Response& response);
 		bool setGainsDepth(SetGains::Request& request, SetGains::Response& response);
 		bool setGainsPitch(SetGains::Request& request, SetGains::Response& response);

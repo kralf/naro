@@ -83,7 +83,7 @@ void DiveController::init() {
 	getPitchService = advertiseService("getRefPitch", "getRefPitch", &DiveController::getRefPitch);
 	enablePIDService = advertiseService("enablePIDCtrl", "enablePIDCtrl", &DiveController::enablePIDCtrl);
 	enableLQRService = advertiseService("enableLQRCtrl", "enableLQRCtrl", &DiveController::enableLQRCtrl);
-	disableService = advertiseService("disable", "disable", &DiveController::disable);
+	disableService = advertiseService("disableService", "disableService", &DiveController::disableServiceCall);
 	tankPosService = advertiseService("setTankPos", "setTankPos", &DiveController::setTankPosService);
 	setGainDepthService = advertiseService("setGainsDepthPID", "setGainsDepthPID", &DiveController::setGainsDepth);
 	setGainPitchService = advertiseService("setGainsPitchPID", "setGainsPitchPID", &DiveController::setGainsPitch);
@@ -96,6 +96,7 @@ void DiveController::init() {
 }
 
 void DiveController::cleanup() {
+	disable();
 	NODEWRAP_INFO("Shutting down: <DiveCtrl>");
 }
 
@@ -219,6 +220,13 @@ void DiveController::lqrCallback(const ros::TimerEvent& event) {
  * SERVICE FUNCTIONS
  * =============================================================
  */
+
+void DiveController::disable() {
+	pitchTimer.stop();
+	depthTimer.stop();
+	lqrTimer.stop();
+	NODEWRAP_INFO("DiveCtrl disabled!");
+}
 
 // ======= SERVICE CALLS ========
 
@@ -366,11 +374,8 @@ bool DiveController::enableLQRCtrl(EnableLQRCtrl::Request& request, EnableLQRCtr
 
 }
 
-bool DiveController::disable(Disable::Request& request, Disable::Response& response) {
-	pitchTimer.stop();
-	depthTimer.stop();
-	lqrTimer.stop();
-	NODEWRAP_INFO("DiveCtrl disabled!");
+bool DiveController::disableServiceCall(Disable::Request& request, Disable::Response& response) {
+	disable();
 	return 1;
 }
 
