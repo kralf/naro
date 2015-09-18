@@ -96,6 +96,7 @@ void DiveController::init() {
 }
 
 void DiveController::cleanup() {
+
 	disableFunc();
 	NODEWRAP_INFO("Shutting down: <DiveCtrl>");
 }

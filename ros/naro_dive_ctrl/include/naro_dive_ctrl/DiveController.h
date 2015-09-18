@@ -105,6 +105,7 @@ class DiveController:
 		void connectServices();
 		void disableFunc();
 
+
 		bool setPitch(SetPitch::Request& request, SetPitch::Response& response);
 		bool getRefPitch(GetRefPitch::Request& request, GetRefPitch::Response& response);
 		bool setDepth(SetDepth::Request& request, SetDepth::Response& response);
